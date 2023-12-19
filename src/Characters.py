@@ -3,16 +3,19 @@ class Servant():
 
     def __init__(self):
         
-        self.Message = 'Character: Loyal Servant of Author\n'\
+        self.message = 'Character: Loyal Servant of Author\n'\
                        'Side: City\n'\
                        'Weakness: You do not know the identity of anyone except for yourself.\n'\
                        'Guide: Try to finds the "Merlin" and and help him/her win the game.'
+
+        self.name = "Loyal Servant of Author"
+        self.side = "City"
 
 class Persival():
 
     def __init__(self): 
         
-        self.Message = 'Character: Persival\n'\
+        self.message = 'Character: Persival\n'\
                        'Side: City\n'\
                        'Power: You will be given two names,'\
                        'one of them is "Merlin" and one of the is "Morgana". '\
@@ -20,21 +23,27 @@ class Persival():
                        'Which one is Merlin and which one is "Morgana".'\
                        'Here are your 2 Names:\n'
 
+        self.name = "Persival"
+        self.side = "City"
+
 class Merlin():
 
     def __init__(self):
 
-        self.Message = 'Character: Merlin\n' \
+        self.message = 'Character: Merlin\n' \
                        'Side: City\n'\
                        'Power: You know all the members of evils except for the "Mordered".\n'\
                        'Note: If "Assassins" finds out your identity, '\
                        'he\she can shoot you and the game will be lost for City Side.\n'\
                        'Here are the members of the evil:\n'
 
+        self.name = "Merlin"
+        self.side = "City"
+
 class King():
     def __init__(self): 
         
-        self.Message = 'Character: King Aurthor\n'\
+        self.message = 'Character: King Arthor\n'\
                        'Side: City\n'\
                        'Power: If you lose the game in rounds, you have a last chance to gauss the members '\
                        'of the evil at the end of the game. If you gauss "ALL" the names right '\
@@ -45,17 +54,24 @@ class King():
                        'Note 2: Your identity as "King Aurthor" will be revealed '\
                        'to everyone while you are gussing the names.'
 
+        self.name = "King Arthur"
+        self.side = "City"
+
+    def gauss_names(self, gaussed_name, evil_team):
+        pass
 
 # Mordered Side
 class Minion():
 
     def __init__(self):
 
-        self.Message = 'Character: Minion of Mordred\n'\
+        self.message = 'Character: Minion of Mordred\n'\
                        'Side: Evil\n'\
                        'Power: You know all other evils (Except for the Oberon).\n'\
                        'Weakness: "Merlin" knows your identity.\n'\
                        'Here are your teammate(s):\n'
+        self.side = "Evil"
+        self.name = "Minion of Mordred"
 
 class Morgana():
 
@@ -68,6 +84,9 @@ class Morgana():
                        'Weakness: "Merlin" knows your identity.\n'\
                        'Here are your teammate(s):\n'
 
+        self.side = "Evil"
+        self.name = "Morgana"
+
 class Assassin():
 
     def __init__(self):
@@ -79,6 +98,9 @@ class Assassin():
                        'evil will win the game.\n'\
                        'Weakness: "Merlin" knows your identity.\n'\
                        'Here are your teammate(s):\n'
+
+        self.side = "Evil"
+        self.name = "Assassin"
 
     def shoot(self, name):
 
@@ -93,6 +115,8 @@ class Oberon():
                        'Weakness Number 1: You do not know the identity of anyone except for yourself.\n'\
                        'Weakness Number 2: "Merlin" knows your identity.\n'\
                        'Guide: Try to find the other evil(s) and help them win the game.'
+        self.side = "Evil"
+        self.name = "Oberon"
 
 class Mordred():
 
@@ -103,3 +127,5 @@ class Mordred():
                        'Power Number 1: You know all other Evils (Except for the Oberon).\n'\
                        'Power Number 2: "Merlin" does not know you identity.\n'\
                        'Here are your teammate(s):\n'
+        self.side = "Evil"
+        self.name = "Mordred"
