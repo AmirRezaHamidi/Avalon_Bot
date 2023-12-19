@@ -1,5 +1,4 @@
 import random
-from ast import Pass
 
 from Characters import (Assassin, King, Merlin, Minion, Mordred, Morgana,
                         Oberon, Persival, Servant)
@@ -13,6 +12,7 @@ class Game_Engine():
         self.prefered_characters = prefered_characters
         self.n_players = len(names)
         self.character_assignment()
+        self.round = 0
 
     def count_side(self):
 
@@ -27,7 +27,7 @@ class Game_Engine():
 
             elif character.side == "Evil":
                 current_evil += 1
-        
+
         return current_city, current_evil
 
     def power_character(self):
@@ -67,16 +67,18 @@ class Game_Engine():
             for _ in range(evil_diff):
                 self.game_character.append(Minion())
         else:
-
-            raise ValueError("Characters does not match the number of players.")
+            message = "Number of characters does not "\
+                      "match the number of players."
+            raise ValueError(message)
 
     def resolve_character(self):
-        
+
         self.power_character()
 
         if len(self.game_character) > len(self.names):
-            
-            raise ValueError("Number of characters are more than Number of players :)")
+
+            message = "Number of characters are more than Number of players :)"
+            raise ValueError(message)
 
         else:
 
@@ -91,9 +93,9 @@ class Game_Engine():
                 n_city = 4
                 n_evil = 2
                 self.non_power_characters(n_city, n_evil)
-                
+
             elif len(self.names) == 7:
-                
+
                 n_city = 4
                 n_evil = 3
                 self.non_power_characters(n_city, n_evil)
@@ -107,7 +109,7 @@ class Game_Engine():
                 n_city = 6
                 n_evil = 3
                 self.non_power_characters(n_city, n_evil)
-                    
+
             elif len(self.names) == 10:
 
                 n_city = 6
@@ -124,14 +126,13 @@ class Game_Engine():
 
             self.assigned_character[name] = self.game_character[index]
 
-    def character_information(self):
+    def character_message(self):
 
         pass
 
     def choose_committee(self, committee_names):
 
         pass
-
 
     def count_committee_vote(self, committee_votes):
 
@@ -140,5 +141,3 @@ class Game_Engine():
     def count_mission_vote(self, mission_vote, round):
 
         pass
-
-

@@ -4,7 +4,7 @@ from telegram import KeyboardButton, ReplyKeyboardMarkup, Update
 from telegram.ext import (Application, CommandHandler, ContextTypes,
                           MessageHandler, filters)
 
-from src.Data import DATA_DIR
+# from src.Data import DATA_DIR
 
 TOKEN: Final = '6468920953:AAHXzkA9iOrVwThJ6pk6kZ06AE7DSOnJVsI'
 BOT_USERNAME: Final = "@Our_Avalon_Bot"
