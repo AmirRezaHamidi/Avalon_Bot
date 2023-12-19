@@ -12,6 +12,8 @@ class Game_Engine():
         self.prefered_characters = prefered_characters
         self.n_players = len(names)
         self.character_assignment()
+        self.character_message()
+
         self.round = 0
 
     def count_side(self):
@@ -45,7 +47,7 @@ class Game_Engine():
 
                 self.game_character.append(Mordred())
 
-            if "King Arthur" in self.prefered_characters:
+            if "King" in self.prefered_characters:
 
                 self.game_character.append(King())
 
@@ -99,11 +101,13 @@ class Game_Engine():
                 n_city = 4
                 n_evil = 3
                 self.non_power_characters(n_city, n_evil)
+
             elif len(self.names) == 8:
 
                 n_city = 5
                 n_evil = 3
                 self.non_power_characters(n_city, n_evil)
+
             elif len(self.names) == 9:
 
                 n_city = 6
@@ -120,15 +124,44 @@ class Game_Engine():
 
         self.resolve_character()
         self.assigned_character = dict()
+        self.string_character = []
+
         random.shuffle(self.names)
 
         for index, name in enumerate(self.names):
 
             self.assigned_character[name] = self.game_character[index]
+            self.string_character.append(self.game_character[index].name)
 
     def character_message(self):
 
-        pass
+        self.all_info = dict()
+        self.all_info["Merlin"] = []
+        self.all_info["Evil_Team"] = []
+
+        for name, character in self.assigned_character.items():
+
+            if (character.side == "Evil") and (character.name != "Oberon"):
+
+                self.all_info["Evil_Team"].append(name)
+
+            if (character.side == "Evil") and (character.name != "Mordred"):
+
+                self.all_info["Merlin"].append(name)
+
+        if "Persival" in self.string_character:
+
+            self.all_info["Persival"] = []
+
+            for name, character in self.assigned_character.items():
+
+                Persival_Condition_1 = character.name == "Merlin"
+                Persival_Condition_2 = character.name == "Morgana"
+
+                if (Persival_Condition_1) or (Persival_Condition_2):
+                    self.all_info["Persival"].append(name)
+
+            random.shuffle(self.all_info["Persival"])
 
     def choose_committee(self, committee_names):
 

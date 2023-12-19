@@ -9,7 +9,7 @@ class Servant():
                        'Guide: Try to finds the "Merlin" and and help him/her'\
                        ' win the game.'
 
-        self.name = "Loyal Servant of Author"
+        self.name = "Servant"
         self.side = "City"
 
 
@@ -65,7 +65,7 @@ class King():
                        'will be revealed '\
                        'to everyone while you are gussing the names.'
 
-        self.name = "King Arthur"
+        self.name = "King"
         self.side = "City"
 
     def gauss_names(self, gaussed_name, evil_team):
@@ -84,7 +84,7 @@ class Minion():
                        'Weakness: "Merlin" knows your identity.\n'\
                        'Here are your teammate(s):\n'
         self.side = "Evil"
-        self.name = "Minion of Mordred"
+        self.name = "Minion"
 
 
 class Morgana():
