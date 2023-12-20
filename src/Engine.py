@@ -4,18 +4,54 @@ from Characters import (Assassin, King, Merlin, Minion, Mordred, Morgana,
                         Oberon, Persival, Servant)
 
 
-class Game_Engine():
+class Avalon_Engine():
 
     def __init__(self, names, prefered_characters=None):
 
         self.names = names
         self.prefered_characters = prefered_characters
         self.n_players = len(names)
-        self.character_assignment()
-        self.character_message()
 
+        self.committee_accept = None
+        self.win_side = None
+        self.reject_count = 0
+        self.evil_wins = 0
+        self.city_wins = 0
         self.round = 0
 
+        self.king_used_guess = False
+        self.assassin_shoots = False
+
+        self.character_assignment()
+        self.character_message()
+        self.round_info()
+
+    def round_info(self):
+
+        if len(self.names) == 5:
+            self.round_count = [2, 3, 2, 3, 3]
+            self.two_fails = False
+
+        elif len(self.names) == 6:
+            self.round_count = [2, 3, 4, 3, 4]
+            self.two_fails = False
+
+        elif len(self.names) == 7:
+            self.round_count = [2, 3, 3, 4, 4]
+            self.two_fails = True
+
+        elif len(self.names) == 8:
+            self.round_count = [3, 4, 4, 5, 5]
+            self.two_fails = True
+
+        elif len(self.names) == 9:
+            self.round_count = [3, 4, 4, 5, 5]
+            self.two_fails = True
+
+        elif len(self.names) == 10:
+            self.round_count = [3, 4, 4, 5, 5]
+            self.two_fails = True
+    
     def count_side(self):
 
         current_city = 0
@@ -163,14 +199,53 @@ class Game_Engine():
 
             random.shuffle(self.all_info["Persival"])
 
-    def choose_committee(self, committee_names):
-
-        pass
-
     def count_committee_vote(self, committee_votes):
 
-        pass
+        sum_votes = sum(committee_votes)
+        n_votes = len(committee_votes)
 
-    def count_mission_vote(self, mission_vote, round):
+        if sum_votes / n_votes >= 0.5:
 
-        pass
+            self.committee_accept = True
+            self.reject_count = 0
+
+        else:
+
+            self.committee_accept = False
+            self.reject_count += 1
+
+        
+    def mission_result(self, mission_votes, round):
+
+        self.fail_count = mission_votes.count(0)
+        self.success_count = mission_votes.count(1)
+
+        condition_1 = self.round  == 4
+        condition_2 = self.two_fails == True
+
+        if (condition_1) and (condition_2):
+
+            if self.fail_count >= 2:
+
+                self.evil_wins += 1
+
+            else:
+
+                self.city_wins += 1
+
+        else:
+
+            if self.fail_count >= 1:
+
+                self.evil_wins += 1
+
+            else:
+
+                self.city_wins += 1
+
+
+
+
+
+
+            
