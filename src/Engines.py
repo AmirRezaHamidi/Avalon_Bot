@@ -7,27 +7,28 @@ from Characters import (Assassin, King, Merlin, Minion, Mordred, Morgana,
 class Avalon_Engine():
 
     def __init__(self, names, prefered_characters=None):
+        
+        if prefered_characters is []: 
+            prefered_characters = None
 
         self.names = names
-        self.n_players = len(names)
         self.prefered_characters = prefered_characters
 
         self.round = 0
         self.city_wins = 0
         self.evil_wins = 0
         self.reject_count = 0
-
         self.win_side = "Not Determined"
 
         self.continues = True
+        self.acceptable_round = False
         self.committee_accept = False
-        self.assassin_shooted = False
         self.king_guessed_right = False
         self.assassin_shooted_right = False
 
+        self.round_info()
         self.character_assignment()
         self.character_message()
-        self.round_info()
 
     def round_info(self):
 
@@ -118,7 +119,7 @@ class Avalon_Engine():
 
         if len(self.game_character) > len(self.names):
 
-            message = "Number of characters are more than Number of players :)"
+            message = "Number of characters are more than number of players :)"
             raise ValueError(message)
 
         else:
@@ -175,9 +176,10 @@ class Avalon_Engine():
     def character_message(self):
 
         self.all_info = dict()
-        self.all_info["Merlin"] = []
-        self.all_info["Evil_Team"] = []
         self.all_info["King"] = []
+        self.all_info["Merlin"] = []
+        self.all_info["Persival"] = []
+        self.all_info["Evil_Team"] = []
 
         for name, character in self.assigned_character.items():
 
@@ -194,8 +196,6 @@ class Avalon_Engine():
                 self.all_info["King"].append(name)
 
         if "Persival" in self.string_character:
-
-            self.all_info["Persival"] = []
 
             for name, character in self.assigned_character.items():
 
@@ -214,10 +214,10 @@ class Avalon_Engine():
 
     def count_committee_vote(self, committee_votes):
 
-        sum_votes = sum(committee_votes)
-        n_votes = len(committee_votes)
+        negative_votes = committee_votes.count(0)
+        positive_votes = committee_votes.count(1)
 
-        if sum_votes / n_votes >= 0.5:
+        if positive_votes>= negative_votes:
 
             self.committee_accept = True
             self.reject_count = 0
@@ -232,7 +232,7 @@ class Avalon_Engine():
         self.fail_count = mission_votes.count(0)
         self.success_count = mission_votes.count(1)
 
-        condition_1 = self.round  == 4
+        condition_1 = self.round  == 3
         condition_2 = self.two_fails == True
 
         if (condition_1) and (condition_2):
@@ -256,13 +256,18 @@ class Avalon_Engine():
                 self.city_wins += 1
 
     def king_guess(self, guesses):
+        
+        king_point = 0
 
-        if guesses == self.all_info["King"]:
+        for name in guesses:
+
+            if name in self.all_info["King"]:
+
+                king_point += 1
+
+        if king_point == len(self.all_info["King"]):
 
             self.king_guessed_right = True
-
-        else:
-            self.king_guessed_right = False
 
     def assassin_shoot(self, shooted_name):
 
