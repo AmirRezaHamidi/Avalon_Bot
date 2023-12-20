@@ -214,6 +214,9 @@ class Avalon_Engine():
             self.committee_accept = False
             self.reject_count += 1
 
+    def check_committee(self, committee_names):
+
+        if len(committee_names) == 
         
     def mission_result(self, mission_votes, round):
 
