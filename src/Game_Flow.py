@@ -19,7 +19,7 @@ while Game.continues:
     while True:
 
         # Should be received from the bot
-        
+
         n_committee = Game.all_round[Game.round]
         random.shuffle(names)
         committee_names = names[0:n_committee]
@@ -34,11 +34,12 @@ while Game.continues:
 
         else:
             # Should be sent to bot
-            Message = f"You should pick exactly {n_committee} person for this round."
+            Message = f"You should pick exactly {n_committee} person "\
+                       "for this round."
             # Should be sent to bot
 
     # Should be received from the bot
-    committee_votes = random.choices([0, 1], weights=[20, 80], k = len(names))
+    committee_votes = random.choices([0, 1], weights=[20, 80], k=len(names))
     # Should be received from the bot
     print('-' * 15)
     print("Committee Votes")
@@ -51,9 +52,9 @@ while Game.continues:
     Game.count_committee_vote(committee_votes=committee_votes)
 
     if Game.committee_accept:
-        
+
         # Should be sent to bot
-        Messsage = f"please choose between Fail and Success"
+        Messsage = "please choose between Fail and Success"
         # Should be sent to bot
 
         # Should be received from the bot
@@ -61,7 +62,7 @@ while Game.continues:
 
         for name in committee_names:
             mission_characters.append(Game.assigned_character[name])
-        
+
         mission_votes = character_vote(mission_characters)
         random.shuffle(mission_votes)
         # Should be received from the bot
@@ -69,17 +70,17 @@ while Game.continues:
         # Should sent the mission vote result
         Game.mission_result(mission_votes=mission_votes)
         Game.round += 1
-        message=f"you have {Game.fail_count} "\
-                f"fail votes and {Game.success_count} success votes"
+        message = f"you have {Game.fail_count} "\
+                  f"fail votes and {Game.success_count} success votes"
         # Should sent the mission vote result
 
     else:
 
         if Game.reject_count == 5:
 
-            Game.continues =False
+            Game.continues = False
             Game.win_side = "Evil"
-        
+
     if Game.evil_wins == 3 or Game.city_wins == 3:
 
         Game.continues = False
@@ -99,7 +100,7 @@ if "King" in Game.string_character:
         if not Game.king_guessed_right:
 
             Game.win_side = "Evil"
-            
+
         elif Game.king_guessed_right:
 
             # Should be received from the bot
@@ -108,7 +109,7 @@ if "King" in Game.string_character:
             # Should be received from the bot
 
             Game.assassin_shoot(shooted_name)
-            
+
             if Game.assassin_shooted_right:
 
                 Game.win_side = "Evil"
@@ -131,7 +132,7 @@ if "King" in Game.string_character:
 
         else:
             Game.win_side = "City"
-    
+
 else:
 
     if Game.evil_wins == 3:
@@ -146,11 +147,10 @@ else:
         # Should be received from the bot
 
         Game.assassin_shoot(shooted_name)
-        
+
         if Game.assassin_shooted_right:
 
             Game.win_side = "Evil"
 
         else:
             Game.win_side = "City"
-

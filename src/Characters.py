@@ -68,6 +68,7 @@ class King():
         self.name = "King"
         self.side = "City"
 
+
 # Mordered Side
 class Minion():
 

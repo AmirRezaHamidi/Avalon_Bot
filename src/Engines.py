@@ -7,8 +7,8 @@ from Characters import (Assassin, King, Merlin, Minion, Mordred, Morgana,
 class Avalon_Engine():
 
     def __init__(self, names, prefered_characters=None):
-        
-        if prefered_characters is []: 
+
+        if prefered_characters is []:
             prefered_characters = None
 
         self.names = names
@@ -55,7 +55,7 @@ class Avalon_Engine():
         elif len(self.names) == 10:
             self.all_round = [3, 4, 4, 5, 5]
             self.two_fails = True
-    
+
     def count_side(self):
 
         current_city = 0
@@ -217,7 +217,7 @@ class Avalon_Engine():
         negative_votes = committee_votes.count(0)
         positive_votes = committee_votes.count(1)
 
-        if positive_votes>= negative_votes:
+        if positive_votes >= negative_votes:
 
             self.committee_accept = True
             self.reject_count = 0
@@ -232,8 +232,8 @@ class Avalon_Engine():
         self.fail_count = mission_votes.count(0)
         self.success_count = mission_votes.count(1)
 
-        condition_1 = self.round  == 3
-        condition_2 = self.two_fails == True
+        condition_1 = self.round == 3
+        condition_2 = self.two_fails is True
 
         if (condition_1) and (condition_2):
 
@@ -256,7 +256,7 @@ class Avalon_Engine():
                 self.city_wins += 1
 
     def king_guess(self, guesses):
-        
+
         king_point = 0
 
         for name in guesses:
