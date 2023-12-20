@@ -9,18 +9,21 @@ class Avalon_Engine():
     def __init__(self, names, prefered_characters=None):
 
         self.names = names
-        self.prefered_characters = prefered_characters
         self.n_players = len(names)
+        self.prefered_characters = prefered_characters
 
-        self.committee_accept = None
-        self.win_side = None
-        self.reject_count = 0
-        self.evil_wins = 0
-        self.city_wins = 0
         self.round = 0
+        self.city_wins = 0
+        self.evil_wins = 0
+        self.reject_count = 0
 
-        self.king_used_guess = False
-        self.assassin_shoots = False
+        self.win_side = "Not Determined"
+
+        self.continues = True
+        self.committee_accept = False
+        self.assassin_shooted = False
+        self.king_guessed_right = False
+        self.assassin_shooted_right = False
 
         self.character_assignment()
         self.character_message()
@@ -29,27 +32,27 @@ class Avalon_Engine():
     def round_info(self):
 
         if len(self.names) == 5:
-            self.round_count = [2, 3, 2, 3, 3]
+            self.all_round = [2, 3, 2, 3, 3]
             self.two_fails = False
 
         elif len(self.names) == 6:
-            self.round_count = [2, 3, 4, 3, 4]
+            self.all_round = [2, 3, 4, 3, 4]
             self.two_fails = False
 
         elif len(self.names) == 7:
-            self.round_count = [2, 3, 3, 4, 4]
+            self.all_round = [2, 3, 3, 4, 4]
             self.two_fails = True
 
         elif len(self.names) == 8:
-            self.round_count = [3, 4, 4, 5, 5]
+            self.all_round = [3, 4, 4, 5, 5]
             self.two_fails = True
 
         elif len(self.names) == 9:
-            self.round_count = [3, 4, 4, 5, 5]
+            self.all_round = [3, 4, 4, 5, 5]
             self.two_fails = True
 
         elif len(self.names) == 10:
-            self.round_count = [3, 4, 4, 5, 5]
+            self.all_round = [3, 4, 4, 5, 5]
             self.two_fails = True
     
     def count_side(self):
@@ -174,6 +177,7 @@ class Avalon_Engine():
         self.all_info = dict()
         self.all_info["Merlin"] = []
         self.all_info["Evil_Team"] = []
+        self.all_info["King"] = []
 
         for name, character in self.assigned_character.items():
 
@@ -184,6 +188,10 @@ class Avalon_Engine():
             if (character.side == "Evil") and (character.name != "Mordred"):
 
                 self.all_info["Merlin"].append(name)
+
+            if (character.side == "Evil"):
+
+                self.all_info["King"].append(name)
 
         if "Persival" in self.string_character:
 
@@ -198,6 +206,12 @@ class Avalon_Engine():
                     self.all_info["Persival"].append(name)
 
             random.shuffle(self.all_info["Persival"])
+
+    def check_committee(self, committee_names):
+
+        if len(committee_names) == self.all_round(self.round):
+            self.acceptable_round = True
+            self.round += 1
 
     def count_committee_vote(self, committee_votes):
 
@@ -214,11 +228,7 @@ class Avalon_Engine():
             self.committee_accept = False
             self.reject_count += 1
 
-    def check_committee(self, committee_names):
-
-        if len(committee_names) == 
-        
-    def mission_result(self, mission_votes, round):
+    def mission_result(self, mission_votes):
 
         self.fail_count = mission_votes.count(0)
         self.success_count = mission_votes.count(1)
@@ -246,9 +256,16 @@ class Avalon_Engine():
 
                 self.city_wins += 1
 
+    def king_guess(self, guesses):
 
+        if guesses == self.all_info["King"]:
 
+            self.king_guessed_right = True
 
+        else:
+            self.king_guessed_right = False
 
+    def assassin_shoot(self, shooted_name):
 
-            
+        if type(self.assigned_character(shooted_name)) == Merlin:
+            self.assassin_shooted_right = True

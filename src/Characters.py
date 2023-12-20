@@ -68,10 +68,6 @@ class King():
         self.name = "King"
         self.side = "City"
 
-    def gauss_names(self, gaussed_name, evil_team):
-        pass
-
-
 # Mordered Side
 class Minion():
 
@@ -120,10 +116,6 @@ class Assassin():
 
         self.side = "Evil"
         self.name = "Assassin"
-
-    def shoot(self, name):
-
-        return name
 
 
 class Oberon():
