@@ -8,9 +8,9 @@ names = ["Fateme", "ali", "hasan", "hossein", "sajad", "bagher", "sadegh",
 prefered_characters = ["Mordred", "King", "Oberon"]
 # Should be received from the bot
 
+
 # Night Phase
 Game = Avalon_Engine(names, prefered_characters=prefered_characters)
-
 
 while Game.continues:
 
@@ -18,7 +18,7 @@ while Game.continues:
 
         # Should be received from the bot
         current_round = Game.round
-        n_committee = Game.all_round(current_round)
+        n_committee = Game.all_round[current_round]
         random.shuffle(names)
         committee_names = names[0:n_committee]
         # Should be received from the bot
@@ -36,32 +36,40 @@ while Game.continues:
             Message = f"You should pick exactly {n_committee} person for this round."
             # Should be sent to bot
 
+    # Should be received from the bot
+    committee_votes = [random.randint(0, 1) for _ in names]
+    # Should be received from the bot
+
+    Game.count_committee_vote(committee_votes=committee_votes)
+
+    if Game.committee_accept:
+        
+        # Should be sent to bot
+        Messsage = f"please choose between Fail and Success"
+        # Should be sent to bot
+
         # Should be received from the bot
-        committee_votes = [random.randint(0, 1) for _ in names]
+        mission_characters = []
+
+        for name in committee_names:
+            mission_characters.append(Game.assigned_character[name])
+        
+        mission_votes = character_vote(mission_characters)
         # Should be received from the bot
 
-        Game.count_committee_vote(committee_votes=committee_votes)
+        Game.mission_result(mission_votes=mission_votes)
+        Game.round += 1
 
-        if Game.committee_accept:
-            
-            # Should be sent to bot
-            Messsage = f"please choose between Fail and Success"
-            # Should be sent to bot
+    else:
 
-            # Should be received from the bot
-            mission_characters = []
+        if Game.reject_count == 5:
 
-            for name in committee_names:
-                mission_characters.append(Game.assigned_characters[name])
-            
-            mission_votes = character_vote(mission_characters)
-            # Should be received from the bot
-
-            Game.mission_result(mission_votes=mission_votes)
-    
+            Game.continues =False
+            Game.win_side = "Evil"
+        
     if Game.evil_wins == 3 or Game.city_wins == 3:
 
-        Game.continues = False 
+        Game.continues = False
 
 if "king" in Game.string_character:
 
@@ -116,7 +124,7 @@ else:
 
     if Game.evil_wins == 3:
 
-        Game.win_side = "evil"
+        Game.win_side = "Evil"
 
     elif Game.city_wins == 3:
 
@@ -133,3 +141,5 @@ else:
 
         else:
             Game.win_side = "City"
+
+print(f"{Game.win_side} won")
