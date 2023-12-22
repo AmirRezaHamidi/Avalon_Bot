@@ -10,12 +10,14 @@ keys = SimpleNamespace(
     new_game=emojize(':plus: Creat a new Game'),
     join_game=emojize(':plus: Joing the game'),
     start=emojize(":check_mark_button:START."),
-    terminate=emojize(":cross_mark_button:TERMINATE")
-
+    terminate=emojize(":cross_mark_button:TERMINATE"),
+    Merlin ="Merlin",
+    Persival_Morgana = "Persival and Morgana",
+    King = "King Arthur",
+    Assassin="Assassin",
+    Mordred = "Mordred",
+    Oberon = "Oberon",
+    OK = emojize(":check_mark_button:OK")
 )
 
-    # merlin =
-    # Assassin=
-    # King = 
-    # Merlin = 
-    # Mordred
+    

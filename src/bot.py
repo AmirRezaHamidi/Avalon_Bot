@@ -181,21 +181,51 @@ class Bot():
         def start_game(message):
 
             #### ACTIONS ####
-            self.game_exist = "ongoing"
-            #### TEXT ####
 
-            text =("Let's choos your prefered characters")
+            #### TEXT ####
+            text = 'OK, choose your prefered character in game and press OK'
 
             #### KEYBOARD ####
+            buttons_text_1= [keys.Persival_Morgana, keys.King]
+            buttons_text_2= [keys.Oberon, keys.Mordred]
+            buttons_text_3= [keys.OK]
 
-            buttons_text= [keys.start, keys.terminate]
-            buttons = map(types.KeyboardButton, buttons_text)
+            first_row_buttons = map(types.KeyboardButton, buttons_text_1)
+            second_row_buttons =map(types.KeyboardButton, buttons_text_2)
+            third_row_buttons =map(types.KeyboardButton, buttons_text_3)
             keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-            keyboard.add(*buttons)
+
+            keyboard.add(*first_row_buttons)
+            keyboard.add(*second_row_buttons)
+            keyboard.add(*third_row_buttons)
 
             #### MESSAGE ####
-            self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
+            self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
+        
+        @self.bot.message_handler(regexp=keys.start)
+        def start_game(message):
 
+            #### ACTIONS ####
+
+            #### TEXT ####
+            text = 'OK, choose your prefered character in game and press OK'
+
+            #### KEYBOARD ####
+            buttons_text_1= [keys.Persival_Morgana, keys.King]
+            buttons_text_2= [keys.Oberon, keys.Mordred]
+            buttons_text_3= [keys.OK]
+
+            first_row_buttons = map(types.KeyboardButton, buttons_text_1)
+            second_row_buttons =map(types.KeyboardButton, buttons_text_2)
+            third_row_buttons =map(types.KeyboardButton, buttons_text_3)
+            keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+            
+            keyboard.add(*first_row_buttons)
+            keyboard.add(*second_row_buttons)
+            keyboard.add(*third_row_buttons)
+
+            #### MESSAGE ####
+            self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
         ######################### Hoin Game #########################
         @self.bot.message_handler(regexp=keys.join_game)
         def join_game(message):
@@ -218,9 +248,7 @@ class Bot():
         ######################### Admin Request #########################
         @self.bot.message_handler(regexp=keys.join_game)
         def choose_character(message):
-
-            nick_name_text = 'OK, please choose an "ENGLISH" nickname.\n'
-            self.bot.send_message(message.chat.id, nick_name_text)
+            pass
 
         ######################### Admin Request #########################
         @self.bot.message_handler(commands=["adminrequest"])
