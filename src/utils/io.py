@@ -1,5 +1,6 @@
 import json
 
+
 def write_json(data, json_file, indent=4):
 
     with open(json_file, "w") as f:

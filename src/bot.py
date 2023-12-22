@@ -18,11 +18,13 @@ class Bot():
         self.temp_admin_id = None
         self.game_admin_id = None
         self.super_admin_id  = 224775397
+        self.names = list()
 
-        self.game_exist = False
+        self.prefered_characters = [""]
+        
+        self.game_state = False
         self.players = defaultdict(dict)
         self.bot = telebot.TeleBot(TOKEN)
-        self.prefered_characters = list()
 
         #### Initializing the bot ####
         logger.info("Defining the handlers ...")
@@ -38,7 +40,7 @@ class Bot():
         @self.bot.message_handler(func=self.is_admin, commands=["start"])
         def admin_start_command(message):
             
-            if self.game_exist == False:
+            if self.game_state == False:
 
                 #### TEXT ####
                 text =("""Hello and Welcome to this bot. \n\n"""
@@ -53,7 +55,7 @@ class Bot():
                 #### MESSAGE ####
                 self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
 
-            elif self.game_exist == "joining":
+            elif self.game_state == "joining":
 
                 #### TEXT ####
                 text =("""Hello and Welcome to this bot. \n\n"""
@@ -68,7 +70,7 @@ class Bot():
                 #### MESSAGE ####
                 self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
 
-            elif self.game_exist == "ongoing":
+            elif self.game_state == "ongoing":
 
                 #### TEXT ####
                 text =("""Hello and Welcome to this bot. \n\n"""
@@ -87,7 +89,7 @@ class Bot():
         @self.bot.message_handler(func=self.is_admin, regexp=keys.i_am_admin)
         def i_am_admin_button(message):
             
-            if self.game_exist == False:
+            if self.game_state == False:
 
                 #### TEXT ####
                 text =("""Hello and Welcome to this bot. \n\n"""
@@ -102,7 +104,7 @@ class Bot():
                 #### MESSAGE ####
                 self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
 
-            elif self.game_exist == "joining":
+            elif self.game_state == "joining":
 
                 #### TEXT ####
                 text =("""Hello and Welcome to this bot. \n\n"""
@@ -117,7 +119,7 @@ class Bot():
                 #### MESSAGE ####
                 self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
 
-            elif self.game_exist == "ongoing":
+            elif self.game_state == "ongoing":
 
                 #### TEXT ####
                 text =("""Hello and Welcome to this bot. \n\n"""
@@ -169,7 +171,7 @@ class Bot():
         @self.bot.message_handler(regexp=keys.bot_status)
         def status_button(message):
             
-            if self.game_exist == False:
+            if self.game_state == False:
 
                 #### TEXT ####
                 text =("""No game exist. wait for the admin to create a game.""")
@@ -183,7 +185,7 @@ class Bot():
                 #### MESSAGE ####
                 self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
                 
-            elif self.game_exist == "ongoing":
+            elif self.game_state == "ongoing":
 
                 #### ACTIONS ####
 
@@ -199,7 +201,7 @@ class Bot():
                 #### MESSAGE ####
                 self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
 
-            elif self.game_exist == "joining":
+            elif self.game_state == "joining":
 
                 #### ACTIONS ####
 
@@ -215,13 +217,17 @@ class Bot():
                 #### MESSAGE ####
                 self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
         
-        ######################### Print Input #########################
+        ######################### Creat Game #########################
         @self.bot.message_handler(func=self.is_admin, regexp=keys.new_game)
-        def new_game(message):
+        def creat_game(message):
 
             #### ACTIONS ####
             self.game_admin_id = message.chat.id
-            self.game_exist = "joining"
+            self.game_state = "joining"
+
+            self.players[message.chat.id]["name"] =  \
+                message.chat.first_name + " " + message.chat.last_name
+            self.players[message.chat.id]["user"] = message.chat.username
 
             #### TEXT ####
             text =("Ok, ask your friends to join the game")
@@ -235,6 +241,7 @@ class Bot():
             #### MESSAGE ####
             self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
 
+        ######################### Terminate Game #########################
         @self.bot.message_handler(func=self.is_admin, regexp=keys.terminate)
         def terminate_game(message):
 
@@ -244,7 +251,7 @@ class Bot():
             self.game_admin_id = None
             self.super_admin_id  = 224775397
 
-            self.game_exist = False
+            self.game_state = False
             self.players = defaultdict(dict)
             self.prefered_characters = list()
 
@@ -258,31 +265,86 @@ class Bot():
             for player in self.players.keys():
                 self.bot.send_message(player, text, reply_markup=markup)
 
-
+        ######################### Start Game #########################
         @self.bot.message_handler(func=self.is_admin, regexp=keys.start)
         def start_game(message):
 
             #### TEXT ####
             text = 'OK, choose your prefered character in game and press OK'
-
-            #### KEYBOARD ####
-            buttons_text_1= [keys.Persival_Morgana, keys.King]
-            buttons_text_2= [keys.Oberon, keys.Mordred]
-            buttons_text_3= [keys.OK, keys.terminate]
-
-            first_row_buttons = map(types.KeyboardButton, buttons_text_1)
-            second_row_buttons =map(types.KeyboardButton, buttons_text_2)
-            third_row_buttons =map(types.KeyboardButton, buttons_text_3)
-            keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-
-            keyboard.add(*first_row_buttons)
-            keyboard.add(*second_row_buttons)
-            keyboard.add(*third_row_buttons)
+            keyboard = self.character_keyboard()
 
             #### MESSAGE ####
             self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
-        
-        ######################### Hoin Game #########################
+
+        ######################### Add_Persival_Morgana #########################
+        @self.bot.message_handler(func=self.is_admin, regexp=keys.full_Persival_Morgana)
+        @self.bot.message_handler(func=self.is_admin, regexp=keys.Persival_Morgana)
+        def Persival_Morgana_button(message):
+
+            #### ACTIONS ####
+            if "Persival and Morgana" not in self.prefered_characters:
+                text = "Persival and Morgana were added to the game"
+                self.prefered_characters.append("Persival and Morgana")
+
+            else:
+                text = "Persvial and Morgana were removed from the game"
+                del self.prefered_characters[self.prefered_characters.index("Persival and Morgana")]
+
+            keyboard = self.character_keyboard()
+            self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
+
+        ######################### Add_Mordred #########################
+        @self.bot.message_handler(func=self.is_admin, regexp=keys.full_Mordred)
+        @self.bot.message_handler(func=self.is_admin, regexp=keys.Mordred)
+        def Mordred_button(message):
+
+            #### ACTIONS ####
+            if "Mordred" not in self.prefered_characters:
+                text = "Mordred was added to the game"
+                self.prefered_characters.append("Mordred")
+
+            else:
+                text = "Mordred was removed from the game"
+                del self.prefered_characters[self.prefered_characters.index("Mordred")]
+
+            keyboard = self.character_keyboard()
+            self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
+
+        ######################### Add_King #########################
+        @self.bot.message_handler(func=self.is_admin, regexp=keys.full_King)
+        @self.bot.message_handler(func=self.is_admin, regexp=keys.King)
+        def King_button(message):
+
+            #### ACTIONS ####
+            if "King" not in self.prefered_characters:
+                text = "King Arthur was added to the game"
+                self.prefered_characters.append("King")
+
+            else:
+                text = "King Arthur was removed from the game"
+                del self.prefered_characters[self.prefered_characters.index("King")]
+
+            keyboard = self.character_keyboard()
+            self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
+
+        ######################### Add_Oberon #########################
+        @self.bot.message_handler(func=self.is_admin, regexp=keys.full_Oberon)
+        @self.bot.message_handler(func=self.is_admin, regexp=keys.Oberon)
+        def Oberon_button(message):
+
+            #### ACTIONS ####
+            if "Oberon" not in self.prefered_characters:
+                text = "Oberon was added to the game"
+                self.prefered_characters.append("Oberon")
+
+            else:
+                text = "Oberon was removed from the game"
+                del self.prefered_characters[self.prefered_characters.index("Oberon")]
+
+            keyboard = self.character_keyboard()
+            self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
+
+        ######################### Join Game #########################
         @self.bot.message_handler(regexp=keys.join_game)
         def join_game(message):
             
@@ -300,70 +362,24 @@ class Bot():
             markup = types.ReplyKeyboardRemove()
             self.bot.send_message(message.chat.id, text, reply_markup=markup)
             self.bot.send_message(self.game_admin_id, text_to_admin)
+        
 
-        ######################### Admin Request #########################
-        @self.bot.message_handler(func= self.is_admin(), regexp=keys.Mordred)
-        def Character_button(message):
-
+        ######################### Join Game #########################
+        @self.bot.message_handler(func=self.is_admin, regexp=keys.finished_choosing)
+        def send_info(message):
+            
             #### ACTIONS ####
-            if "Mordred" not in self.prefered_characters:
-                self.prefered_characters.append("Mordred")
+            self.extract_names()
 
-            else:
-                del self.prefered_characters[self.prefered_characters.index("Mordred")]
+            print(self.prefered_characters)
+            print(self.names)
 
-            keyboard = self.keyboard_forger()
-            
-            
+            new_game = Avalon_Engine(self.prefered_characters, self.names)
 
-            self.bot.send_message(message.chat.id, reply_markup=keyboard)
+            markup = types.ReplyKeyboardRemove()
+            self.bot.send_message(message.chat.id, text, reply_markup=markup)
+            self.bot.send_message(self.game_admin_id, text_to_admin)
 
-        @self.bot.message_handler(func= self.is_admin(), regexp=keys.Oberon)
-        def Character_button(message):
-
-            #### ACTIONS ####
-            if "Mordred" not in self.prefered_characters:
-                self.prefered_characters.append("Mordred")
-
-            else:
-                del self.prefered_characters[self.prefered_characters.index("Mordred")]
-
-            keyboard = self.keyboard_forger()
-            
-            
-
-            self.bot.send_message(message.chat.id, reply_markup=keyboard)
-
-        @self.bot.message_handler(func=self.is_admin(), regexp)
-        def Character_button(message):
-
-            #### ACTIONS ####
-            if "Mordred" not in self.prefered_characters:
-                self.prefered_characters.append("Mordred")
-
-            else:
-                del self.prefered_characters[self.prefered_characters.index("Mordred")]
-
-            keyboard = self.keyboard_forger()
-            
-            
-
-            self.bot.send_message(message.chat.id, reply_markup=keyboard)
-        @self.bot.message_handler(func= self.is_admin(), regexp=keys.Mordred)
-        def Character_button(message):
-
-            #### ACTIONS ####
-            if "Mordred" not in self.prefered_characters:
-                self.prefered_characters.append("Mordred")
-
-            else:
-                del self.prefered_characters[self.prefered_characters.index("Mordred")]
-
-            keyboard = self.keyboard_forger()
-            
-            
-
-            self.bot.send_message(message.chat.id, reply_markup=keyboard)
         ######################### Admin Request #########################
         @self.bot.message_handler(commands=["adminrequest"])
         def admin_request(message):
@@ -403,24 +419,24 @@ class Bot():
         return ((self.super_admin_id == message.chat.id) or
                 (self.admin_id == message.chat.id))
 
-    def keyboard_forger(self):
+    def character_keyboard(self):
 
-        condition_1 =  "Persival and Morgana" in self.prefered_characters
+        condition_1 = "Persival and Morgana" in self.prefered_characters
         condition_2 = "Mordred" in self.prefered_characters
         condition_3 = "Oberon" in self.prefered_characters
         condition_4 = "King" in self.prefered_characters
-        current_presival_Morgana = keys.full_Persival_Morgana if condition_1 else keys.Persival_Morgana
-        current_king = keys.full_Mordred if condition_2 else keys.mordred
-        current_mordred =keys.full_oberon if condition_3 else keys.oberon
-        current_oberon = keys.full_king if condition_4 else keys.king
+        current_presival_Morgana = (keys.full_Persival_Morgana if condition_1 else keys.Persival_Morgana)
+        current_king = keys.full_Mordred if condition_2 else keys.Mordred
+        current_mordred = keys.full_Oberon if condition_3 else keys.Oberon
+        current_oberon = keys.full_King if condition_4 else keys.King
 
-        buttons_text_1= [current_presival_Morgana, current_king]
-        buttons_text_2= [current_oberon, current_mordred]
-        buttons_text_3= [keys.OK, keys.terminate]
+        buttons_text_1 = [current_presival_Morgana, current_king]
+        buttons_text_2 = [current_oberon, current_mordred]
+        buttons_text_3 = [keys.finished_choosing, keys.terminate]
 
         first_row_buttons = map(types.KeyboardButton, buttons_text_1)
-        second_row_buttons =map(types.KeyboardButton, buttons_text_2)
-        third_row_buttons =map(types.KeyboardButton, buttons_text_3)
+        second_row_buttons = map(types.KeyboardButton, buttons_text_2)
+        third_row_buttons = map(types.KeyboardButton, buttons_text_3)
         keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
 
         keyboard.add(*first_row_buttons)
@@ -428,6 +444,12 @@ class Bot():
         keyboard.add(*third_row_buttons)
 
         return keyboard
+
+    def extract_names(self):
+
+        for player_info in self.players.values():
+
+            self.names.append(player_info["name"])
 
 if __name__ == "__main__":
 

@@ -1,5 +1,3 @@
-import json
-
 def character_vote(mission_characters):
 
     vote = []
