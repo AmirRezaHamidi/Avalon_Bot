@@ -20,7 +20,7 @@ class Bot():
         self.super_admin_id  = 224775397
         self.names = list()
 
-        self.prefered_characters = [""]
+        self.optional_characters = [""]
         
         self.game_state = False
         self.players = defaultdict(dict)
@@ -253,7 +253,7 @@ class Bot():
 
             self.game_state = False
             self.players = defaultdict(dict)
-            self.prefered_characters = list()
+            self.optional_characters = list()
 
             #### TEXT ####
             text = "The game has been terminated"
@@ -282,13 +282,13 @@ class Bot():
         def Persival_Morgana_button(message):
 
             #### ACTIONS ####
-            if "Persival and Morgana" not in self.prefered_characters:
+            if "Persival and Morgana" not in self.optional_characters:
                 text = "Persival and Morgana were added to the game"
-                self.prefered_characters.append("Persival and Morgana")
+                self.optional_characters.append("Persival and Morgana")
 
             else:
                 text = "Persvial and Morgana were removed from the game"
-                del self.prefered_characters[self.prefered_characters.index("Persival and Morgana")]
+                del self.optional_characters[self.optional_characters.index("Persival and Morgana")]
 
             keyboard = self.character_keyboard()
             self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
@@ -299,13 +299,13 @@ class Bot():
         def Mordred_button(message):
 
             #### ACTIONS ####
-            if "Mordred" not in self.prefered_characters:
+            if "Mordred" not in self.optional_characters:
                 text = "Mordred was added to the game"
-                self.prefered_characters.append("Mordred")
+                self.optional_characters.append("Mordred")
 
             else:
                 text = "Mordred was removed from the game"
-                del self.prefered_characters[self.prefered_characters.index("Mordred")]
+                del self.optional_characters[self.optional_characters.index("Mordred")]
 
             keyboard = self.character_keyboard()
             self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
@@ -316,13 +316,13 @@ class Bot():
         def King_button(message):
 
             #### ACTIONS ####
-            if "King" not in self.prefered_characters:
+            if "King" not in self.optional_characters:
                 text = "King Arthur was added to the game"
-                self.prefered_characters.append("King")
+                self.optional_characters.append("King")
 
             else:
                 text = "King Arthur was removed from the game"
-                del self.prefered_characters[self.prefered_characters.index("King")]
+                del self.optional_characters[self.optional_characters.index("King")]
 
             keyboard = self.character_keyboard()
             self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
@@ -333,13 +333,13 @@ class Bot():
         def Oberon_button(message):
 
             #### ACTIONS ####
-            if "Oberon" not in self.prefered_characters:
+            if "Oberon" not in self.optional_characters:
                 text = "Oberon was added to the game"
-                self.prefered_characters.append("Oberon")
+                self.optional_characters.append("Oberon")
 
             else:
                 text = "Oberon was removed from the game"
-                del self.prefered_characters[self.prefered_characters.index("Oberon")]
+                del self.optional_characters[self.optional_characters.index("Oberon")]
 
             keyboard = self.character_keyboard()
             self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
@@ -371,10 +371,10 @@ class Bot():
             #### ACTIONS ####
             self.extract_names()
 
-            print(self.prefered_characters)
+            print(self.optional_characters)
             print(self.names)
 
-            new_game = Avalon_Engine(self.prefered_characters, self.names)
+            new_game = Avalon_Engine(self.optional_characters, self.names)
 
             markup = types.ReplyKeyboardRemove()
             self.bot.send_message(message.chat.id, text, reply_markup=markup)
@@ -421,10 +421,10 @@ class Bot():
 
     def character_keyboard(self):
 
-        condition_1 = "Persival and Morgana" in self.prefered_characters
-        condition_2 = "Mordred" in self.prefered_characters
-        condition_3 = "Oberon" in self.prefered_characters
-        condition_4 = "King" in self.prefered_characters
+        condition_1 = "Persival and Morgana" in self.optional_characters
+        condition_2 = "Mordred" in self.optional_characters
+        condition_3 = "Oberon" in self.optional_characters
+        condition_4 = "King" in self.optional_characters
         current_presival_Morgana = (keys.full_Persival_Morgana if condition_1 else keys.Persival_Morgana)
         current_king = keys.full_Mordred if condition_2 else keys.Mordred
         current_mordred = keys.full_Oberon if condition_3 else keys.Oberon

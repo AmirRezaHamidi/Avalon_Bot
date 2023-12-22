@@ -6,13 +6,13 @@ from Characters import (Assassin, King, Merlin, Minion, Mordred, Morgana,
 
 class Avalon_Engine():
 
-    def __init__(self, names, prefered_characters=None):
+    def __init__(self, names, optional_characters=None):
 
-        if prefered_characters is []:
-            prefered_characters = None
+        if optional_characters is []:
+            optional_characters = None
 
         self.names = names
-        self.prefered_characters = prefered_characters
+        self.optional_characters = optional_characters
 
         self.round = 0
         self.city_wins = 0
@@ -76,22 +76,22 @@ class Avalon_Engine():
 
         self.game_character = [Assassin(), Merlin()]
 
-        if self.prefered_characters is not None:
+        if self.optional_characters is not None:
 
-            if "Persival and Morgana" in self.prefered_characters:
+            if "Persival and Morgana" in self.optional_characters:
 
                 self.game_character.append(Morgana())
                 self.game_character.append(Persival())
 
-            if "Mordred" in self.prefered_characters:
+            if "Mordred" in self.optional_characters:
 
                 self.game_character.append(Mordred())
 
-            if "King" in self.prefered_characters:
+            if "King" in self.optional_characters:
 
                 self.game_character.append(King())
 
-            if "Oberon" in self.prefered_characters:
+            if "Oberon" in self.optional_characters:
 
                 self.game_character.append(Oberon())
 
