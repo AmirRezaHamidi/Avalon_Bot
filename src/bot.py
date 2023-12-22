@@ -1,7 +1,8 @@
 from collections import defaultdict
 
+from constants import keys
 import telebot
-from emoji import emojize
+from emoji import demojize, emojize
 from loguru import logger
 from telebot import types
 
@@ -14,9 +15,10 @@ class Bot():
         self.admin_id = None
         self.temp_admin_id = None
         self.super_admin_id  = 224775397
+        self.game_admin_id = None
 
         self.game_exist = False
-        self.players = defaultdict(list)
+        self.players = defaultdict(dict)
         self.bot = telebot.TeleBot(TOKEN)
 
         #### Initializing the bot ####
@@ -29,104 +31,193 @@ class Bot():
 
     def handlers(self):
 
-        ######################### admin start command #########################
+        ######################### Admin Start Command #########################
         @self.bot.message_handler(func=self.is_admin, commands=["start"])
         def admin_start_command(message):
 
             #### ACTIONS ####
 
             #### TEXT ####
-            admin_start_command_text =("""Hello and Welcome to this bot. \n\n"""
-                                       """You are currently the admin. Let's start a new game""")
+            text =("""Hello and Welcome to this bot. \n\n"""
+                    """You are currently the admin. Let's start a new game""")
                                      
             #### KEYBOARD ####
-            admin_start_command_bottons_text= [emojize(':plus: Start a new Game')]
-            admin_start_command_bottons = map(types.KeyboardButton, admin_start_command_bottons_text)
-            admin_start_command_keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-            admin_start_command_keyboard.add(*admin_start_command_bottons)
+            buttons_text= [keys.new_game, keys.bot_status]
+            buttons = map(types.KeyboardButton, buttons_text)
+            keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+            keyboard.add(*buttons)
 
             #### MESSAGE ####
-            self.bot.send_message(message.chat.id, text=admin_start_command_text,
-                                  reply_markup=admin_start_command_keyboard)
+            self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
 
-        ######################### start command #########################
+        ######################### I Am Admin Button #########################
+        @self.bot.message_handler( func=self.is_admin, regexp=keys.is_admin)
+        def i_am_admin_button(message):
+
+            #### ACTIONS ####
+            #### TEXT ####
+            text =("""Hello and Welcome to this bot. \n\n"""
+                    """You are currently the admin. Let's start a new game.""")
+                                     
+            #### KEYBOARD ####
+            buttons_text= [keys.new_game]
+            buttons = map(types.KeyboardButton, buttons_text)
+            keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+            keyboard.add(*buttons)
+
+            #### MESSAGE ####
+            self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
+
+        ######################### Fake Admin Button #########################
+        @self.bot.message_handler(regexp=keys.is_admin)
+        def fake_admin_button(message):
+
+            #### ACTIONS ####
+            #### TEXT ####
+            text =(emojize(" :slightly_smiling_face: Nope, you are not"))
+                                     
+            #### KEYBOARD ####
+            buttons_text= [keys.bot_status, keys.is_admin]
+            buttons = map(types.KeyboardButton, buttons_text)
+            keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+            keyboard.add(*buttons)
+            #### MESSAGE ####
+            self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
+
+        ######################### Start Command #########################
         @self.bot.message_handler(commands=["start"])
         def start_command(message):
 
             #### ACTIONS ####
 
             #### TEXT ####
-            start_command_text =("""Hello and Welcome to this bot. \n\n"""
-                                 """Let's see the bot status""")
+            text =("""Hello and Welcome to this bot. \n\n"""
+                    """Let's see the bot status""")
 
             #### KEYBOARD ####
-            start_command_buttons_text= [emojize(':white_exclamation_mark:Bot Status:white_exclamation_mark:')]
-            start_command_buttons = map(types.KeyboardButton, start_command_buttons_text)
-            start_command_keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-            start_command_keyboard.add(*start_command_buttons)
+
+            buttons_text= [keys.bot_status, keys.is_admin]
+            buttons = map(types.KeyboardButton, buttons_text)
+            keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+            keyboard.add(*buttons)
 
             #### MESSAGE ####
-            self.bot.send_message(message.chat.id, text=start_command_text,
-                                 reply_markup=start_command_keyboard)
+            self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
 
         ######################### Status Button #########################
-        @self.bot.message_handler(regexp=emojize(':white_exclamation_mark:Bot Status:white_exclamation_mark:'))
+        @self.bot.message_handler(regexp=keys.bot_status)
         def status_button(message):
-
+            
             if self.game_exist == False:
 
                 #### ACTIONS ####
 
                 #### TEXT ####
-                status_button_text =("""No game exist. wait for the admin to create a game.""")
+                text =("""No game exist. wait for the admin to create a game.""")
                                      
                 #### KEYBOARD ####
-                status_botton_bottons_text= [emojize(':white_exclamation_mark:Bot Status:white_exclamation_mark:')]
-                status_botton_bottons = map(types.KeyboardButton, status_botton_bottons_text)
-                status_botton_keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-                status_botton_keyboard.add(*status_botton_bottons)
+                buttons_text= [keys.bot_status, keys.is_admin]
+                buttons = map(types.KeyboardButton, buttons_text)
+                keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+                keyboard.add(*buttons)
 
                 #### MESSAGE ####
-                self.bot.send_message(message.chat.id, text=status_button_text,
-                                 reply_markup=status_botton_keyboard)
+                self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
                 
             elif self.game_exist == "ongoing":
 
                 #### ACTIONS ####
 
                 #### TEXT ####
-                status_button_text =("""A game is ongoing. Check again later.""")
+                text =("""A game is ongoing. Check again later.""")
                                      
                 #### KEYBOARD ####
-                status_botton_bottons_text= [emojize(':white_exclamation_mark:Bot Status:white_exclamation_mark:')]
-                status_botton_bottons = map(types.KeyboardButton, status_botton_bottons_text)
-                status_botton_keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-                status_botton_keyboard.add(*status_botton_bottons)
+                buttons_text= [keys.bot_status]
+                buttons = map(types.KeyboardButton, buttons_text)
+                keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+                keyboard.add(*buttons)
 
                 #### MESSAGE ####
-                self.bot.send_message(message.chat.id, text=status_button_text,
-                                 reply_markup=status_botton_keyboard)
+                self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
 
             elif self.game_exist == "joining":
-                
+
                 #### ACTIONS ####
 
                 #### TEXT ####
-                status_button_text =("""A game already exist and you can join it.""")
+                text =("""A game already exist and you can join it.""")
                                      
                 #### KEYBOARD ####
-                status_botton_bottons_text= [emojize(':plus: Joing the game')]
-                status_botton_bottons = map(types.KeyboardButton, status_botton_bottons_text)
-                status_botton_keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-                status_botton_keyboard.add(*status_botton_bottons)
+                buttons_text= [keys.join_game]
+                buttons = map(types.KeyboardButton, buttons_text)
+                keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+                keyboard.add(*buttons)
 
                 #### MESSAGE ####
-                self.bot.send_message(message.chat.id, text=status_button_text,
-                                 reply_markup=status_botton_keyboard)
+                self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
         
+        ######################### Print Input #########################
+        @self.bot.message_handler(regexp=keys.new_game)
+        def new_game(message):
+
+            #### ACTIONS ####
+            self.game_admin_id = message.chat.id
+            self.game_exist = "joining"
+            #### TEXT ####
+
+            text =("Ok, ask your friends to join the game")
+
+            #### KEYBOARD ####
+
+            buttons_text= [keys.start, keys.terminate]
+            buttons = map(types.KeyboardButton, buttons_text)
+            keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+            keyboard.add(*buttons)
+
+            #### MESSAGE ####
+            self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
+
+        @self.bot.message_handler(regexp=keys.start)
+        def start_game(message):
+
+            #### ACTIONS ####
+            self.game_exist = "ongoing"
+            #### TEXT ####
+
+            text =("Let's choos your prefered characters")
+
+            #### KEYBOARD ####
+
+            buttons_text= [keys.start, keys.terminate]
+            buttons = map(types.KeyboardButton, buttons_text)
+            keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+            keyboard.add(*buttons)
+
+            #### MESSAGE ####
+            self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
+
+        ######################### Hoin Game #########################
+        @self.bot.message_handler(regexp=keys.join_game)
+        def join_game(message):
+            
+            #### ACTIONS ####
+            self.players[message.chat.id]["name"] =  \
+                message.chat.first_name + " " + message.chat.last_name
+            self.players[message.chat.id]["user"] = message.chat.username
+            name = self.players[message.chat.id]["name"]
+
+            text = f"You have join the game sucessfuly \n"\
+                    f"your name in the game: {name}.\n\n"\
+                    "Wait for the admin to start the game."
+
+            text_to_admin = f"{name} has joing the game"
+            markup = types.ReplyKeyboardRemove()
+            self.bot.send_message(message.chat.id, text, reply_markup=markup)
+            self.bot.send_message(self.game_admin_id, text_to_admin)
+
         ######################### Admin Request #########################
-        @self.bot.message_handler(regexp="Join a Game")
-        def join_a_game(message):
+        @self.bot.message_handler(regexp=keys.join_game)
+        def choose_character(message):
 
             nick_name_text = 'OK, please choose an "ENGLISH" nickname.\n'
             self.bot.send_message(message.chat.id, nick_name_text)
@@ -155,6 +246,13 @@ class Bot():
             admin_answer = f"{self.temp_admin_id} is now an admin"
             self.bot.send_message(self.temp_admin_id, answer)
             self.bot.send_message(message.chat.id, admin_answer)
+
+        ######################### Print Input #########################
+        @self.bot.message_handler()
+        def print_function(message):
+
+            print(demojize(message.text))
+
     ######################### Auxilary Functions #########################
     def is_super_admin(self, message):
         return self.super_admin_id == message.chat.id
