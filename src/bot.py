@@ -7,6 +7,7 @@ from loguru import logger
 from telebot import types
 from Engines import Avalon_Engine
 from random import shuffle
+from utils.io import write_json
 
 TOKEN = "6468920953:AAHXzkA9iOrVwThJ6pk6kZ06AE7DSOnJVsI"
 
@@ -22,8 +23,11 @@ class Bot():
 
         self.names = ["Amir_1","Amir_2", "Amir_3", "Amir_4",
                         "Amir_5", "Amir_6", "Amir_7", "Amir_8"]
+        self.names_to_ids = {name: 224775397 for name in self.names}
+        # self.names = []
+        # self.names_to_ids = []
+
         self.curren_users_id = []
-        self.name_to_id = {name: 224775397 for name in self.names}
         self.optional_characters = []
         self.commander_order = []
         
@@ -231,10 +235,8 @@ class Bot():
             self.game_admin_id = message.chat.id
             self.game_state = "joining"
 
-            self.players[message.chat.id]["name"] =  \
-                message.chat.first_name + " " + message.chat.last_name
-            self.players[message.chat.id]["user"] = message.chat.username
-            self.name_to_id[self.players[message.chat.id]["name"]] = message.chat.id
+            name = self.grab_name(message)
+            self.names_to_ids[name] = message.chat.id
 
             #### TEXT ####
             text =("Ok, ask your friends to join the game")
@@ -356,15 +358,15 @@ class Bot():
         def join_game(message):
             
             #### ACTIONS ####
-            self.players[message.chat.id]["name"] =  \
-                message.chat.first_name + " " + message.chat.last_name
-            self.players[message.chat.id]["user"] = message.chat.username
-            name = self.players[message.chat.id]["name"]
-            self.name_to_id[self.players[message.chat.id]["name"]] = message.chat.id
+
+            name = self.grab_name(message)
+            self.names_to_ids[name] = message.chat.id
+
             text = f"You have join the game sucessfuly \n"\
                     f"your name in the game: {name}.\n\n"\
                     "Wait for the admin to start the game."
-
+            
+            
             text_to_admin = f"{name} has joined the game"
             markup = types.ReplyKeyboardRemove()
             self.bot.send_message(message.chat.id, text, reply_markup=markup)
@@ -382,7 +384,7 @@ class Bot():
             for name, character in Game.assigned_character.items():
 
                 message = character.message
-                self.bot.send_message(self.name_to_id[name], message)
+                self.bot.send_message(self.names_to_ids[name], message)
 
                 if character.has_info:
                     
@@ -395,15 +397,15 @@ class Bot():
 
                         info = "\n".join(Game.all_info["Evil_Team"])
 
-                        self.bot.send_message(self.name_to_id[name], info)
+                        self.bot.send_message(self.names_to_ids[name], info)
 
                     else:
 
                         info = "\n".join(Game.all_info[character.name])
-                        self.bot.send_message(self.name_to_id[name], info)
+                        self.bot.send_message(self.names_to_ids[name], info)
 
 
-            self.commander_order = list(self.name_to_id.keys())[:]
+            self.commander_order = list(self.names_to_ids.keys())[:]
 
             if self.shuffle_commander_order:
 
@@ -413,12 +415,12 @@ class Bot():
             commander_order_message_2 = "\n:downwards_button:\n".join(self.commander_order)
             text = emojize(commander_order_message_1 + commander_order_message_2)
 
-            for id in self.name_to_id.values():
+            for id in self.names_to_ids.values():
 
                 self.bot.send_message(id, text)
 
             self.resolve_commander()
-            commander_id = self.name_to_id[self.current_commander]
+            commander_id = self.names_to_ids[self.current_commander]
             n_committee = Game.all_round[Game.round]
             commander_text = "It's your turn to choose your committee. "\
                                 f"In this round, you should choose {n_committee} player."
@@ -621,9 +623,9 @@ class Bot():
 
     def extract_names(self):
 
-        for player_info in self.players.values():
+        for name in self.names_to_ids.keys():
 
-            self.names.append(player_info["name"])
+            self.names.append(name)
 
     def resolve_commander(self):
         
@@ -633,8 +635,22 @@ class Bot():
 
     def is_commander(self, message):
 
-        return(self.name_to_id[self.current_commander] == message.chat.id)
+        return(self.names_to_ids[self.current_commander] == message.chat.id)
 
+    def grab_name(self, message):
+        
+        if((message.chat.first_name != None) and (message.chat.last_name != None)):
+            name = message.chat.first_name + " " + message.chat.last_name
+
+        elif not (message.chat.last_name):
+            name = message.chat.first_name
+            
+
+        elif not (message.chat.first_name):
+            name = message.chat.last_name
+
+        return name
+        
 if __name__ == "__main__":
 
     my_bot = Bot()
