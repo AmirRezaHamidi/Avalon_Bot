@@ -22,5 +22,6 @@ keys = SimpleNamespace(
     fail = emojize(":red_circle:Fail"),
     success = emojize(":green_circle:success"),
     propose = emojize(":loudspeaker:Propose"),
-    final_decision = emojize(":hundred_points:Final Decision")
+    final_decision = emojize(":hundred_points:Final Decision"),
+    check_box = emojize(":check_box_with_check:")
 )

@@ -24,6 +24,8 @@ class Bot():
 
         self.names = ["Amir_1","Amir_2", "Amir_3", "Amir_4",
                         "Amir_5", "Amir_6", "Amir_7", "Amir_8"]
+        self.choosed_names = [emojize(f"{keys.check_box}{name}")\
+                               for name in self.names]
         self.names_to_ids = {name: 224775397 for name in self.names}
         # self.names = []
         # self.names_to_ids = []
@@ -153,7 +155,7 @@ class Bot():
         def fake_admin_button(message):
 
             #### TEXT ####
-            text =(emojize(" :slightly_smiling_face: Nope, you are not"))
+            text =(emojize(":slightly_smiling_face: Nope, you are not"))
                                      
             #### KEYBOARD ####
             buttons_text= [keys.bot_status, keys.i_am_admin]
@@ -238,6 +240,8 @@ class Bot():
 
             name = self.grab_name(message)
             self.names_to_ids[name] = message.chat.id
+            self.names.append(name)
+            self.choosed_names.append(emojize(f"{keys.check_box}{name}"))
 
             #### TEXT ####
             text =("Ok, ask your friends to join the game")
@@ -275,7 +279,7 @@ class Bot():
             #### TEXT ####
             text = 'OK, choose your prefered character in game and press OK'
             keyboard = self.character_keyboard()
-
+            self.names
             #### MESSAGE ####
             self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
 
@@ -290,6 +294,7 @@ class Bot():
                 self.optional_characters.append("Persival and Morgana")
 
             else:
+
                 text = "Persvial and Morgana were removed from the game"
                 del self.optional_characters[self.optional_characters.index("Persival and Morgana")]
 
@@ -354,6 +359,8 @@ class Bot():
             #### ACTIONS ####
             name = self.grab_name(message)
             self.names_to_ids[name] = message.chat.id
+            self.names.append(name)
+            self.choosed_names.append(emojize(f"{keys.check_box}{name}"))
 
             text = f"You have join the game sucessfuly \n"\
                     f"your name in the game: {name}.\n\n"\
@@ -370,7 +377,6 @@ class Bot():
         def send_info(message):
 
             #### ACTIONS ####
-            self.extract_names()
 
             Game = Avalon_Engine(self.names, self.optional_characters)
 
@@ -422,19 +428,21 @@ class Bot():
             self.bot.send_message(commander_id, commander_text, reply_markup = keyboard)
 
         ######################### committee add and remove #########################
-        @self.bot.message_handler(func=self.is_commander, content_types = self.names)
-        @self.bot.message_handler(commands=["adminrequest"])
-        def admin_request(message):
-            
-            request = f"{message.chat.first_name} {message.chat.last_name} " \
-                        f"with usrname {message.chat.username} "\
-                            "Requeste for an admin promotion"
-            
-            self.temp_admin_id = message.chat.id
-            message_to_user= "you request has been sent to the super admin."
-            self.bot.send_message(self.super_admin_id, request)
-            self.bot.send_message(self.super_admin_id, self.temp_admin_id)
-            self.bot.send_message(message.chat.id, message_to_user)
+        @self.bot.message_handler(func=self.is_committee_choice)
+        def committee_add_or_remove(message):
+
+            add_remove_name = self.correct_name(message.text)
+            if add_remove_name in self.current_committee:
+                del self.current_committee[self.current_committee.index(add_remove_name)]
+                text = f"{add_remove_name} was removed from the committee"
+
+            else:
+                self.current_committee.append(message.text)
+                text = f"{add_remove_name} was add to the committee"
+
+            keyboard = self.committee_keyboard()
+
+            self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
 
         ######################### committee propose #########################
         @self.bot.message_handler(commands=["adminrequest"])
@@ -449,6 +457,10 @@ class Bot():
             self.bot.send_message(self.super_admin_id, request)
             self.bot.send_message(self.super_admin_id, self.temp_admin_id)
             self.bot.send_message(message.chat.id, message_to_user)
+
+        @self.bot.message_handler(regexp="salam")
+        def start(message):
+            self.bot.se(message.chat.id, 'chose', ['a', 'b'], is_anonymous = False)
 
         ######################### committee final #########################
         @self.bot.message_handler(commands=["adminrequest"])
@@ -536,7 +548,7 @@ class Bot():
         def print_function(message):
             
             keyboard = self.committee_keyboard()
-            self.bot.send_message(message.chat.id, demojize(message.text), reply_markup=keyboard)
+            self.bot.send_message(message.chat.id, demojize(message.text))
 
     ######################### Auxilary Functions #########################
     def is_super_admin(self, message):
@@ -613,12 +625,6 @@ class Bot():
         keyboard.add(*buttons)
         return keyboard
 
-    def extract_names(self):
-
-        for name in self.names_to_ids.keys():
-
-            self.names.append(name)
-
     def resolve_commander(self):
         
         self.current_commander = self.commander_order[0]
@@ -628,6 +634,16 @@ class Bot():
     def is_commander(self, message):
 
         return(self.names_to_ids[self.current_commander] == message.chat.id)
+    
+    def is_committee_choice(self, message):
+        
+        condition_1 = self.is_commander(message)
+        condition_2 = message.text in self.names
+        condition_3 = message.text in self.choosed_names
+        print(condition_1, condition_2,condition_3)
+        print(message.text)
+        return (condition_1 and (condition_2 or condition_3))
+
 
     def grab_name(self, message):
         
@@ -641,6 +657,12 @@ class Bot():
             name = message.chat.last_name
 
         return name
+    
+    def correct_name(self, currupted_name):
+        if currupted_name[0:len(keys.check_box)] == keys.check_box:
+            return currupted_name[len(keys.check_box):]
+        else:
+            return currupted_name
 
 if __name__ == "__main__":
 
