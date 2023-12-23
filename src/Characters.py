@@ -11,6 +11,7 @@ class Servant():
 
         self.name = "Servant"
         self.side = "City"
+        self.has_info = False
 
 
 class Persival():
@@ -27,6 +28,7 @@ class Persival():
 
         self.name = "Persival"
         self.side = "City"
+        self.has_info = True
 
 
 class Merlin():
@@ -44,6 +46,7 @@ class Merlin():
 
         self.name = "Merlin"
         self.side = "City"
+        self.has_info = True
 
 
 class King():
@@ -67,7 +70,7 @@ class King():
 
         self.name = "King"
         self.side = "City"
-
+        self.has_info = False
 
 # Mordered Side
 class Minion():
@@ -79,33 +82,36 @@ class Minion():
                        'Power: You know all other evils '\
                        '(Except for the Oberon).\n'\
                        'Weakness: "Merlin" knows your identity.\n'\
-                       'Here are your teammate(s):\n'
-        self.side = "Evil"
+                       'Here are your teammate(s) inlcuding you:\n'
+
         self.name = "Minion"
+        self.side = "Evil"
+        self.has_info = True
 
 
 class Morgana():
 
     def __init__(self):
 
-        self.Message = 'Character: Morgana\n'\
+        self.message = 'Character: Morgana\n'\
                        'Side: Evil\n'\
                        'Power Number 1: You know all other Evils '\
                        '(Except for the Oberon).\n'\
                        'Power Number 2: You can confuse '\
                        '"Persival" by acting as "Merlin".\n'\
                        'Weakness: "Merlin" knows your identity.\n'\
-                       'Here are your teammate(s):\n'
+                       'Here are your teammate(s) inlcuding you:\n'
 
-        self.side = "Evil"
         self.name = "Morgana"
+        self.side = "Evil"
+        self.has_info = True
 
 
 class Assassin():
 
     def __init__(self):
 
-        self.Message = 'Character: Assassin'\
+        self.message = 'Character: Assassin'\
                        'Side: Evil\n'\
                        'Power Number 1: You know all other Evils '\
                        '(Except for the "Oberon").\n'\
@@ -113,37 +119,41 @@ class Assassin():
                        'players. If you shoot "Merlin", '\
                        'evil will win the game.\n'\
                        'Weakness: "Merlin" knows your identity.\n'\
-                       'Here are your teammate(s):\n'
+                       'Here are your teammate(s) inlcuding you:\n'
 
-        self.side = "Evil"
         self.name = "Assassin"
+        self.side = "Evil"
+        self.has_info = True
 
 
 class Oberon():
 
     def __init__(self):
 
-        self.Message = 'Character: Oberon\n'\
+        self.message = 'Character: Oberon\n'\
                        'Side: Evil\n'\
                        'Weakness Number 1: You do not know the '\
                        'identity of anyone except for yourself.\n'\
                        'Weakness Number 2: "Merlin" knows your identity.\n'\
                        'Guide: Try to find the other evil(s) and '\
                        'help them win the game.'
-        self.side = "Evil"
-        self.name = "Oberon"
 
+        self.name = "Oberon"
+        self.side = "Evil"
+        self.has_info = False
 
 class Mordred():
 
     def __init__(self):
 
-        self.Message = 'Character: Mordred\n'\
+        self.message = 'Character: Mordred\n'\
                        'Side: Evil\n'\
                        'Power Number 1: You know all other Evils '\
                        '(Except for the Oberon).\n'\
                        'Power Number 2: "Merlin" does not '\
                        'know you identity.\n'\
-                       'Here are your teammate(s):\n'
-        self.side = "Evil"
+                       'Here are your teammate(s) inlcuding you:\n'
+
         self.name = "Mordred"
+        self.side = "Evil"
+        self.has_info = True

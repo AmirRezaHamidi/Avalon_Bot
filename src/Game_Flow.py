@@ -5,11 +5,11 @@ from test_func import character_vote
 # Should be received from the bot
 names = ["Fateme", "ali", "hasan", "hossein", "sajad", "bagher", "sadegh",
          "jafar", "reza"]
-prefered_characters = ["Mordred", "King"]
+optional_characters = ["Mordred", "King"]
 # Should be received from the bot
 
 # Night Phase
-Game = Avalon_Engine(names, prefered_characters=prefered_characters)
+Game = Avalon_Engine(names, optional_characters=optional_characters)
 
 # should send the information to players
 # should send the information to players

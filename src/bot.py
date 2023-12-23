@@ -1,12 +1,12 @@
 from collections import defaultdict
 
-from constants import keys
+from Constants import keys
 import telebot
 from emoji import demojize, emojize
 from loguru import logger
 from telebot import types
 from Engines import Avalon_Engine
-
+from random import shuffle
 
 TOKEN = "6468920953:AAHXzkA9iOrVwThJ6pk6kZ06AE7DSOnJVsI"
 
@@ -18,10 +18,15 @@ class Bot():
         self.temp_admin_id = None
         self.game_admin_id = None
         self.super_admin_id  = 224775397
-        self.names = list()
+        self.current_committee = list()
 
-        self.optional_characters = [""]
+        self.names = ["Amir_1","Amir_2", "Amir_3", "Amir_4",
+                        "Amir_5", "Amir_6", "Amir_7", "Amir_8"]
+        self.curren_users_id = []
+        self.name_to_id = {name: 224775397 for name in self.names}
+        self.optional_characters = []
         
+        self.shuffle_commander_order = False
         self.game_state = False
         self.players = defaultdict(dict)
         self.bot = telebot.TeleBot(TOKEN)
@@ -228,6 +233,7 @@ class Bot():
             self.players[message.chat.id]["name"] =  \
                 message.chat.first_name + " " + message.chat.last_name
             self.players[message.chat.id]["user"] = message.chat.username
+            self.name_to_id[self.players[message.chat.id]["name"]] = message.chat.id
 
             #### TEXT ####
             text =("Ok, ask your friends to join the game")
@@ -353,32 +359,62 @@ class Bot():
                 message.chat.first_name + " " + message.chat.last_name
             self.players[message.chat.id]["user"] = message.chat.username
             name = self.players[message.chat.id]["name"]
-
+            self.name_to_id[self.players[message.chat.id]["name"]] = message.chat.id
             text = f"You have join the game sucessfuly \n"\
                     f"your name in the game: {name}.\n\n"\
                     "Wait for the admin to start the game."
 
-            text_to_admin = f"{name} has joing the game"
+            text_to_admin = f"{name} has joined the game"
             markup = types.ReplyKeyboardRemove()
             self.bot.send_message(message.chat.id, text, reply_markup=markup)
             self.bot.send_message(self.game_admin_id, text_to_admin)
-        
 
         ######################### Join Game #########################
         @self.bot.message_handler(func=self.is_admin, regexp=keys.finished_choosing)
         def send_info(message):
-            
+
             #### ACTIONS ####
             self.extract_names()
 
-            print(self.optional_characters)
-            print(self.names)
+            Game = Avalon_Engine(self.names, self.optional_characters)
 
-            new_game = Avalon_Engine(self.optional_characters, self.names)
+            for name, character in Game.assigned_character.items():
 
-            markup = types.ReplyKeyboardRemove()
-            self.bot.send_message(message.chat.id, text, reply_markup=markup)
-            self.bot.send_message(self.game_admin_id, text_to_admin)
+                message = character.message
+                self.bot.send_message(self.name_to_id[name], message)
+
+                if character.has_info:
+                    
+                    c_1 = character.name == "Minion"
+                    c_2 = character.name == "Assassin"
+                    c_3 = character.name == "Morgana"
+                    c_4 = character.name == "Mordred"
+                    
+                    if c_1 or c_2 or c_3 or c_4:
+
+                        info = "\n".join(Game.all_info["Evil_Team"])
+
+                        self.bot.send_message(self.name_to_id[name], info)
+
+                    else:
+
+                        info = "\n".join(Game.all_info[character.name])
+                        self.bot.send_message(self.name_to_id[name], info)
+
+            self.commander_order = list(self.name_to_id.keys())[:]
+
+            if self.shuffle_commander_order:
+
+                shuffle(self.commander_order)
+
+
+            commander_order_message_1 = "Here is the order of the commanders.\n"
+            commander_order_message_2 = "-->".join(self.commander_order)
+            text = commander_order_message_1 + commander_order_message_2
+
+            for id in self.name_to_id.values():
+
+                self.bot.send_message(id, text)
 
         ######################### Admin Request #########################
         @self.bot.message_handler(commands=["adminrequest"])
@@ -444,6 +480,43 @@ class Bot():
         keyboard.add(*third_row_buttons)
 
         return keyboard
+
+    def first_commander_keyboard(self):
+
+        buttons_str = [keys.finished_choosing, keys.terminate]
+        buttons = map(types.KeyboardButton, buttons_str)
+        keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+        keyboard.add(*buttons)
+
+        return keyboard
+
+    def committee_keyboard(self):
+        
+        buttons_str = []
+
+        for name in self.names:
+
+            if name in self.current_committee:
+
+                temp_str = ""
+                
+
+            else:
+
+                temp_str = ":check_box_with_check:"
+
+            buttons_str.append(emojize(f"{temp_str}{name}"))
+        
+        buttons = map(types.KeyboardButton, buttons_str)
+        keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+        keyboard.add(*buttons)
+
+    def mission_keyboard(self):
+
+        buttons_str = ["", ""]
+        buttons = map(types.KeyboardButton, buttons_str)
+        keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+        keyboard.add(*buttons)
 
     def extract_names(self):
 
