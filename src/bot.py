@@ -406,16 +406,101 @@ class Bot():
             if self.shuffle_commander_order:
 
                 shuffle(self.commander_order)
-
-
+        
             commander_order_message_1 = "Here is the order of the commanders.\n"
-            commander_order_message_2 = "-->".join(self.commander_order)
-            text = commander_order_message_1 + commander_order_message_2
+            commander_order_message_2 = "\n:downwards_button:\n".join(self.commander_order)
+            text = emojize(commander_order_message_1 + commander_order_message_2)
 
             for id in self.name_to_id.values():
 
                 self.bot.send_message(id, text)
 
+            self.bot.send_message
+        
+        ######################### committee add #########################
+        @self.bot.message_handler(commands=["adminrequest"])
+        def admin_request(message):
+            
+            request = f"{message.chat.first_name} {message.chat.last_name} " \
+                        f"with usrname {message.chat.username} "\
+                            "Requeste for an admin promotion"
+            
+            self.temp_admin_id = message.chat.id
+            message_to_user= "you request has been sent to the super admin."
+            self.bot.send_message(self.super_admin_id, request)
+            self.bot.send_message(self.super_admin_id, self.temp_admin_id)
+            self.bot.send_message(message.chat.id, message_to_user)
+
+        ######################### committee propose #########################
+        @self.bot.message_handler(commands=["adminrequest"])
+        def admin_request(message):
+            
+            request = f"{message.chat.first_name} {message.chat.last_name} " \
+                        f"with usrname {message.chat.username} "\
+                            "Requeste for an admin promotion"
+            
+            self.temp_admin_id = message.chat.id
+            message_to_user= "you request has been sent to the super admin."
+            self.bot.send_message(self.super_admin_id, request)
+            self.bot.send_message(self.super_admin_id, self.temp_admin_id)
+            self.bot.send_message(message.chat.id, message_to_user)
+
+        ######################### committee final #########################
+        @self.bot.message_handler(commands=["adminrequest"])
+        def admin_request(message):
+            
+            request = f"{message.chat.first_name} {message.chat.last_name} " \
+                        f"with usrname {message.chat.username} "\
+                            "Requeste for an admin promotion"
+            
+            self.temp_admin_id = message.chat.id
+            message_to_user= "you request has been sent to the super admin."
+            self.bot.send_message(self.super_admin_id, request)
+            self.bot.send_message(self.super_admin_id, self.temp_admin_id)
+            self.bot.send_message(message.chat.id, message_to_user)
+
+        ######################### vote inside #########################
+        @self.bot.message_handler(commands=["adminrequest"])
+        def admin_request(message):
+            
+            request = f"{message.chat.first_name} {message.chat.last_name} " \
+                        f"with usrname {message.chat.username} "\
+                            "Requeste for an admin promotion"
+            
+            self.temp_admin_id = message.chat.id
+            message_to_user= "you request has been sent to the super admin."
+            self.bot.send_message(self.super_admin_id, request)
+            self.bot.send_message(self.super_admin_id, self.temp_admin_id)
+            self.bot.send_message(message.chat.id, message_to_user)
+
+        ######################### mission out #########################
+        @self.bot.message_handler(commands=["adminrequest"])
+        def admin_request(message):
+            
+            request = f"{message.chat.first_name} {message.chat.last_name} " \
+                        f"with usrname {message.chat.username} "\
+                            "Requeste for an admin promotion"
+            
+            self.temp_admin_id = message.chat.id
+            message_to_user= "you request has been sent to the super admin."
+            self.bot.send_message(self.super_admin_id, request)
+            self.bot.send_message(self.super_admin_id, self.temp_admin_id)
+            self.bot.send_message(message.chat.id, message_to_user)
+
+        ######################### mission vote #########################
+        @self.bot.message_handler(commands=["adminrequest"])
+        def admin_request(message):
+            
+            request = f"{message.chat.first_name} {message.chat.last_name} " \
+                        f"with usrname {message.chat.username} "\
+                            "Requeste for an admin promotion"
+            
+            self.temp_admin_id = message.chat.id
+            message_to_user= "you request has been sent to the super admin."
+            self.bot.send_message(self.super_admin_id, request)
+            self.bot.send_message(self.super_admin_id, self.temp_admin_id)
+            self.bot.send_message(message.chat.id, message_to_user)
+        
         ######################### Admin Request #########################
         @self.bot.message_handler(commands=["adminrequest"])
         def admin_request(message):
@@ -444,8 +529,9 @@ class Bot():
         ######################### Print Input #########################
         @self.bot.message_handler()
         def print_function(message):
-
-            print(demojize(message.text))
+            
+            keyboard = self.committee_keyboard()
+            self.bot.send_message(message.chat.id, demojize(message.text), reply_markup=keyboard)
 
     ######################### Auxilary Functions #########################
     def is_super_admin(self, message):
@@ -492,31 +578,35 @@ class Bot():
 
     def committee_keyboard(self):
         
-        buttons_str = []
+        keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
 
         for name in self.names:
 
             if name in self.current_committee:
 
-                temp_str = ""
-                
+                temp_str = ":check_box_with_check:"
 
             else:
 
-                temp_str = ":check_box_with_check:"
+                temp_str = ""
 
-            buttons_str.append(emojize(f"{temp_str}{name}"))
-        
+            button = types.KeyboardButton(emojize(f"{temp_str}{name}"))
+            keyboard.row(button)
+
+        buttons_str = [keys.propose, keys.final_decision]
         buttons = map(types.KeyboardButton, buttons_str)
-        keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-        keyboard.add(*buttons)
+        keyboard.row(*buttons)
+
+        return keyboard
+
 
     def mission_keyboard(self):
 
-        buttons_str = ["", ""]
+        buttons_str = [keys.success, keys.fail]
         buttons = map(types.KeyboardButton, buttons_str)
-        keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+        keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
         keyboard.add(*buttons)
+        return keyboard
 
     def extract_names(self):
 
