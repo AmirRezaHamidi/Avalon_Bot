@@ -8,6 +8,7 @@ from telebot import types
 from Engines import Avalon_Engine
 from random import shuffle
 # from utils.io import write_json
+# write_json(message, Message.json)
 
 TOKEN = "6468920953:AAHXzkA9iOrVwThJ6pk6kZ06AE7DSOnJVsI"
 
@@ -159,6 +160,7 @@ class Bot():
             buttons = map(types.KeyboardButton, buttons_text)
             keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
             keyboard.add(*buttons)
+
             #### MESSAGE ####
             self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
 
@@ -200,8 +202,6 @@ class Bot():
                 
             elif self.game_state == "ongoing":
 
-                #### ACTIONS ####
-
                 #### TEXT ####
                 text =("""A game is ongoing. Check again later.""")
                                      
@@ -215,8 +215,6 @@ class Bot():
                 self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
 
             elif self.game_state == "joining":
-
-                #### ACTIONS ####
 
                 #### TEXT ####
                 text =("""A game already exist and you can join it.""")
@@ -354,7 +352,6 @@ class Bot():
         def join_game(message):
             
             #### ACTIONS ####
-
             name = self.grab_name(message)
             self.names_to_ids[name] = message.chat.id
 
@@ -368,7 +365,7 @@ class Bot():
             self.bot.send_message(message.chat.id, text, reply_markup=markup)
             self.bot.send_message(self.game_admin_id, text_to_admin)
 
-        ######################### Join Game #########################
+        ######################### Send Info #########################
         @self.bot.message_handler(func=self.is_admin, regexp=keys.finished_choosing)
         def send_info(message):
 
@@ -419,14 +416,13 @@ class Bot():
             commander_id = self.names_to_ids[self.current_commander]
             n_committee = Game.all_round[Game.round]
             commander_text = "It's your turn to choose your committee. "\
-                                f"In this round, you should choose {n_committee} player."
+                                f"In this round, you should pick {n_committee} player."
 
             keyboard = self.committee_keyboard()
             self.bot.send_message(commander_id, commander_text, reply_markup = keyboard)
 
-
         ######################### committee add and remove #########################
-        @self.bot.message_handler(func=self.is_commander, content_types =[])
+        @self.bot.message_handler(func=self.is_commander, content_types = self.names)
         @self.bot.message_handler(commands=["adminrequest"])
         def admin_request(message):
             
