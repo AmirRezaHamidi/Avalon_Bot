@@ -7,13 +7,13 @@ from loguru import logger
 from telebot import types
 from Engines import Avalon_Engine
 from random import shuffle
-from utils.io import write_json
+# from utils.io import write_json
 
 TOKEN = "6468920953:AAHXzkA9iOrVwThJ6pk6kZ06AE7DSOnJVsI"
 
 class Bot():
 
-    def __init__(self):
+    def initial_condition(self):
 
         self.admin_id = None
         self.temp_admin_id = None
@@ -33,7 +33,10 @@ class Bot():
         
         self.shuffle_commander_order = False
         self.game_state = False
-        self.players = defaultdict(dict)
+
+    def __init__(self):
+
+        self.initial_condition()
         self.bot = telebot.TeleBot(TOKEN)
 
         #### Initializing the bot ####
@@ -255,14 +258,7 @@ class Bot():
         def terminate_game(message):
 
             #### ACTIONS ####
-            self.admin_id = None
-            self.temp_admin_id = None
-            self.game_admin_id = None
-            self.super_admin_id  = 224775397
-
-            self.game_state = False
-            self.players = defaultdict(dict)
-            self.optional_characters = list()
+            self.initial_condition()
 
             #### TEXT ####
             text = "The game has been terminated"
@@ -271,8 +267,8 @@ class Bot():
             markup = types.ReplyKeyboardRemove()
 
             #### MESSAGE ####
-            for player in self.players.keys():
-                self.bot.send_message(player, text, reply_markup=markup)
+            for id in self.names_to_ids.values():
+                self.bot.send_message(id, text, reply_markup=markup)
 
         ######################### Start Game #########################
         @self.bot.message_handler(func=self.is_admin, regexp=keys.start)
@@ -364,7 +360,7 @@ class Bot():
 
             text = f"You have join the game sucessfuly \n"\
                     f"your name in the game: {name}.\n\n"\
-                    "Wait for the admin to start the game."
+                        "Wait for the admin to start the game."
             
             
             text_to_admin = f"{name} has joined the game"
@@ -644,13 +640,12 @@ class Bot():
 
         elif not (message.chat.last_name):
             name = message.chat.first_name
-            
 
         elif not (message.chat.first_name):
             name = message.chat.last_name
 
         return name
-        
+
 if __name__ == "__main__":
 
     my_bot = Bot()
