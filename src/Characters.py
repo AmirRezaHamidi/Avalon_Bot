@@ -111,7 +111,7 @@ class Assassin():
 
     def __init__(self):
 
-        self.message = 'Character: Assassin'\
+        self.message = 'Character: Assassin\n'\
                        'Side: Evil\n'\
                        'Power Number 1: You know all other Evils '\
                        '(Except for the "Oberon").\n'\

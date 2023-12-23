@@ -25,6 +25,7 @@ class Bot():
         self.curren_users_id = []
         self.name_to_id = {name: 224775397 for name in self.names}
         self.optional_characters = []
+        self.commander_order = []
         
         self.shuffle_commander_order = False
         self.game_state = False
@@ -401,6 +402,7 @@ class Bot():
                         info = "\n".join(Game.all_info[character.name])
                         self.bot.send_message(self.name_to_id[name], info)
 
+
             self.commander_order = list(self.name_to_id.keys())[:]
 
             if self.shuffle_commander_order:
@@ -415,9 +417,18 @@ class Bot():
 
                 self.bot.send_message(id, text)
 
-            self.bot.send_message
-        
-        ######################### committee add #########################
+            self.resolve_commander()
+            commander_id = self.name_to_id[self.current_commander]
+            n_committee = Game.all_round[Game.round]
+            commander_text = "It's your turn to choose your committee. "\
+                                f"In this round, you should choose {n_committee} player."
+
+            keyboard = self.committee_keyboard()
+            self.bot.send_message(commander_id, commander_text, reply_markup = keyboard)
+
+
+        ######################### committee add and remove #########################
+        @self.bot.message_handler(func=self.is_commander, content_types =[])
         @self.bot.message_handler(commands=["adminrequest"])
         def admin_request(message):
             
@@ -613,6 +624,16 @@ class Bot():
         for player_info in self.players.values():
 
             self.names.append(player_info["name"])
+
+    def resolve_commander(self):
+        
+        self.current_commander = self.commander_order[0]
+        self.commander_order.append(self.commander_order[0])
+        del self.commander_order [0]
+
+    def is_commander(self, message):
+
+        return(self.name_to_id[self.current_commander] == message.chat.id)
 
 if __name__ == "__main__":
 
