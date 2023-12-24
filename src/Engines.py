@@ -243,20 +243,24 @@ class Avalon_Engine():
             if self.fail_count >= 2:
 
                 self.evil_wins += 1
+                self.who_won = "Evil"
 
             else:
 
                 self.city_wins += 1
+                self.who_won = "City"
 
         else:
 
             if self.fail_count >= 1:
 
                 self.evil_wins += 1
+                self.who_won = "Evil"
 
             else:
 
                 self.city_wins += 1
+                self.who_won = "City"
 
     def king_guess(self, guesses):
 
