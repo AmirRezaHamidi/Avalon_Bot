@@ -212,6 +212,9 @@ class Avalon_Engine():
         if len(committee_names) == self.all_round[self.round]:
             self.acceptable_round = True
 
+        else:
+            self.acceptable_round = False
+
     def count_committee_vote(self, committee_votes):
 
         negative_votes = committee_votes.count(0)

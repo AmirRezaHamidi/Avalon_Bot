@@ -3,36 +3,33 @@ from emoji import emojize
 
 
 keys = SimpleNamespace(
-    bot_status=emojize(':white_exclamation_mark:Bot Status'
-                       ':white_exclamation_mark:'),
+    bot_status=emojize(':white_exclamation_mark:Bot Status'),
     i_am_admin=emojize(':smiling_face_with_sunglasses:I Am an Admin'),
     new_game=emojize(':plus: Creat a new Game'),
     join_game=emojize(':plus: Joing the game'),
-    start=emojize(":check_mark_button:START"),
-    terminate=emojize(":cross_mark:TERMINATE"),
-    Persival_Morgana="Persival_Morgana",
-    King="King Arthur",
-    Mordred="Mordred",
-    Oberon="Oberon",
-    full_Persival_Morgana=emojize(":check_box_with_check:Persival_Morgana"),
-    full_King=emojize(":check_box_with_check:King Arthur"),
-    full_Mordred=emojize(":check_box_with_check:Mordred"),
-    full_Oberon=emojize(":check_box_with_check:Oberon"),
-    finished_choosing=emojize(":check_mark_button:Finished Choosing"),
-    fail=emojize(":red_circle:Fail"),
-    success=emojize(":green_circle:success"),
-    propose=emojize(":loudspeaker:Propose"),
-    final=emojize(":hundred_points:Final Decision"),
-    check_box=emojize(":check_box_with_check:"),
-    agree = emojize(":thumbs_up:Agree"),
-    disagree = emojize(":thumbs_down:Disagree")
+    choose_character=emojize(':performing_arts:Lets choose characters'),
+    Persival_Morgana='Persival_Morgana',
+    King='King Arthur',
+    Mordred='Mordred',
+    Oberon='Oberon',
+    finished_choosing=emojize(':check_mark_button:Finished Choosing'),
+    fail=emojize(':red_circle:Fail'),
+    success=emojize(':green_circle:success'),
+    propose=emojize(':loudspeaker:Propose'),
+    final=emojize(':hundred_points:Final Decision'),
+    check_box=emojize(':check_box_with_check:'),
+    agree=emojize(':thumbs_up:Agree'),
+    disagree=emojize(':thumbs_down:Disagree'),
+    assassin=emojize(':gun:Shoot')
 )
 
 States = SimpleNamespace(
-    no_game="no_game",
-    starting="starting",
-    ongoing="ongoing",
-    committee_choose="committee_choose",
-    committee_voting="committee_voting",
-    mission_voting="mission_voting"
+    no_game='no_game',
+    starting='starting',
+    ongoing='ongoing',
+    choose_characters='choose_characters',
+    committee_choose='committee_choose',
+    committee_voting='committee_voting',
+    mission_voting='mission_voting',
+    assassin_shoots='assassin_shoots'
 )

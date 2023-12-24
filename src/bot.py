@@ -25,21 +25,26 @@ class Bot():
         self.current_commander = str()
         self.committee_votes = list()
         self.mission_votes = list()
+        self.choosed_characters = list()
 
         self.names = ["Amir Hamidi", "Amir_1","Amir_2", "Amir_3", "Amir_4",
                         "Amir_5", "Amir_6", "Amir_7", "Amir_8"]
-        self.choosed_names = [emojize(f"{keys.check_box}{name}")\
+        self.checked_names = [emojize(f"{keys.check_box}{name}")\
                                for name in self.names]
         self.names_to_ids = {name: 224775397 for name in self.names}
         # self.names = []
         # self.names_to_ids = []
 
         self.curren_users_id = []
-        self.optional_characters = []
+        self.optional_characters = [keys.Persival_Morgana, keys.Mordred, 
+                                    keys.King, keys.Oberon]
+        self.checked_optional_characters =\
+              [f"{keys.check_box}{name}" for name in self.optional_characters]
         self.commander_order = []
         
         self.shuffle_commander_order = False
         self.game_state = States.no_game
+        
     def define_game(self, names, optional_characters):
 
         self.Game = Avalon_Engine(names, optional_characters)
@@ -247,14 +252,15 @@ class Bot():
 
             name = self.grab_name(message)
             self.names_to_ids[name] = message.chat.id
+
             self.names.append(name)
-            self.choosed_names.append(emojize(f"{keys.check_box}{name}"))
+            self.checked_names.append(emojize(f"{keys.check_box}{name}"))
 
             #### TEXT ####
             text =("Ok, ask your friends to join the game")
 
             #### KEYBOARD ####
-            buttons_text= [keys.start, keys.terminate]
+            buttons_text= [keys.choose_character]
             buttons = map(types.KeyboardButton, buttons_text)
             keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
             keyboard.add(*buttons)
@@ -263,7 +269,7 @@ class Bot():
             self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
 
         ######################### Terminate Game #########################
-        @self.bot.message_handler(func=self.is_admin, regexp=keys.terminate)
+        @self.bot.message_handler(func=self.is_game_admin, commands=["terminate"])
         def terminate_game(message):
 
             #### ACTIONS ####
@@ -279,84 +285,38 @@ class Bot():
             for id in self.names_to_ids.values():
                 self.bot.send_message(id, text, reply_markup=markup)
 
+            self.game_state = States.no_game
+
         ######################### Start Game #########################
-        @self.bot.message_handler(func=self.is_admin, regexp=keys.start)
+        @self.bot.message_handler(func=self.is_game_admin, regexp=keys.choose_character)
         def start_game(message):
 
+            self.game_state = States.ongoing
+
             #### TEXT ####
-            text = 'OK, choose your prefered character in game and press OK'
+            text = 'OK, choose your prefered character in the game.'
             keyboard = self.character_keyboard()
-            self.names
+
             #### MESSAGE ####
             self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
 
-        ######################### Add_Persival_Morgana #########################
-        @self.bot.message_handler(func=self.is_admin, regexp=keys.full_Persival_Morgana)
-        @self.bot.message_handler(func=self.is_admin, regexp=keys.Persival_Morgana)
-        def Persival_Morgana_button(message):
+        ######################### admin choosing character #########################
+        @self.bot.message_handler(func=self.is_admin_choosing_character)
+        def admin_choose_characters(message):
 
-            #### ACTIONS ####
-            if "Persival and Morgana" not in self.optional_characters:
-                text = "Persival and Morgana were added to the game"
-                self.optional_characters.append("Persival and Morgana")
+            add_remove_character = self.correct_name(message.text)
 
-            else:
+            if add_remove_character in self.choosed_characters:
 
-                text = "Persvial and Morgana were removed from the game"
-                del self.optional_characters[self.optional_characters.index("Persival and Morgana")]
-
-            keyboard = self.character_keyboard()
-            self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
-
-        ######################### Add_Mordred #########################
-        @self.bot.message_handler(func=self.is_admin, regexp=keys.full_Mordred)
-        @self.bot.message_handler(func=self.is_admin, regexp=keys.Mordred)
-        def Mordred_button(message):
-
-            #### ACTIONS ####
-            if "Mordred" not in self.optional_characters:
-                text = "Mordred was added to the game"
-                self.optional_characters.append("Mordred")
+                self.choosed_characters.remove(add_remove_character)
+                text = f"{add_remove_character} was removed from the game"
 
             else:
-                text = "Mordred was removed from the game"
-                del self.optional_characters[self.optional_characters.index("Mordred")]
+                self.choosed_characters.append(add_remove_character)
+                text = f"{add_remove_character} was added to the game"
 
             keyboard = self.character_keyboard()
-            self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
 
-        ######################### Add_King #########################
-        @self.bot.message_handler(func=self.is_admin, regexp=keys.full_King)
-        @self.bot.message_handler(func=self.is_admin, regexp=keys.King)
-        def King_button(message):
-
-            #### ACTIONS ####
-            if "King" not in self.optional_characters:
-                text = "King Arthur was added to the game"
-                self.optional_characters.append("King")
-
-            else:
-                text = "King Arthur was removed from the game"
-                del self.optional_characters[self.optional_characters.index("King")]
-
-            keyboard = self.character_keyboard()
-            self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
-
-        ######################### Add_Oberon #########################
-        @self.bot.message_handler(func=self.is_admin, regexp=keys.full_Oberon)
-        @self.bot.message_handler(func=self.is_admin, regexp=keys.Oberon)
-        def Oberon_button(message):
-
-            #### ACTIONS ####
-            if "Oberon" not in self.optional_characters:
-                text = "Oberon was added to the game"
-                self.optional_characters.append("Oberon")
-
-            else:
-                text = "Oberon was removed from the game"
-                del self.optional_characters[self.optional_characters.index("Oberon")]
-
-            keyboard = self.character_keyboard()
             self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
 
         ######################### Join Game #########################
@@ -367,7 +327,7 @@ class Bot():
             name = self.grab_name(message)
             self.names_to_ids[name] = message.chat.id
             self.names.append(name)
-            self.choosed_names.append(emojize(f"{keys.check_box}{name}"))
+            self.checked_names.append(emojize(f"{keys.check_box}{name}"))
 
             text = f"You have join the game sucessfuly \n"\
                     f"your name in the game: {name}.\n\n"\
@@ -420,7 +380,7 @@ class Bot():
             commander_order_message_2 = "\n:downwards_button:\n".join(self.commander_order)
             text = emojize(commander_order_message_1 + commander_order_message_2)
 
-            for _, id in self.names_to_ids.values():
+            for id in self.names_to_ids.values():
 
                 self.bot.send_message(id, text)
 
@@ -440,45 +400,65 @@ class Bot():
         def commander_choose_name(message):
 
             add_remove_name = self.correct_name(message.text)
+
             if add_remove_name in self.current_committee:
-                del self.current_committee[self.current_committee.index(add_remove_name)]
+
+                self.current_committee.remove(add_remove_name)
                 text = f"{add_remove_name} was removed from the committee"
 
             else:
-                self.current_committee.append(message.text)
+
+                self.current_committee.append(add_remove_name)
                 text = f"{add_remove_name} was add to the committee"
 
             keyboard = self.commander_keyboard()
-
             self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
 
         ######################### commander pressing_button #########################
         @self.bot.message_handler(func=self.is_commander_pressing_button)
         def commander_press_button(message):
-            
+
+            self.Game.check_committee(self.current_committee)
+
             # adding the rule that the number of committee members are equal to the right number
-            if message.text == keys.propose:
+            if self.Game.acceptable_round:
 
-                committee_member_text = "\n".join(self.current_committee)
-                whole_text = text + committee_member_text
-                keyboard = self.remove_keyboard()
+                if message.text == keys.propose:
 
-                for _, id in self.names_to_ids.items():
+                    text = "Proposed Committee:\n"
+                    committee_member_text = "\n".join(self.current_committee)
+                    whole_text = text + committee_member_text
+                    keyboard = self.remove_keyboard()
 
-                    if id != message.chat.id:
+                    for id in self.names_to_ids.values():
+                        
+                        if id == self.game_admin_id:
 
+                            self.bot.send_message(id, whole_text)
+
+                        else:
+
+                            self.bot.send_message(id, whole_text, reply_markup=keyboard)
+
+                elif message.text == keys.final:
+
+                    text = "Final Decision:\n"
+                    committee_member_text = "\n".join(self.current_committee)
+                    whole_text = text + committee_member_text
+                    keyboard = self.committee_vote_keyboard()
+                    self.committee_voters = self.names[:]
+
+                    for id in self.names_to_ids.values():
                         self.bot.send_message(id, whole_text, reply_markup=keyboard)
+                    
+                    self.game_state = States.committee_voting
+            else:
 
-            elif message.text == keys.final:
-
-                text = "Final Decision:\n"
-                committee_member_text = "\n".join(self.current_committee)
-                whole_text = text + committee_member_text
-                keyboard = self.committee_vote_keyboard()
-                self.committee_voters = self.names[:]
-
-                for _, id in self.names_to_ids.items():
-                    self.bot.send_message(id, whole_text, reply_markup=keyboard)
+                text = "The number of players in the "\
+                        f"committee should be {self.Game.all_round[self.Game.round]}"
+                
+                keyboard = self.commander_keyboard()
+                self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
 
         ######################### vote inside #########################
         @self.bot.message_handler(func=self.is_eligible_vote)
@@ -508,7 +488,7 @@ class Bot():
                     members_text = "the proposed committee was accepted"
                     committee_text  ="Please choose between Fail and Success"
 
-                    for _, id in self.names_to_ids.items():
+                    for id in self.names_to_ids.values():
 
                         self.bot.send_message(id, members_text)
 
@@ -523,7 +503,7 @@ class Bot():
                     self.Game.continues = False
                     self.Game.win_side = "Evil"
 
-                    for _, id in self.names_to_ids.items():
+                    for id in self.names_to_ids.values():
                         
                         text = "Evil Won.\n Reason: 5 consecitive rejection of the committee"
                         self.bot.send_message(id, text)
@@ -535,12 +515,13 @@ class Bot():
                     commander_text = "It's your turn to choose your committee. "\
                                 f"In this round, you should pick {n_committee} player."
 
-                    for _, id in self.names_to_ids.items():
+                    for id in self.names_to_ids.values():
 
                         self.bot.send_message(id, members_text)
 
                     commander_id = self.commander_order[0]
                     self.resolve_commander()
+
                     keyboard = self.commander_keyboard()
                     self.bot.send_message(commander_id, commander_text, reply_markup=keyboard)
 
@@ -560,9 +541,9 @@ class Bot():
 
                 if self.Game.evil_wins == 3:
 
-                    for _, id in self.names_to_ids.items():
+                    for id in self.names_to_ids.values():
                         
-                        text = "Evil Won.\n Reason: thye won three times"
+                        text = "Evil won.\n Reason: thye won three times"
                         self.bot.send_message(id, text)
 
                 elif self.Game.city_wins == 3:
@@ -612,20 +593,23 @@ class Bot():
     def is_super_admin(self, message):
 
         c_1 = self.super_admin_id == message.chat.id
-
         return c_1
 
     def is_admin(self, message):
 
         c_1 = self.is_super_admin(message)
         c_2 = self.admin_id == message.chat.id
-
         return c_1 or c_2
+    
+    def is_game_admin(self, message):
 
+        c_1 = self.game_admin_id == message.chat.id
+        return c_1
+    
     def is_commander(self, message):
 
         c_1 = self.current_commander == self.grab_name(message)
-        print(self.current_commander)
+
         return c_1
 
     def is_in_current_committee(self, message):
@@ -633,12 +617,20 @@ class Bot():
         c_1 = self.grab_name(message) in self.current_committee
         return c_1
 
+    def is_admin_choosing_character(self, message):
+
+        c_1 = self.gmae_state = States.ongoing
+        c_2 = self.is_game_admin(message)
+        c_4 = message.text in self.optional_characters
+        c_3 = message.text in self.checked_optional_characters
+        return c_1 and c_2 and (c_3 or c_4)
+
     def is_commander_choosing_name(self,message):
 
         c_1 = self.game_state == States.committee_choose
         c_2 = self.is_commander(message)
         c_3 = message.text in self.names
-        c_4 = message.text in self.choosed_names
+        c_4 = message.text in self.checked_names
 
         return c_1 and c_2 and (c_3 or c_4)
 
@@ -647,7 +639,6 @@ class Bot():
         c_1 = self.game_state == States.committee_choose
         c_2 = self.is_commander(message)
         c_3 = message.text in [keys.final, keys.propose]
-        print(c_1, c_2, c_3)
 
         return c_1 and c_2 and c_3
 
@@ -657,7 +648,7 @@ class Bot():
         c_1 = self.game_state == States.committee_voting
         c_2 = emojize(message.text) in [keys.agree, keys.disagree]
         c_3 = name in self.committee_voters
-
+        print(c_1, c_2, c_3)
         return c_1 and c_2 and c_3
 
     def is_eligible_fail_success(self, message):
@@ -667,31 +658,38 @@ class Bot():
         c_3 = self.game_state = States.mission_voting
 
         return c_1 and c_2 and c_3
+    
+    def is_assassin(self, message):
 
+        c_1 = self.game_state == keys.assassin_shoots
+        c_2 = message.chat.id == self.assassin_id
+
+        return c_1 and c_2
+    
     ######################### keyboard makers #########################
     def character_keyboard(self):
 
-        condition_1 = "Persival and Morgana" in self.optional_characters
-        condition_2 = "Mordred" in self.optional_characters
-        condition_3 = "Oberon" in self.optional_characters
-        condition_4 = "King" in self.optional_characters
-        current_presival_Morgana = (keys.full_Persival_Morgana if condition_1 else keys.Persival_Morgana)
-        current_king = keys.full_Mordred if condition_2 else keys.Mordred
-        current_mordred = keys.full_Oberon if condition_3 else keys.Oberon
-        current_oberon = keys.full_King if condition_4 else keys.King
-
-        buttons_text_1 = [current_presival_Morgana, current_king]
-        buttons_text_2 = [current_oberon, current_mordred]
-        buttons_text_3 = [keys.finished_choosing, keys.terminate]
-
-        first_row_buttons = map(types.KeyboardButton, buttons_text_1)
-        second_row_buttons = map(types.KeyboardButton, buttons_text_2)
-        third_row_buttons = map(types.KeyboardButton, buttons_text_3)
         keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+        buttons = []
 
-        keyboard.add(*first_row_buttons)
-        keyboard.add(*second_row_buttons)
-        keyboard.add(*third_row_buttons)
+        for character in self.optional_characters:
+
+            if character in self.choosed_characters:
+                
+                temp_str = demojize(keys.check_box)
+
+            else:
+
+                temp_str = ""
+
+            buttons.append(types.KeyboardButton(emojize(temp_str + character)))
+
+        keyboard.add(*buttons)
+        buttons_last_layers = [keys.finished_choosing]
+
+        last_layer_buttons = map(types.KeyboardButton, buttons_last_layers)
+
+        keyboard.add(*last_layer_buttons)
 
         return keyboard
 
@@ -703,7 +701,7 @@ class Bot():
 
             if name in self.current_committee:
 
-                temp_str = ":check_box_with_check:"
+                temp_str = demojize(keys.check_box)
 
             else:
 
@@ -733,7 +731,12 @@ class Bot():
         keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
         keyboard.add(*buttons)
         return keyboard
+    
+    def assassin_keyboard(self):
+        keyboard = types.ReplyKeyboardMarkup(row_width=1,resize_keyboard=True)
+        keyboard.add(types.KeyboardButton(keys.assassin))
 
+        return
     def remove_keyboard(self):
         return types.ReplyKeyboardRemove()
 
