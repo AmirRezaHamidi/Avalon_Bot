@@ -17,8 +17,8 @@ class Bot():
     def initial_condition(self):
 
         self.admin_id = None
-        self.temp_admin_id = None
-        self.game_admin_id = None
+        self.temp_admin_id = int()
+        self.game_admin_id = int()
         self.super_admin_id  = 224775397
         self.current_committee = list()
 
@@ -427,6 +427,22 @@ class Bot():
             keyboard = self.committee_keyboard()
             self.bot.send_message(commander_id, commander_text, reply_markup = keyboard)
 
+        ######################### Next_committee #########################
+        @self.bot.message_handler(func=self.is_committee_choice)
+        def Next_committtee(message):
+
+            add_remove_name = self.correct_name(message.text)
+            if add_remove_name in self.current_committee:
+                del self.current_committee[self.current_committee.index(add_remove_name)]
+                text = f"{add_remove_name} was removed from the committee"
+
+            else:
+                self.current_committee.append(message.text)
+                text = f"{add_remove_name} was add to the committee"
+
+            keyboard = self.committee_keyboard()
+
+            self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
         ######################### committee add and remove #########################
         @self.bot.message_handler(func=self.is_committee_choice)
         def committee_add_or_remove(message):
@@ -446,7 +462,7 @@ class Bot():
 
         ######################### committee propose #########################
         @self.bot.message_handler(commands=["adminrequest"])
-        def admin_request(message):
+        def committee_propose(message):
             
             request = f"{message.chat.first_name} {message.chat.last_name} " \
                         f"with usrname {message.chat.username} "\
@@ -458,13 +474,9 @@ class Bot():
             self.bot.send_message(self.super_admin_id, self.temp_admin_id)
             self.bot.send_message(message.chat.id, message_to_user)
 
-        @self.bot.message_handler(regexp="salam")
-        def start(message):
-            self.bot.se(message.chat.id, 'chose', ['a', 'b'], is_anonymous = False)
-
         ######################### committee final #########################
         @self.bot.message_handler(commands=["adminrequest"])
-        def admin_request(message):
+        def committee_final(message):
             
             request = f"{message.chat.first_name} {message.chat.last_name} " \
                         f"with usrname {message.chat.username} "\
@@ -478,7 +490,7 @@ class Bot():
 
         ######################### vote inside #########################
         @self.bot.message_handler(commands=["adminrequest"])
-        def admin_request(message):
+        def vote_for_committee(message):
             
             request = f"{message.chat.first_name} {message.chat.last_name} " \
                         f"with usrname {message.chat.username} "\
@@ -492,7 +504,7 @@ class Bot():
 
         ######################### mission out #########################
         @self.bot.message_handler(commands=["adminrequest"])
-        def admin_request(message):
+        def send_mission_button(message):
             
             request = f"{message.chat.first_name} {message.chat.last_name} " \
                         f"with usrname {message.chat.username} "\
@@ -506,7 +518,7 @@ class Bot():
 
         ######################### mission vote #########################
         @self.bot.message_handler(commands=["adminrequest"])
-        def admin_request(message):
+        def recieve_mission_vote(message):
             
             request = f"{message.chat.first_name} {message.chat.last_name} " \
                         f"with usrname {message.chat.username} "\
@@ -647,6 +659,8 @@ class Bot():
 
     def grab_name(self, message):
         
+        name = str()
+
         if((message.chat.first_name != None) and (message.chat.last_name != None)):
             name = message.chat.first_name + " " + message.chat.last_name
 
@@ -661,6 +675,7 @@ class Bot():
     def correct_name(self, currupted_name):
         if currupted_name[0:len(keys.check_box)] == keys.check_box:
             return currupted_name[len(keys.check_box):]
+            
         else:
             return currupted_name
 
