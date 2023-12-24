@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from Constants import keys
+from Constants import keys,States
 import telebot
 from emoji import demojize, emojize
 from loguru import logger
@@ -21,8 +21,12 @@ class Bot():
         self.game_admin_id = int()
         self.super_admin_id  = 224775397
         self.current_committee = list()
+        self.committee_voters = list()
+        self.current_commander = str()
+        self.committee_votes = list()
+        self.mission_votes = list()
 
-        self.names = ["Amir_1","Amir_2", "Amir_3", "Amir_4",
+        self.names = ["Amir Hamidi", "Amir_1","Amir_2", "Amir_3", "Amir_4",
                         "Amir_5", "Amir_6", "Amir_7", "Amir_8"]
         self.choosed_names = [emojize(f"{keys.check_box}{name}")\
                                for name in self.names]
@@ -35,7 +39,10 @@ class Bot():
         self.commander_order = []
         
         self.shuffle_commander_order = False
-        self.game_state = False
+        self.game_state = States.no_game
+    def define_game(self, names, optional_characters):
+
+        self.Game = Avalon_Engine(names, optional_characters)
 
     def __init__(self):
 
@@ -56,7 +63,7 @@ class Bot():
         @self.bot.message_handler(func=self.is_admin, commands=["start"])
         def admin_start_command(message):
             
-            if self.game_state == False:
+            if self.game_state == States.no_game:
 
                 #### TEXT ####
                 text =("""Hello and Welcome to this bot. \n\n"""
@@ -71,7 +78,7 @@ class Bot():
                 #### MESSAGE ####
                 self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
 
-            elif self.game_state == "joining":
+            elif self.game_state == States.starting:
 
                 #### TEXT ####
                 text =("""Hello and Welcome to this bot. \n\n"""
@@ -86,7 +93,7 @@ class Bot():
                 #### MESSAGE ####
                 self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
 
-            elif self.game_state == "ongoing":
+            elif self.game_state == States.ongoing:
 
                 #### TEXT ####
                 text =("""Hello and Welcome to this bot. \n\n"""
@@ -105,7 +112,7 @@ class Bot():
         @self.bot.message_handler(func=self.is_admin, regexp=keys.i_am_admin)
         def i_am_admin_button(message):
             
-            if self.game_state == False:
+            if self.game_state == States.no_game:
 
                 #### TEXT ####
                 text =("""Hello and Welcome to this bot. \n\n"""
@@ -120,7 +127,7 @@ class Bot():
                 #### MESSAGE ####
                 self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
 
-            elif self.game_state == "joining":
+            elif self.game_state == States.starting:
 
                 #### TEXT ####
                 text =("""Hello and Welcome to this bot. \n\n"""
@@ -135,7 +142,7 @@ class Bot():
                 #### MESSAGE ####
                 self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
 
-            elif self.game_state == "ongoing":
+            elif self.game_state == States.ongoing:
 
                 #### TEXT ####
                 text =("""Hello and Welcome to this bot. \n\n"""
@@ -188,7 +195,7 @@ class Bot():
         @self.bot.message_handler(regexp=keys.bot_status)
         def status_button(message):
             
-            if self.game_state == False:
+            if self.game_state == States.no_game:
 
                 #### TEXT ####
                 text =("""No game exist. wait for the admin to create a game.""")
@@ -202,7 +209,7 @@ class Bot():
                 #### MESSAGE ####
                 self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
                 
-            elif self.game_state == "ongoing":
+            elif self.game_state == States.ongoing:
 
                 #### TEXT ####
                 text =("""A game is ongoing. Check again later.""")
@@ -216,7 +223,7 @@ class Bot():
                 #### MESSAGE ####
                 self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
 
-            elif self.game_state == "joining":
+            elif self.game_state == States.starting:
 
                 #### TEXT ####
                 text =("""A game already exist and you can join it.""")
@@ -236,7 +243,7 @@ class Bot():
 
             #### ACTIONS ####
             self.game_admin_id = message.chat.id
-            self.game_state = "joining"
+            self.game_state = States.starting
 
             name = self.grab_name(message)
             self.names_to_ids[name] = message.chat.id
@@ -366,7 +373,6 @@ class Bot():
                     f"your name in the game: {name}.\n\n"\
                         "Wait for the admin to start the game."
             
-            
             text_to_admin = f"{name} has joined the game"
             markup = types.ReplyKeyboardRemove()
             self.bot.send_message(message.chat.id, text, reply_markup=markup)
@@ -377,10 +383,10 @@ class Bot():
         def send_info(message):
 
             #### ACTIONS ####
+            # send assasin the button
+            self.define_game(self.names, self.optional_characters)
 
-            Game = Avalon_Engine(self.names, self.optional_characters)
-
-            for name, character in Game.assigned_character.items():
+            for name, character in self.Game.assigned_character.items():
 
                 message = character.message
                 self.bot.send_message(self.names_to_ids[name], message)
@@ -394,13 +400,13 @@ class Bot():
                     
                     if c_1 or c_2 or c_3 or c_4:
 
-                        info = "\n".join(Game.all_info["Evil_Team"])
+                        info = "\n".join(self.Game.all_info["Evil_Team"])
 
                         self.bot.send_message(self.names_to_ids[name], info)
 
                     else:
 
-                        info = "\n".join(Game.all_info[character.name])
+                        info = "\n".join(self.Game.all_info[character.name])
                         self.bot.send_message(self.names_to_ids[name], info)
 
 
@@ -414,38 +420,24 @@ class Bot():
             commander_order_message_2 = "\n:downwards_button:\n".join(self.commander_order)
             text = emojize(commander_order_message_1 + commander_order_message_2)
 
-            for id in self.names_to_ids.values():
+            for _, id in self.names_to_ids.values():
 
                 self.bot.send_message(id, text)
 
             self.resolve_commander()
             commander_id = self.names_to_ids[self.current_commander]
-            n_committee = Game.all_round[Game.round]
+
+            n_committee = self.Game.all_round[self.Game.round]
             commander_text = "It's your turn to choose your committee. "\
                                 f"In this round, you should pick {n_committee} player."
 
-            keyboard = self.committee_keyboard()
+            keyboard = self.commander_keyboard()
             self.bot.send_message(commander_id, commander_text, reply_markup = keyboard)
+            self.game_state = States.committee_choose
 
-        ######################### Next_committee #########################
-        @self.bot.message_handler(func=self.is_committee_choice)
-        def Next_committtee(message):
-
-            add_remove_name = self.correct_name(message.text)
-            if add_remove_name in self.current_committee:
-                del self.current_committee[self.current_committee.index(add_remove_name)]
-                text = f"{add_remove_name} was removed from the committee"
-
-            else:
-                self.current_committee.append(message.text)
-                text = f"{add_remove_name} was add to the committee"
-
-            keyboard = self.committee_keyboard()
-
-            self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
-        ######################### committee add and remove #########################
-        @self.bot.message_handler(func=self.is_committee_choice)
-        def committee_add_or_remove(message):
+        ######################### ccommander choosing name #########################
+        @self.bot.message_handler(func=self.is_commander_choosing_name)
+        def commander_choose_name(message):
 
             add_remove_name = self.correct_name(message.text)
             if add_remove_name in self.current_committee:
@@ -456,80 +448,134 @@ class Bot():
                 self.current_committee.append(message.text)
                 text = f"{add_remove_name} was add to the committee"
 
-            keyboard = self.committee_keyboard()
+            keyboard = self.commander_keyboard()
 
             self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
 
-        ######################### committee propose #########################
-        @self.bot.message_handler(commands=["adminrequest"])
-        def committee_propose(message):
+        ######################### commander pressing_button #########################
+        @self.bot.message_handler(func=self.is_commander_pressing_button)
+        def commander_press_button(message):
             
-            request = f"{message.chat.first_name} {message.chat.last_name} " \
-                        f"with usrname {message.chat.username} "\
-                            "Requeste for an admin promotion"
-            
-            self.temp_admin_id = message.chat.id
-            message_to_user= "you request has been sent to the super admin."
-            self.bot.send_message(self.super_admin_id, request)
-            self.bot.send_message(self.super_admin_id, self.temp_admin_id)
-            self.bot.send_message(message.chat.id, message_to_user)
+            # adding the rule that the number of committee members are equal to the right number
+            if message.text == keys.propose:
 
-        ######################### committee final #########################
-        @self.bot.message_handler(commands=["adminrequest"])
-        def committee_final(message):
-            
-            request = f"{message.chat.first_name} {message.chat.last_name} " \
-                        f"with usrname {message.chat.username} "\
-                            "Requeste for an admin promotion"
-            
-            self.temp_admin_id = message.chat.id
-            message_to_user= "you request has been sent to the super admin."
-            self.bot.send_message(self.super_admin_id, request)
-            self.bot.send_message(self.super_admin_id, self.temp_admin_id)
-            self.bot.send_message(message.chat.id, message_to_user)
+                committee_member_text = "\n".join(self.current_committee)
+                whole_text = text + committee_member_text
+                keyboard = self.remove_keyboard()
+
+                for _, id in self.names_to_ids.items():
+
+                    if id != message.chat.id:
+
+                        self.bot.send_message(id, whole_text, reply_markup=keyboard)
+
+            elif message.text == keys.final:
+
+                text = "Final Decision:\n"
+                committee_member_text = "\n".join(self.current_committee)
+                whole_text = text + committee_member_text
+                keyboard = self.committee_vote_keyboard()
+                self.committee_voters = self.names[:]
+
+                for _, id in self.names_to_ids.items():
+                    self.bot.send_message(id, whole_text, reply_markup=keyboard)
 
         ######################### vote inside #########################
-        @self.bot.message_handler(commands=["adminrequest"])
+        @self.bot.message_handler(func=self.is_eligible_vote)
         def vote_for_committee(message):
-            
-            request = f"{message.chat.first_name} {message.chat.last_name} " \
-                        f"with usrname {message.chat.username} "\
-                            "Requeste for an admin promotion"
-            
-            self.temp_admin_id = message.chat.id
-            message_to_user= "you request has been sent to the super admin."
-            self.bot.send_message(self.super_admin_id, request)
-            self.bot.send_message(self.super_admin_id, self.temp_admin_id)
-            self.bot.send_message(message.chat.id, message_to_user)
+
+            self.committee_voters.remove(self.grab_name(message))
+            if self.committee_voters:
+                
+                name = self.grab_name(message)
+                self.transfer_committee_vote(message)
+
+                text = emojize(f"{name} voted: {message}")
+                self.bot.send_message(message.chat.id, text)
+
+            else:
+
+                name = self.grab_name(message)
+                self.transfer_committee_vote(message)
+
+                text = emojize(f"{name} voted: {message}")
+                self.bot.send_message(message.chat.id, text)
+
+                self.Game.count_committee_vote(self.committee_votes)
+
+                if self.Game.committee_accept:
+
+                    members_text = "the proposed committee was accepted"
+                    committee_text  ="Please choose between Fail and Success"
+
+                    for _, id in self.names_to_ids.items():
+
+                        self.bot.send_message(id, members_text)
+
+                    for name in self.current_committee:
+
+                        id = self.names_to_ids[name]
+                        keyboard = self.mission_keyboard()
+                        self.bot.send_message(id, committee_text, reply_markup=keyboard)
+
+                elif self.Game.reject_count == 5:
+
+                    self.Game.continues = False
+                    self.Game.win_side = "Evil"
+
+                    for _, id in self.names_to_ids.items():
+                        
+                        text = "Evil Won.\n Reason: 5 consecitive rejection of the committee"
+                        self.bot.send_message(id, text)
+
+                else:
+
+                    members_text = "the proposed committee was rejected"
+                    n_committee = self.Game.all_round[self.Game.round]
+                    commander_text = "It's your turn to choose your committee. "\
+                                f"In this round, you should pick {n_committee} player."
+
+                    for _, id in self.names_to_ids.items():
+
+                        self.bot.send_message(id, members_text)
+
+                    commander_id = self.commander_order[0]
+                    self.resolve_commander()
+                    keyboard = self.commander_keyboard()
+                    self.bot.send_message(commander_id, commander_text, reply_markup=keyboard)
 
         ######################### mission out #########################
-        @self.bot.message_handler(commands=["adminrequest"])
-        def send_mission_button(message):
+        @self.bot.message_handler(func=self.is_eligible_fail_success)
+        def vote_for_mission(message):
             
-            request = f"{message.chat.first_name} {message.chat.last_name} " \
-                        f"with usrname {message.chat.username} "\
-                            "Requeste for an admin promotion"
-            
-            self.temp_admin_id = message.chat.id
-            message_to_user= "you request has been sent to the super admin."
-            self.bot.send_message(self.super_admin_id, request)
-            self.bot.send_message(self.super_admin_id, self.temp_admin_id)
-            self.bot.send_message(message.chat.id, message_to_user)
+            self.current_committee.remove(self.grab_name(message))
 
-        ######################### mission vote #########################
-        @self.bot.message_handler(commands=["adminrequest"])
-        def recieve_mission_vote(message):
-            
-            request = f"{message.chat.first_name} {message.chat.last_name} " \
-                        f"with usrname {message.chat.username} "\
-                            "Requeste for an admin promotion"
-            
-            self.temp_admin_id = message.chat.id
-            message_to_user= "you request has been sent to the super admin."
-            self.bot.send_message(self.super_admin_id, request)
-            self.bot.send_message(self.super_admin_id, self.temp_admin_id)
-            self.bot.send_message(message.chat.id, message_to_user)
-        
+            if self.current_committee:
+
+                pass
+
+            else:
+
+                self.Game.mission_result(self.mission_votes)
+
+                if self.Game.evil_wins == 3:
+
+                    for _, id in self.names_to_ids.items():
+                        
+                        text = "Evil Won.\n Reason: thye won three times"
+                        self.bot.send_message(id, text)
+
+                elif self.Game.city_wins == 3:
+
+                    text = "City won 3 rounds, it is time for assassin to shoot"
+                    self.bot.send_message(id, text)
+                    assassin_text = "who do you want to shoot?"
+                    assassin_id = 12
+                    self.bot.send_message(assassin_id, text)
+
+                else:
+
+                    pass
         ######################### Admin Request #########################
         @self.bot.message_handler(commands=["adminrequest"])
         def admin_request(message):
@@ -540,6 +586,7 @@ class Bot():
             
             self.temp_admin_id = message.chat.id
             message_to_user= "you request has been sent to the super admin."
+
             self.bot.send_message(self.super_admin_id, request)
             self.bot.send_message(self.super_admin_id, self.temp_admin_id)
             self.bot.send_message(message.chat.id, message_to_user)
@@ -559,17 +606,69 @@ class Bot():
         @self.bot.message_handler()
         def print_function(message):
             
-            keyboard = self.committee_keyboard()
             self.bot.send_message(message.chat.id, demojize(message.text))
 
-    ######################### Auxilary Functions #########################
+    ######################### rule checkers #########################
     def is_super_admin(self, message):
-        return self.super_admin_id == message.chat.id
+
+        c_1 = self.super_admin_id == message.chat.id
+
+        return c_1
 
     def is_admin(self, message):
-        return ((self.super_admin_id == message.chat.id) or
-                (self.admin_id == message.chat.id))
 
+        c_1 = self.is_super_admin(message)
+        c_2 = self.admin_id == message.chat.id
+
+        return c_1 or c_2
+
+    def is_commander(self, message):
+
+        c_1 = self.current_commander == self.grab_name(message)
+        print(self.current_commander)
+        return c_1
+
+    def is_in_current_committee(self, message):
+
+        c_1 = self.grab_name(message) in self.current_committee
+        return c_1
+
+    def is_commander_choosing_name(self,message):
+
+        c_1 = self.game_state == States.committee_choose
+        c_2 = self.is_commander(message)
+        c_3 = message.text in self.names
+        c_4 = message.text in self.choosed_names
+
+        return c_1 and c_2 and (c_3 or c_4)
+
+    def is_commander_pressing_button(self, message):
+
+        c_1 = self.game_state == States.committee_choose
+        c_2 = self.is_commander(message)
+        c_3 = message.text in [keys.final, keys.propose]
+        print(c_1, c_2, c_3)
+
+        return c_1 and c_2 and c_3
+
+    def is_eligible_vote(self, message):
+
+        name = self.grab_name(message)
+        c_1 = self.game_state == States.committee_voting
+        c_2 = emojize(message.text) in [keys.agree, keys.disagree]
+        c_3 = name in self.committee_voters
+
+        return c_1 and c_2 and c_3
+
+    def is_eligible_fail_success(self, message):
+
+        c_1 = self.is_in_current_committee(message)
+        c_2 = message.text in [keys.success, keys.fail]
+        c_3 = self.game_state = States.mission_voting
+
+        return c_1 and c_2 and c_3
+
+    ######################### keyboard makers #########################
     def character_keyboard(self):
 
         condition_1 = "Persival and Morgana" in self.optional_characters
@@ -596,16 +695,7 @@ class Bot():
 
         return keyboard
 
-    def first_commander_keyboard(self):
-
-        buttons_str = [keys.finished_choosing, keys.terminate]
-        buttons = map(types.KeyboardButton, buttons_str)
-        keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-        keyboard.add(*buttons)
-
-        return keyboard
-
-    def committee_keyboard(self):
+    def commander_keyboard(self):
         
         keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
 
@@ -622,12 +712,19 @@ class Bot():
             button = types.KeyboardButton(emojize(f"{temp_str}{name}"))
             keyboard.row(button)
 
-        buttons_str = [keys.propose, keys.final_decision]
+        buttons_str = [keys.propose, keys.final]
         buttons = map(types.KeyboardButton, buttons_str)
         keyboard.row(*buttons)
 
         return keyboard
 
+    def committee_vote_keyboard(self):
+
+        buttons_str = [keys.agree, keys.disagree]
+        buttons = map(types.KeyboardButton, buttons_str)
+        keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+        keyboard.add(*buttons)
+        return keyboard
 
     def mission_keyboard(self):
 
@@ -637,25 +734,15 @@ class Bot():
         keyboard.add(*buttons)
         return keyboard
 
+    def remove_keyboard(self):
+        return types.ReplyKeyboardRemove()
+
+    ######################### auxilary functions #########################
     def resolve_commander(self):
         
         self.current_commander = self.commander_order[0]
         self.commander_order.append(self.commander_order[0])
         del self.commander_order [0]
-
-    def is_commander(self, message):
-
-        return(self.names_to_ids[self.current_commander] == message.chat.id)
-    
-    def is_committee_choice(self, message):
-        
-        condition_1 = self.is_commander(message)
-        condition_2 = message.text in self.names
-        condition_3 = message.text in self.choosed_names
-        print(condition_1, condition_2,condition_3)
-        print(message.text)
-        return (condition_1 and (condition_2 or condition_3))
-
 
     def grab_name(self, message):
         
@@ -671,13 +758,32 @@ class Bot():
             name = message.chat.last_name
 
         return name
-    
+
     def correct_name(self, currupted_name):
+
         if currupted_name[0:len(keys.check_box)] == keys.check_box:
+
             return currupted_name[len(keys.check_box):]
-            
+
         else:
+
             return currupted_name
+
+    def transfer_committee_vote(self, message):
+
+        if message.text == keys.agree:
+            self.committee_votes.append(1)
+
+        elif message.text == keys.disagree:
+            self.committee_votes.append(0)
+
+    def transfer_mission_vote(self, message):
+
+        if message.text == keys.success:
+            self.mission_votes.append(1)
+
+        elif message.text == keys.fail:
+            self.mission_votes.append(0)
 
 if __name__ == "__main__":
 

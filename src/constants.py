@@ -19,9 +19,20 @@ keys = SimpleNamespace(
     full_Mordred=emojize(":check_box_with_check:Mordred"),
     full_Oberon=emojize(":check_box_with_check:Oberon"),
     finished_choosing=emojize(":check_mark_button:Finished Choosing"),
-    fail = emojize(":red_circle:Fail"),
-    success = emojize(":green_circle:success"),
-    propose = emojize(":loudspeaker:Propose"),
-    final_decision = emojize(":hundred_points:Final Decision"),
-    check_box = emojize(":check_box_with_check:")
+    fail=emojize(":red_circle:Fail"),
+    success=emojize(":green_circle:success"),
+    propose=emojize(":loudspeaker:Propose"),
+    final=emojize(":hundred_points:Final Decision"),
+    check_box=emojize(":check_box_with_check:"),
+    agree = emojize(":thumbs_up:Agree"),
+    disagree = emojize(":thumbs_down:Disagree")
+)
+
+States = SimpleNamespace(
+    no_game="no_game",
+    starting="starting",
+    ongoing="ongoing",
+    committee_choose="committee_choose",
+    committee_voting="committee_voting",
+    mission_voting="mission_voting"
 )
