@@ -3,6 +3,9 @@ from emoji import emojize
 
 
 keys = SimpleNamespace(
+
+    accept = emojize(":check_mark_button:Accept"),
+    decline = emojize(":cross_mark:Decline"),
     bot_status=emojize(':white_exclamation_mark:Bot Status'),
     i_am_admin=emojize(':smiling_face_with_sunglasses:I Am an Admin'),
     new_game=emojize(':plus: Creat a new Game'),
@@ -20,7 +23,8 @@ keys = SimpleNamespace(
     check_box=emojize(':check_box_with_check:'),
     agree=emojize(':thumbs_up:Agree'),
     disagree=emojize(':thumbs_down:Disagree'),
-    assassin=emojize(':gun:Shoot')
+    assassin=emojize(':gun:Shoot'),
+    guess=emojize(':dice"Guess')
 )
 
 States = SimpleNamespace(

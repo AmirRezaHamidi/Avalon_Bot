@@ -167,7 +167,7 @@ class Avalon_Engine():
         self.string_character = []
 
         random.shuffle(self.names)
-
+        
         for index, name in enumerate(self.names):
 
             self.assigned_character[name] = self.game_character[index]
