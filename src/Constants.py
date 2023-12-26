@@ -24,7 +24,7 @@ keys = SimpleNamespace(
     agree=emojize(':thumbs_up:Agree'),
     disagree=emojize(':thumbs_down: Disagree'),
     assassin_shoots=emojize(':gun: Shoot'),
-    kings_guess=emojize(':dice:Guess')
+    kings_guess=emojize(':dice: Guess')
 )
 
 States = SimpleNamespace(
