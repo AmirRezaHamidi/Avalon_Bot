@@ -1,5 +1,6 @@
 import os
 from collections import defaultdict
+import re
 
 from Constants import keys,States
 import telebot
@@ -14,6 +15,24 @@ current_working_directory = os.getcwd()
 TOKEN = read_txt_file(f"{current_working_directory}\src\Data\Bot_Token.txt")
 
 class Bot():
+        
+    def print_instance_attributes(self):
+    
+        print("Game State:",self.game_state, sep=" --> ")
+        print("Game_admin", self.game_admin_id, sep=" --> ")
+        print("Names:", self.names, sep=" --> ")
+        print("checked Names:", self.checked_names, sep=" --> ")
+        print("Names to Ids:", self.names_to_ids, sep=" --> ")
+        print("choosed characters:",self.choosed_characters, sep=" --> ")
+        print("commander order:",self.commander_order, sep=" --> ")
+        print("current commander:", self.current_commander, sep=" --> ")
+        print("current commander:", self.current_commander, sep=" --> ")
+        print("current committee:", self.current_committee, sep=" --> ")
+        print("committee voters:", self.committee_voters, sep=" --> ")
+        print("committee votes:", self.committee_votes, sep=" --> ")
+        print("mission votes:", self.mission_votes, sep=" --> ")
+        print("king id:", self.king_id, sep=" --> ")
+        print("assassin id:", self.assassin_id, sep=" --> ")
 
     def initial_condition(self):
 
@@ -24,32 +43,46 @@ class Bot():
 
         self.game_state = States.no_game
 
+        ############### Temp ###############
         self.names = ["Amir Hamidi", "Amir_1", "Amir_2", "Amir_3", "Amir_4", "Amir_5"]
         self.checked_names = [emojize(f"{keys.check_box}{name}") for name in self.names]
 
         self.ids = [224775397, 224775397, 224775397, 224775397, 224775397, 224775397]
-        self.names_to_ids = {name: 224775397 for name in self.names}
 
+        self.names_to_ids = {name : id for name, id in zip(self.names, self.ids)}
+        self.ids_to_names = {id : name for name, id in zip(self.names, self.ids)}
+        ############### Temp ###############
+
+        ############### main ###############
         # self.names = list()
         # self.names_to_ids = dict()
         # self.checked_names = list()
+        ############### main ###############
 
         self.choosed_characters = ["Merlin", "Assassin"]
         self.optional_characters = [keys.Persival_Morgana, keys.Mordred, keys.King, keys.Oberon]
         self.checked_optional_characters = [f"{keys.check_box}{name}" for name in self.optional_characters]
+        self.Evil_team_id = list()
 
         self.commander_order = list()
         self.current_commander = str()
         self.shuffle_commander_order = False
 
-        self.current_committee = list()
         self.committee_voters = list()
         self.committee_votes = list()
 
+        self.current_committee = list()
         self.mission_votes = list()
 
         self.king_id = int()
+        self.names_to_send_to_king = list()
+        self.checked_names_to_send_to_king = list()
+        self.kings_guess = list()
+        
         self.assassin_id = int()
+        self.names_to_send_to_assassin = list()
+        self.checked_names_to_send_to_assassin = list()
+        self.assassins_guess = str()
 
         self.someone_requested = False
         self.requested_name = None
@@ -91,35 +124,19 @@ class Bot():
         else:
 
             return currupted_name
-
-    def print_instance_attributes(self):
-        
-        print("Game State:",self.game_state, sep=" --> ")
-        print("Game_admin", self.game_admin_id, sep=" --> ")
-        print("Names:", self.names, sep=" --> ")
-        print("checked Names:", self.checked_names, sep=" --> ")
-        print("Names to Ids:", self.names_to_ids, sep=" --> ")
-        print("choosed characters:",self.choosed_characters, sep=" --> ")
-        print("commander order:",self.commander_order, sep=" --> ")
-        print("current commander:", self.current_commander, sep=" --> ")
-        print("current commander:", self.current_commander, sep=" --> ")
-        print("current committee:", self.current_committee, sep=" --> ")
-        print("committee voters:", self.committee_voters, sep=" --> ")
-        print("committee votes:", self.committee_votes, sep=" --> ")
-        print("mission votes:", self.mission_votes, sep=" --> ")
-        print("king id:", self.king_id, sep=" --> ")
-        print("assassin id:", self.assassin_id, sep=" --> ")
-
+    
     def add_player(self, message):
 
         name = self.grab_name(message)
         id = message.chat.id
 
         self.names.append(name)
-        self.checked_names.append(f"{keys.check_box}{name}")
-
         self.ids.append(id)
+
+        self.checked_names.append(emojize(f"{keys.check_box}{name}"))
+
         self.names_to_ids[name] = id
+        self.ids_to_names[id] = name
 
     def define_game(self):
 
@@ -131,7 +148,7 @@ class Bot():
         @self.bot.message_handler(func=self.is_admin, commands=["start"])
         def admin_start_command(message):
             print("admin_start_command")
-            
+
             if self.game_state == States.no_game:
 
                 #### TEXT ####
@@ -195,6 +212,7 @@ class Bot():
 
             #### MESSAGE ####
             self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
+
         ######################### I Am Admin Button #########################
         @self.bot.message_handler(func=self.is_admin, regexp=keys.i_am_admin)
         def i_am_admin_button(message):
@@ -244,6 +262,7 @@ class Bot():
 
                 #### MESSAGE ####
                 self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
+
         ######################### Fake Admin Button #########################
         @self.bot.message_handler(regexp=keys.i_am_admin)
         def fake_admin_button(message):
@@ -316,13 +335,8 @@ class Bot():
             #### ACTIONS ####
             self.game_admin_id = message.chat.id
             self.game_state = States.starting
-
-            name = self.grab_name(message)
-            self.names_to_ids[name] = message.chat.id
-
-            self.names.append(name)
-            self.checked_names.append(emojize(f"{keys.check_box}{name}"))
-            print(self.names)
+            self.add_player(message)
+            
             #### TEXT ####
             text =("Ok, ask your friends to join the game")
 
@@ -395,11 +409,8 @@ class Bot():
             print("join_game")
             
             #### ACTIONS ####
+            self.add_player(message)
             name = self.grab_name(message)
-            self.names_to_ids[name] = message.chat.id
-            self.names.append(name)
-            self.checked_names.append(emojize(f"{keys.check_box}{name}"))
-            print(self.names)
 
             text = f"You have join the game sucessfuly \n"\
                     f"your name in the game: {name}.\n\n"\
@@ -426,24 +437,24 @@ class Bot():
                 self.bot.send_message(self.names_to_ids[name], message)
 
                 if character.name  == "King":
-
                     self.king_id = self.names_to_ids[name]
 
                 if character.name == "Assassin":
-
                     self.assassin_id = self.names_to_ids[name]
-
+                    self.Evil_team_id.append(self.names_to_ids[name])
+                    
                 if character.has_info:
                     
                     c_1 = character.name == "Minion"
                     c_2 = character.name == "Assassin"
                     c_3 = character.name == "Morgana"
                     c_4 = character.name == "Mordred"
-                    
+
                     if c_1 or c_2 or c_3 or c_4:
 
                         info = "\n".join(self.Game.all_info["Evil_Team"])
                         self.bot.send_message(self.names_to_ids[name], info, reply_markup=keyboard)
+                        self.Evil_team_id.append(self.names_to_ids[name])
 
                     else:
 
@@ -451,7 +462,7 @@ class Bot():
                         self.bot.send_message(self.names_to_ids[name], info, reply_markup=keyboard)
 
 
-            self.commander_order = list(self.names_to_ids.keys())[:]
+            self.commander_order = self.names[:]
 
             if self.shuffle_commander_order:
 
@@ -519,10 +530,6 @@ class Bot():
 
                             self.bot.send_message(id, whole_text)
 
-                        else:
-
-                            self.bot.send_message(id, whole_text, reply_markup=keyboard)
-
                 elif message.text == keys.final:
 
                     text = "Final Decision:\n"
@@ -548,7 +555,7 @@ class Bot():
         @self.bot.message_handler(func=self.is_eligible_vote)
         def vote_for_committee(message):
             print("vote_for_committee")
-
+            # should be change to ids.
             self.committee_voters.remove(self.grab_name(message))
 
             if self.committee_voters:
@@ -625,6 +632,7 @@ class Bot():
             print("vote_for_mission")
             
             self.current_committee.remove(self.grab_name(message))
+            # should be change to ids.
 
             if self.current_committee:
 
@@ -637,7 +645,22 @@ class Bot():
                 if self.Game.evil_wins == 3:
                     
                     if keys.king in self.choosed_characters:
+                        
+                        text = ("The evil team has won 3 rounds.\n"
+                                "Now it is time for the king to guess all the member of the evil team."
+                                f"The king in this game is: {self.ids_to_names[self.king_id]}")
 
+                        for id in self.ids:
+
+                            self.bot.send_message(id, text)
+                        
+                        king_message = ("who do you think was the member of evil team in this game ?")
+
+                        keyboard = self.king_keyboard
+                        self.bot.send_message(self.king_id, king_message, keyboard) 
+                    
+
+                    else:
 
                         for id in self.names_to_ids.values():
                             
@@ -679,25 +702,105 @@ class Bot():
                     keyboard = self.commander_keyboard()
                     self.bot.send_message(commander_id, commander_text, reply_markup=keyboard)
         
-        @self.bot.message_handler(func=self.is_king)
-        def king_guess(message):
-            print("king_guess")
+        @self.bot.message_handler(func=self.is_king_choosing_names)
+        def king_choosing_names(message):
+            print("king_choosing_names")
             
-            names = message.text
+            name = self.fix_name(message.text)
 
-        @self.bot.message_handler(func=self.is_assassin)
-        def assassin_shoots(message):
-            print("assassin_shoots")
-            pass
+            
+            if name in self.kings_guess:
+
+                self.kings_guess.remove(name)
+                text = f"{name} was removed from you guesses"
+
+            else:
+
+                self.kings_guess.appned(name)
+                text = f"{name} was added your guesses"
+        
+            keyboard = self.king_keyboard()
+            self.bot.send_message(self.king_id, text, reply_markup=keyboard)
+
+        @self.bot.message_handler(func=self.is_king_pressing_button)
+        def king_pressing_button(message):
+            print("king_pressing_button")
+
+            if len(self.kings_guess) == len(self.Game.all_info["king"]):
+
+                self.Game.king_guess(self.kings_guess)
+
+                if self.Game.king_guessed_right:
+                    
+                    self.game_state = States.assassin_shoots
+                    text = (f"Great job\n the king has guessed all {len(self.Game.all_info['king'])} players right.\n"
+                             "Now it is time for the assassin to try and fine merlin")
+                    
+                    for id in self.ids:
+                        self.bot.send_message(id, text)
+
+                    assassin_text = f"Who do you think is the Merlin ?"
+                    keyboard = self.assassin_keyboard()
+                    self.bot.send_message(self.assassin_id, assassin_text, reply_markup=keyboard)
+
+            else:
+
+                text = f"you should guess exactly {len(self.Game.all_info['king'])} players"
+                keyboard = self.king_keyboard
+                self.bot.send_message(self.king_id, text, reply_markup=keyboard)
+        
+        @self.bot.message_handler(func=self.is_assassin_choosing_name)
+        def assassin_choosing_name(message):
+            print("assassin_choosing_name")
+            
+            name = self.fix_name(message.text)
+
+            if name == self.assassins_guess:
+
+                self.assassins_guess = str()
+
+            else:
+
+                self.assassins_guess = name
+
+            keyboard = self.assassin_keyboard()
+            text = f"You have chose {name} as Merlin, Hmmm ..."
+            self.bot.send_message(self.assassin_id, text, reply_markup=keyboard)
+
+        @self.bot.message_handler(func=self.is_assassin_pressing_button)
+        def assassin_pressing_button(message):
+            print("assassin_pressing_button")
+
+            if self.assassins_guess == str():
+
+                text = "You should choose someone !!!"
+                keyboard = self.assassin_keyboard()
+                self.bot.send_message(self.assassin_id, text, reply_markup=keyboard)
+
+            else:
+
+                self.game_state = States.no_game
+                name = self.grab_name(message)
+                self.Game.assassin_shoot(name)
+                keyboard = self.remove_keyboard()
+
+                if self.Game.assassin_shooted_right():
+                    
+                    text = f"Congratulations. Assassins shooted {name} which was Merlin and the Evil won."
+                    
+                    for id in self.ids:
+                        self.bot.send_message(id, text, reply_markup=keyboard)
+
+                else:
+
+                    text = f"Congratulations. Assassins shooted {name} which was not Merlin and the City won."
+
+                    for id in self.ids:
+                        self.bot.send_message(id, text, reply_markup=keyboard)
+
         ######################### Admin Request command #########################
         @self.bot.message_handler(commands=["adminrequest"])
         def admin_request(message):
-            
-            print("admin_request")
-            print(self.game_state)
-            print(States.no_game)
-            print(self.game_state==States.no_game)
-            print(not self.someone_requested)
 
             if not self.someone_requested and self.game_state==States.no_game:
                 print("admin_request")
@@ -758,29 +861,33 @@ class Bot():
     ######################### rule checkers #########################
     def is_super_admin(self, message):
         print("is_super_admin")
+
         c_1 = self.super_admin_id == message.chat.id
         return c_1
 
     def is_super_admin_accept_decline(self, message):
         print("is_super_admin_accept_decline")
+
         c_1 = self.is_super_admin(message)
-        c_2 = message.text == keys.accept
-        c_3 = message.text == keys.decline
-        return c_1 and (c_2 or c_3)
+        c_2 = message.text in [keys.accept, keys.decline] 
+        return c_1 and c_2
 
     def is_admin(self, message):
         print("is_admin")
+
         c_1 = self.is_super_admin(message)
         c_2 = self.admin_id == message.chat.id
         return c_1 or c_2
     
     def is_game_admin(self, message):
         print("is_game_admin")
+
         c_1 = self.game_admin_id == message.chat.id
         return c_1
     
     def is_commander(self, message):
         print("is_commander")
+
         c_1 = self.current_commander == self.grab_name(message)
         print(self.current_commander)
         print(self.grab_name(message))
@@ -788,11 +895,13 @@ class Bot():
 
     def is_in_current_committee(self, message):
         print("is_in_current_committee")
+
         c_1 = self.grab_name(message) in self.current_committee
         return c_1
 
     def is_admin_choosing_character(self, message):
         print("is_admin_choosing_character")
+
         c_1 = self.gmae_state = States.ongoing
         c_2 = self.is_game_admin(message)
         c_4 = message.text in self.optional_characters
@@ -801,15 +910,16 @@ class Bot():
 
     def is_commander_choosing_name(self,message):
         print("is_commander_choosing_name")
+
         c_1 = self.game_state == States.committee_choose
         c_2 = self.is_commander(message)
         c_3 = message.text in self.names
         c_4 = message.text in self.checked_names
-        print(c_1, c_2, c_3, c_4)
         return c_1 and c_2 and (c_3 or c_4)
 
     def is_commander_pressing_button(self, message):
         print("is_commander_pressing_button")
+
         c_1 = self.game_state == States.committee_choose
         c_2 = self.is_commander(message)
         c_3 = message.text in [keys.final, keys.propose]
@@ -817,6 +927,7 @@ class Bot():
 
     def is_eligible_vote(self, message):
         print("is_commander_pressing_button")
+
         name = self.grab_name(message)
         c_1 = self.game_state == States.committee_voting
         c_2 = emojize(message.text) in [keys.agree, keys.disagree]
@@ -825,21 +936,45 @@ class Bot():
 
     def is_eligible_fail_success(self, message):
         print("is_eligible_fail_success")
+
         c_1 = self.is_in_current_committee(message)
         c_2 = message.text in [keys.success, keys.fail]
         c_3 = self.game_state == States.mission_voting
         return c_1 and c_2 and c_3
     
-    def is_king(self, message):
-        print("is_king")
-        c_1 = self.game_state == keys.guess
-        c_2 = message.chat.id == self.king_id
-        return c_1 and c_2
+    def is_king_choosing_names(self, message):
+        print("is_king_choosing_names")
 
-    def is_assassin(self, message):
-        print("is_assassin")
-        c_1 = message.chat.id == self.assassin_id
-        return c_1
+        c_1 = self.game_state == States.kings_guess
+        c_2 = message.chat.id == self.king_id
+        c_3 = message.text in [self.names_to_send_to_king]
+        c_4 = message.text in [self.checked_names_to_send_to_king]
+        return c_1 and c_2 and (c_3 or c_4)
+    
+    def is_king_pressing_button(self, message):
+        print("is_king_pressing_button")
+
+        c_1 = self.game_state == States.kings_guess
+        c_2 = message.chat.id == self.king_id
+        c_3 = message.text == keys.kings_guess
+        return c_1 and c_2 and c_3
+        
+    def is_assassin_choosing_name(self, message):
+        print("is_assassin_choosing_name")
+
+        c_1 = self.game_state == States.assassin_shoots
+        c_2 = message.chat.id == self.assassin_id
+        c_3 = message.text in [self.names_to_send_to_assassin]
+        c_4 = message.text in [self.checked_names_to_send_to_assassin]
+        return c_1 and c_2 and (c_3 or c_4)
+
+    def is_assassin_pressing_button(self, message):
+        print("is_assassin_pressing_button")
+
+        c_1 = self.game_state == States.assassin_shoots
+        c_2 = message.chat.id == self.assassin_id
+        c_3 = message.text == keys.assassin_shoots
+        return c_1 and c_2 and c_3
 
     ######################### keyboard makers #########################
     def decline_accept_keyboard(self):
@@ -917,12 +1052,57 @@ class Bot():
         keyboard.add(*buttons)
         return keyboard
     
-    def assassin_keyboard(self):
+    def king_keyboard(self):
 
         keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-        assassin_button_str = [emojize(f"{keys.assassin}{name}") for name in self.names]
-        assassin_buttons = map(types.KeyboardButton, assassin_button_str)
-        keyboard.add(*assassin_buttons)
+
+        for name in self.names:
+
+            if self.names_to_ids(name) == self.king_id:
+
+                continue
+
+            if name in self.kings_guess:
+
+                temp_str = demojize(keys.check_box)
+
+            else:
+
+                temp_str = ""
+
+            button = types.KeyboardButton(emojize(f"{temp_str}{name}"))
+            keyboard.row(button)
+
+        buttons_str = keys.kings_guess
+        buttons = types.KeyboardButton(buttons_str)
+        keyboard.row(buttons)
+
+        return keyboard
+
+    def assassin_keyboard(self):
+        
+        keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+
+        for name in self.names:
+
+            if self.names_to_ids[name] in self.Evil_team_id:
+
+                continue
+
+            if name == self.assassins_guess:
+
+                temp_str = demojize(keys.check_box)
+
+            else:
+
+                temp_str = ""
+
+            button = types.KeyboardButton(emojize(f"{temp_str}{name}"))
+            keyboard.row(button)
+
+        buttons_str = keys.assassin_shoot
+        buttons = types.KeyboardButton(buttons_str)
+        keyboard.row(buttons)
 
         return keyboard
 

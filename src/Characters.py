@@ -2,7 +2,7 @@
 class Servant():
 
     def __init__(self):
-        self.message = 'Character: Loyal Servant of Author\n'\
+        self.message = 'Character: Loyal Servant of Arthur\n'\
                        'Side: City\n'\
                        'Weakness: You do not know the identity of anyone '\
                        'except for yourself.\n'\
