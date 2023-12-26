@@ -1,6 +1,7 @@
-import json
 
-def write_json(data, json_file, indent=4):
+def read_txt_file(txt_file):
+    
+    with open(txt_file, "r") as f: 
+        TOKEN = f.read()
 
-    with open(json_file, "w") as f:
-        json.dump(data.json, f, indent=indent)
+    return TOKEN 

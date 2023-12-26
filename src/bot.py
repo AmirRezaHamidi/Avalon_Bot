@@ -1,3 +1,4 @@
+import os
 from collections import defaultdict
 
 from Constants import keys,States
@@ -7,48 +8,51 @@ from loguru import logger
 from telebot import types
 from Engines import Avalon_Engine
 from random import shuffle
-# from utils.io import write_json
-# write_json(message, Message.json)
+from utils.io import read_txt_file
 
-TOKEN = "6468920953:AAHXzkA9iOrVwThJ6pk6kZ06AE7DSOnJVsI"
+current_working_directory = os.getcwd()
+TOKEN = read_txt_file(f"{current_working_directory}\src\Data\Bot_Token.txt")
 
 class Bot():
 
     def initial_condition(self):
 
+        self.super_admin_id  = 224775397
         self.admin_id = None
         self.temp_admin_id = int()
         self.game_admin_id = int()
-        self.super_admin_id  = 224775397
+
+        self.game_state = States.no_game
+
+        self.names = ["Amir Hamidi", "Amir_1", "Amir_2", "Amir_3", "Amir_4", "Amir_5"]
+        self.checked_names = [emojize(f"{keys.check_box}{name}") for name in self.names]
+
+        self.ids = [224775397, 224775397, 224775397, 224775397, 224775397, 224775397]
+        self.names_to_ids = {name: 224775397 for name in self.names}
+
+        # self.names = list()
+        # self.names_to_ids = dict()
+        # self.checked_names = list()
+
+        self.choosed_characters = ["Merlin", "Assassin"]
+        self.optional_characters = [keys.Persival_Morgana, keys.Mordred, keys.King, keys.Oberon]
+        self.checked_optional_characters = [f"{keys.check_box}{name}" for name in self.optional_characters]
+
+        self.commander_order = list()
+        self.current_commander = str()
+        self.shuffle_commander_order = False
+
         self.current_committee = list()
         self.committee_voters = list()
-        self.current_commander = str()
         self.committee_votes = list()
+
         self.mission_votes = list()
-        self.choosed_characters = ["Merlin", "Assassin"]
+
         self.king_id = int()
         self.assassin_id = int()
+
         self.someone_requested = False
         self.requested_name = None
-
-        # self.names = ["Amir Hamidi","Amir_2", "Amir_3", "Amir_4",
-        #                 "Amir_5", "Amir_6", "Amir_7", "Amir_8"]
-        # self.checked_names = [emojize(f"{keys.check_box}{name}")\
-        #                        for name in self.names]
-        # self.names_to_ids = {name: 224775397 for name in self.names}
-        self.names = list()
-        self.names_to_ids = dict()
-        self.checked_names = list()
-
-        self.curren_users_id = list()
-        self.optional_characters = [keys.Persival_Morgana, keys.Mordred, 
-                                    keys.King, keys.Oberon]
-        self.checked_optional_characters =\
-              [f"{keys.check_box}{name}" for name in self.optional_characters]
-        self.commander_order = list()
-        
-        self.shuffle_commander_order = False
-        self.game_state = States.no_game
 
     def __init__(self):
 
@@ -62,6 +66,60 @@ class Bot():
         #### Running the bot ####
         logger.info("Starting the bots ...")
         self.bot.infinity_polling()
+
+    def grab_name(self, message):
+        
+        name = str()
+
+        if((message.chat.first_name != None) and (message.chat.last_name != None)):
+            name = message.chat.first_name + " " + message.chat.last_name
+
+        elif not (message.chat.last_name):
+            name = message.chat.first_name
+
+        elif not (message.chat.first_name):
+            name = message.chat.last_name
+
+        return name
+
+    def fix_name(self, currupted_name):
+
+        if currupted_name[0:len(keys.check_box)] == keys.check_box:
+
+            return currupted_name[len(keys.check_box):]
+
+        else:
+
+            return currupted_name
+
+    def print_instance_attributes(self):
+        
+        print("Game State:",self.game_state, sep=" --> ")
+        print("Game_admin", self.game_admin_id, sep=" --> ")
+        print("Names:", self.names, sep=" --> ")
+        print("checked Names:", self.checked_names, sep=" --> ")
+        print("Names to Ids:", self.names_to_ids, sep=" --> ")
+        print("choosed characters:",self.choosed_characters, sep=" --> ")
+        print("commander order:",self.commander_order, sep=" --> ")
+        print("current commander:", self.current_commander, sep=" --> ")
+        print("current commander:", self.current_commander, sep=" --> ")
+        print("current committee:", self.current_committee, sep=" --> ")
+        print("committee voters:", self.committee_voters, sep=" --> ")
+        print("committee votes:", self.committee_votes, sep=" --> ")
+        print("mission votes:", self.mission_votes, sep=" --> ")
+        print("king id:", self.king_id, sep=" --> ")
+        print("assassin id:", self.assassin_id, sep=" --> ")
+
+    def add_player(self, message):
+
+        name = self.grab_name(message)
+        id = message.chat.id
+
+        self.names.append(name)
+        self.checked_names.append(f"{keys.check_box}{name}")
+
+        self.ids.append(id)
+        self.names_to_ids[name] = id
 
     def define_game(self):
 
@@ -316,7 +374,7 @@ class Bot():
         def admin_choose_characters(message):
             print("admin_choose_characters")
 
-            add_remove_character = self.correct_name(message.text)
+            add_remove_character = self.fix_name(message.text)
 
             if add_remove_character in self.choosed_characters:
 
@@ -423,7 +481,7 @@ class Bot():
         def commander_choose_name(message):
             print("commander_choose_name")
 
-            add_remove_name = self.correct_name(message.text)
+            add_remove_name = self.fix_name(message.text)
 
             if add_remove_name in self.current_committee:
 
@@ -634,11 +692,13 @@ class Bot():
         ######################### Admin Request command #########################
         @self.bot.message_handler(commands=["adminrequest"])
         def admin_request(message):
+            
             print("admin_request")
             print(self.game_state)
             print(States.no_game)
             print(self.game_state==States.no_game)
             print(not self.someone_requested)
+
             if not self.someone_requested and self.game_state==States.no_game:
                 print("admin_request")
                 self.someone_requested = True
@@ -875,31 +935,6 @@ class Bot():
         self.current_commander = self.commander_order[0]
         self.commander_order.append(self.commander_order[0])
         del self.commander_order [0]
-
-    def grab_name(self, message):
-        
-        name = str()
-
-        if((message.chat.first_name != None) and (message.chat.last_name != None)):
-            name = message.chat.first_name + " " + message.chat.last_name
-
-        elif not (message.chat.last_name):
-            name = message.chat.first_name
-
-        elif not (message.chat.first_name):
-            name = message.chat.last_name
-
-        return name
-
-    def correct_name(self, currupted_name):
-
-        if currupted_name[0:len(keys.check_box)] == keys.check_box:
-
-            return currupted_name[len(keys.check_box):]
-
-        else:
-
-            return currupted_name
 
     def transfer_committee_vote(self, message):
 

@@ -1,6 +1,6 @@
 from Engines import Avalon_Engine
 import random
-from test_func import character_vote
+from Test.test_func import character_vote
 
 # Should be received from the bot
 names = ["Fateme", "ali", "hasan", "hossein", "sajad", "bagher", "sadegh",
