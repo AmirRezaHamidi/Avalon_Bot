@@ -12,7 +12,7 @@ from random import shuffle
 from utils.io import read_txt_file
 
 current_working_directory = os.getcwd()
-TOKEN = read_txt_file(f"{current_working_directory}\src\Data\Bot_Token.txt")
+TOKEN = read_txt_file(f"{current_working_directory}\\src\\Data\\Bot_Token.txt")
 
 class Bot():
         
@@ -656,8 +656,8 @@ class Bot():
                         
                         king_message = ("who do you think was the member of evil team in this game ?")
 
-                        keyboard = self.king_keyboard
-                        self.bot.send_message(self.king_id, king_message, keyboard) 
+                        keyboard = self.king_keyboard()
+                        self.bot.send_message(self.king_id, king_message, reply_markup=keyboard) 
                     
 
                     else:
@@ -716,7 +716,7 @@ class Bot():
 
             else:
 
-                self.kings_guess.appned(name)
+                self.kings_guess.append(name)
                 text = f"{name} was added your guesses"
         
             keyboard = self.king_keyboard()
@@ -746,7 +746,7 @@ class Bot():
             else:
 
                 text = f"you should guess exactly {len(self.Game.all_info['king'])} players"
-                keyboard = self.king_keyboard
+                keyboard = self.king_keyboard()
                 self.bot.send_message(self.king_id, text, reply_markup=keyboard)
         
         @self.bot.message_handler(func=self.is_assassin_choosing_name)
@@ -784,7 +784,7 @@ class Bot():
                 self.Game.assassin_shoot(name)
                 keyboard = self.remove_keyboard()
 
-                if self.Game.assassin_shooted_right():
+                if self.Game.assassin_shooted_right:
                     
                     text = f"Congratulations. Assassins shooted {name} which was Merlin and the Evil won."
                     
@@ -1058,7 +1058,7 @@ class Bot():
 
         for name in self.names:
 
-            if self.names_to_ids(name) == self.king_id:
+            if self.names_to_ids[name] == self.king_id:
 
                 continue
 
