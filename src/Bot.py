@@ -26,7 +26,6 @@ class Bot():
         print("choosed characters:",self.choosed_characters, sep=" --> ")
         print("commander order:",self.commander_order, sep=" --> ")
         print("current commander:", self.current_commander, sep=" --> ")
-        print("current commander:", self.current_commander, sep=" --> ")
         print("current committee:", self.mission_voters, sep=" --> ")
         print("committee voters:", self.committee_voters, sep=" --> ")
         print("committee votes:", self.committee_votes, sep=" --> ")
@@ -44,19 +43,22 @@ class Bot():
         self.game_state = States.no_game
 
         ############### Temp ###############
-        self.names = ["Amir Hamidi", "Amir Hamidi", "Amir Hamidi", "Amir Hamidi"]
-        self.checked_names = [emojize(f"{keys.check_box}{name}") for name in self.names]
+        # self.names = ["Amir Hamidi", "Amir Hamidi", "Amir Hamidi", "Amir Hamidi"]
+        # self.checked_names = [emojize(f"{keys.check_box}{name}") for name in self.names]
 
-        self.ids = [224775397, 224775397, 224775397, 224775397, 224775397, 224775397]
+        # self.ids = [224775397, 224775397, 224775397, 224775397, 224775397, 224775397]
 
-        self.names_to_ids = {name : id for name, id in zip(self.names, self.ids)}
-        self.ids_to_names = {id : name for name, id in zip(self.names, self.ids)}
+        # self.names_to_ids = {name : id for name, id in zip(self.names, self.ids)}
+        # self.ids_to_names = {id : name for name, id in zip(self.names, self.ids)}
         ############### Temp ###############
 
         ############### main ###############
-        # self.names = list()
-        # self.names_to_ids = dict()
-        # self.checked_names = list()
+        self.names = list()
+        self.checked_names = list()
+        self.ids = list()
+
+        self.ids_to_names = dict()
+        self.names_to_ids = dict()
         ############### main ###############
 
         self.choosed_characters = ["Merlin", "Assassin"]
@@ -88,6 +90,7 @@ class Bot():
 
         self.someone_requested = False
         self.requested_name = None
+        self.all_time_summary = [f"votes for committee (round 1):\n {'-' * 10}"]
 
     def __init__(self):
 
@@ -134,8 +137,8 @@ class Bot():
 
         if name in self.names:
 
-            # similar_name = self.names.count(name)
-            # name = f"{name}_{similar_name}"
+            similar_name = self.names.count(name)
+            name = f"{name}_{similar_name}"
 
             self.names.append(name)
             self.ids.append(id)
@@ -476,6 +479,9 @@ class Bot():
 
                     else:
 
+                        self.names_to_send_to_assassin.append(name)
+                        self.checked_names_to_send_to_assassin.append(f"{emojize(keys.check_box)}{name}")
+                        
                         info = "\n".join(self.Game.all_info[character.name])
                         self.bot.send_message(self.names_to_ids[name], info, reply_markup=keyboard)
 
@@ -583,25 +589,29 @@ class Bot():
 
                     text = emojize(f"your vote: {message.text}")
                     self.bot.send_message(message.chat.id, text)
-
-                    self.summary_voting_text.append(emojize(f"{name} voted: {message.text}"))
+                    self.all_time_summary.append(emojize(f"{name} voted: {message.text}"))
 
                 else:
 
                     self.transfer_committee_vote(message)
 
-                    text = emojize(f"your vote: {message}")
+                    text = emojize(f"your vote: {message.text}")
                     self.bot.send_message(message.chat.id, text)
                     self.Game.count_committee_vote(self.committee_votes)
 
-                    self.summary_voting_text.append(emojize(f"{name} voted: {message.text}"))
-                    summary = "\n".join(self.summary_voting_text)
+                    self.all_time_summary.append(emojize(f"{name} voted: {message.text}"))
+                    summary = "\n".join(self.all_time_summary)
                     keyboard = self.remove_keyboard()
 
                     for id in self.ids:
                         self.bot.send_message(id, summary, reply_markup=keyboard)
 
                     if self.Game.committee_accept:
+                        
+                        self.Game.round += 1
+                        mission_text = f"\nmission results (round{self.Game.round}):\n{'-' * 10}"
+                        self.mission_votes = list()
+                        self.all_time_summary.append(mission_text)
 
                         self.game_state = States.mission_voting
                         members_text = "the proposed committee was accepted"
@@ -632,7 +642,10 @@ class Bot():
                             self.bot.send_message(id, text, reply_markup=keyboard)
                         
                     else:
-
+                        
+                        reject_text = f"votes for committee (round {self.Game.round})"\
+                                      f"(number {self.Game.reject_count + 1}):\n {'-' * 10}"
+                        self.all_time_summary.append(reject_text)
                         n_committee = self.Game.all_round[self.Game.round]
                         members_text = "the proposed committee was rejected"
                         commander_text = "It's your turn to choose your committee. "\
@@ -663,20 +676,33 @@ class Bot():
             print("vote_for_mission")
             
             self.mission_voters.remove(self.ids_to_names[message.chat.id])
-            # should be change to ids.
 
             if self.mission_voters:
 
-                pass
+                self.transfer_mission_vote(message)
+                text = emojize(f"your vote has been received")
+                self.bot.send_message(message.chat.id, text)
 
             else:
 
+                self.transfer_mission_vote(message)
+                text = emojize(f"your vote has been received")
+                self.bot.send_message(message.chat.id, text)
+
                 self.Game.mission_result(self.mission_votes)
+
+                after_mission_text = f"{self.Game.fail_count} fails and {self.Game.success_count} success"
+                next_committee_text = f"votes for commitee(round{self.Game.round + 1})\n\n"
+                self.all_time_summary.append(after_mission_text)
+                self.all_time_summary.append(next_committee_text)
+
 
                 if self.Game.evil_wins == 3:
                     
-                    if keys.king in self.choosed_characters:
-                        
+                    if keys.King in self.choosed_characters:
+
+                        self.game_state = States.kings_guess
+
                         text = ("The evil team has won 3 rounds.\n"
                                 "Now it is time for the king to guess all the member of the evil team."
                                 f"The king in this game is: {self.ids_to_names[self.king_id]}")
@@ -689,19 +715,20 @@ class Bot():
 
                         keyboard = self.king_keyboard()
                         self.bot.send_message(self.king_id, king_message, reply_markup=keyboard) 
-                    
 
                     else:
 
+                        summary_text = "\n".join(self.all_time_summary)
                         for id in self.ids:
                             
                             text = "Evil won.\n"\
                                 "Reason: they won three times"
                             self.bot.send_message(id, text)
+                            self.bot.send_message(id, summary_text)
 
                 elif self.Game.city_wins == 3:
-                    
-                    self.game_state = keys.assassin_shoots
+
+                    self.game_state = States.assassin_shoots
                     member_text = "City won 3 rounds, it is time for assassin to shoot"
                     keyboard = self.remove_keyboard()
                     
@@ -713,22 +740,24 @@ class Bot():
                     self.bot.send_message(self.assassin_id, assassin_text, reply_markup=keyboard)
                     
                 else:
-                    
+                    self.game_state = States.committee_choose
+
                     member_text = f"there was {self.Game.fail_count} fail vote(s), "\
                             f"and {self.Game.success_count} success vote(s)"\
                             f"Hence the {self.Game.who_won} won this round"
+                    summary_text = "\n".join(self.all_time_summary)
                     keyboard = self.remove_keyboard()
-
                     for id in self.ids:
 
                         self.bot.send_message(id, member_text, reply_markup=keyboard)
+                        self.bot.send_message(id, summary_text) 
 
                     n_committee = self.Game.all_round[self.Game.round]
                     commander_text = "It's your turn to choose your committee. "\
                                     f"In this round, you should pick {n_committee} player."
                     
-                    commander_id = self.commander_order[0]
                     self.resolve_commander()
+                    commander_id = self.names_to_ids[self.current_commander]
 
                     keyboard = self.commander_keyboard()
                     self.bot.send_message(commander_id, commander_text, reply_markup=keyboard)
@@ -795,7 +824,7 @@ class Bot():
                 self.assassins_guess = name
 
             keyboard = self.assassin_keyboard()
-            text = f"You have chose {name} as Merlin, Hmmm ..."
+            text = emojize(f":thinking_face: You have chose {name} as Merlin, Hmmm ...")
             self.bot.send_message(self.assassin_id, text, reply_markup=keyboard)
 
         @self.bot.message_handler(func=self.is_assassin_pressing_button)
@@ -951,7 +980,7 @@ class Bot():
         c_2 = self.is_commander(message)
         c_3 = message.text in self.names
         c_4 = message.text in self.checked_names
-
+        print(c_1, c_2, c_3, c_4)
         return c_1 and c_2 and (c_3 or c_4)
 
     def is_commander_pressing_button(self, message):
@@ -1008,6 +1037,10 @@ class Bot():
         c_2 = message.chat.id == self.assassin_id
         c_3 = message.text in [self.names_to_send_to_assassin]
         c_4 = message.text in [self.checked_names_to_send_to_assassin]
+        print(message.text)
+        print(self.names_to_send_to_assassin)
+        print(self.checked_names_to_send_to_assassin)
+        print(c_1, c_2, c_3, c_4)
 
         return c_1 and c_2 and (c_3 or c_4)
 
@@ -1017,6 +1050,7 @@ class Bot():
         c_1 = self.game_state == States.assassin_shoots
         c_2 = message.chat.id == self.assassin_id
         c_3 = message.text == keys.assassin_shoots
+        print(c_1, c_2, c_3)
 
         return c_1 and c_2 and c_3
 
@@ -1144,7 +1178,7 @@ class Bot():
             button = types.KeyboardButton(emojize(f"{temp_str}{name}"))
             keyboard.row(button)
 
-        buttons_str = keys.assassin_shoot
+        buttons_str = keys.assassin_shoots
         buttons = types.KeyboardButton(buttons_str)
         keyboard.row(buttons)
 

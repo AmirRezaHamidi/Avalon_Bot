@@ -14,10 +14,10 @@ class Avalon_Engine():
         self.names = names
         self.optional_characters = optional_characters
 
-        self.round = 0
-        self.city_wins = 0
-        self.evil_wins = 0
-        self.reject_count = 0
+        self.round = int()
+        self.city_wins = int()
+        self.evil_wins = int()
+        self.reject_count = int()
         self.win_side = "Not Determined"
 
         self.continues = True
@@ -231,6 +231,9 @@ class Avalon_Engine():
             self.reject_count += 1
 
     def mission_result(self, mission_votes):
+
+        self.fail_count = 0
+        self.success_count = 0
 
         self.fail_count = mission_votes.count(0)
         self.success_count = mission_votes.count(1)
