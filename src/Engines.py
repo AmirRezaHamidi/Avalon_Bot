@@ -1,5 +1,5 @@
 import random
-
+from Constants import keys
 from Characters import (Assassin, King, Merlin, Minion, Mordred, Morgana,
                         Oberon, Persival, Servant)
 
@@ -78,20 +78,20 @@ class Avalon_Engine():
 
         if self.optional_characters is not None:
 
-            if "Persival and Morgana" in self.optional_characters:
+            if keys.Persival_Morgana in self.optional_characters:
 
                 self.game_character.append(Morgana())
                 self.game_character.append(Persival())
 
-            if "Mordred" in self.optional_characters:
+            if keys.Mordred in self.optional_characters:
 
                 self.game_character.append(Mordred())
 
-            if "King" in self.optional_characters:
+            if keys.King in self.optional_characters:
 
                 self.game_character.append(King())
 
-            if "Oberon" in self.optional_characters:
+            if keys.Oberon in self.optional_characters:
 
                 self.game_character.append(Oberon())
 
@@ -109,8 +109,7 @@ class Avalon_Engine():
             for _ in range(evil_diff):
                 self.game_character.append(Minion())
         else:
-            message = "Number of characters does not "\
-                      "match the number of players."
+            message = "Number of characters does not match the number of players."
             raise ValueError(message)
 
     def resolve_character(self):
@@ -164,7 +163,7 @@ class Avalon_Engine():
 
         self.resolve_character()
         self.assigned_character = dict()
-        self.string_character = []
+        self.string_character = list()
 
         random.shuffle(self.names)
         
@@ -231,9 +230,6 @@ class Avalon_Engine():
             self.reject_count += 1
 
     def mission_result(self, mission_votes):
-
-        self.fail_count = 0
-        self.success_count = 0
 
         self.fail_count = mission_votes.count(0)
         self.success_count = mission_votes.count(1)
