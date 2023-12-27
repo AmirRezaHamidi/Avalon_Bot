@@ -90,7 +90,10 @@ class Bot():
 
         self.someone_requested = False
         self.requested_name = None
-        self.all_time_summary = [f"votes for committee (round 1):\n {'-' * 10}"]
+        self.round_summary = list()
+        self.all_time_summary = list()
+        self.in_between_round_text = f"{'-' * 30}"
+        self.in_between_event_text = f"{'-' * 10}"
 
     def __init__(self):
 
@@ -589,7 +592,7 @@ class Bot():
 
                     text = emojize(f"your vote: {message.text}")
                     self.bot.send_message(message.chat.id, text)
-                    self.all_time_summary.append(emojize(f"{name} voted: {message.text}"))
+                    self.round_summary.append(emojize(f"{name} voted: {message.text}"))
 
                 else:
 
@@ -599,8 +602,8 @@ class Bot():
                     self.bot.send_message(message.chat.id, text)
                     self.Game.count_committee_vote(self.committee_votes)
 
-                    self.all_time_summary.append(emojize(f"{name} voted: {message.text}"))
-                    summary = "\n".join(self.all_time_summary)
+                    self.round_summary.append(emojize(f"{name} voted: {message.text}"))
+                    summary = "\n".join(self.round_summary)
                     keyboard = self.remove_keyboard()
 
                     for id in self.ids:
@@ -611,7 +614,7 @@ class Bot():
                         self.Game.round += 1
                         mission_text = f"\nmission results (round{self.Game.round}):\n{'-' * 10}"
                         self.mission_votes = list()
-                        self.all_time_summary.append(mission_text)
+                        self.round_summary.append(mission_text)
 
                         self.game_state = States.mission_voting
                         members_text = "the proposed committee was accepted"
@@ -692,9 +695,8 @@ class Bot():
                 self.Game.mission_result(self.mission_votes)
 
                 after_mission_text = f"{self.Game.fail_count} fails and {self.Game.success_count} success"
-                next_committee_text = f"votes for commitee(round{self.Game.round + 1})\n\n"
+                next_committee_text = f"\n\nvotes for commitee(round{self.Game.round + 1}) {'-'}*10"
                 self.all_time_summary.append(after_mission_text)
-                self.all_time_summary.append(next_committee_text)
 
 
                 if self.Game.evil_wins == 3:
@@ -725,6 +727,8 @@ class Bot():
                                 "Reason: they won three times"
                             self.bot.send_message(id, text)
                             self.bot.send_message(id, summary_text)
+
+                        self.all_time_summary.append(next_committee_text)
 
                 elif self.Game.city_wins == 3:
 
@@ -1216,6 +1220,39 @@ class Bot():
         self.committee_votes = list()
         self.mission_votes = list()
         self.committee_voters = self.names[:]
+
+    def add_committee_header(self, round, rejected_count):
+
+        return (f"committee votes (round: {round}, rejected: {rejected_count}):" +
+                "\n" + (f"-" * 10) + 
+                "\n")
+    
+    def add_committee_vote(self, name, vote):
+        
+        return emojize(f"{name} voted: {vote}" + 
+                       "\n")
+    
+    def add_mission_header(self, round):
+
+        return ("\n" + f"mission_votes (round: {round}):" + 
+                 "\n" + ("-" * 10) + 
+                 "\n")
+    
+    def add_mission_vote(self, fail, success):
+
+        return (f"{fail} fails and {success} success" + 
+                "\n")
+    
+    def add_result(self, evil, city):
+        
+        return ("\n" + "Results:" +
+                "\n" + ("-" * 10) +
+                "\n" + f"# City Wins : {city}" +
+                "\n" + f"# Evil Wins : {evil}" +
+                "\n" + "-" * 30 +
+                "\n" +
+                "\n")
+
 
 if __name__ == "__main__":
 
