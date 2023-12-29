@@ -1,47 +1,32 @@
 import os
-from collections import defaultdict
-import re
+from random import shuffle
 
-from Constants import keys, States
 import telebot
 from emoji import demojize, emojize
 from loguru import logger
 from telebot import types
+
+from Constants import States, keys
 from Engines import Avalon_Engine
-from random import shuffle
 from utils.io import read_txt_file
 
 current_working_directory = os.getcwd()
 TOKEN = read_txt_file(f"{current_working_directory}\\src\\Data\\Bot_Token.txt")
 
 class Bot():
-        
-    def print_instance_attributes(self):
-    
-        print("Game State:",self.game_state, sep=" --> ")
-        print("Game_admin", self.game_admin_id, sep=" --> ")
-        print("Names:", self.names, sep=" --> ")
-        print("checked Names:", self.checked_names, sep=" --> ")
-        print("Names to Ids:", self.names_to_ids, sep=" --> ")
-        print("choosed characters:",self.choosed_characters, sep=" --> ")
-        print("commander order:",self.commander_order, sep=" --> ")
-        print("current commander:", self.current_commander, sep=" --> ")
-        print("current committee:", self.mission_voters, sep=" --> ")
-        print("committee voters:", self.committee_voters, sep=" --> ")
-        print("committee votes:", self.committee_votes, sep=" --> ")
-        print("mission votes:", self.mission_votes, sep=" --> ")
-        print("king id:", self.king_id, sep=" --> ")
-        print("assassin id:", self.assassin_id, sep=" --> ")
 
     def initial_condition(self):
-
+        
+        # admin parameters
         self.super_admin_id  = 224775397
         self.admin_id = None
         self.temp_admin_id = int()
         self.game_admin_id = int()
 
+        # game state parameter
         self.game_state = States.no_game
 
+        # players parameters
         ############### Temp ###############
         self.names = ["Amir Hamidi", "Amir 1", "Amir 2", "amir 3"]
         self.checked_names = [emojize(f"{keys.check_box}{name}") for name in self.names]
@@ -60,36 +45,43 @@ class Bot():
         # self.ids_to_names = dict()
         # self.names_to_ids = dict()
         ############### main ###############
-
+        
+        # Character parameters
         self.choosed_characters = ["Merlin", "Assassin"]
         self.optional_characters = [keys.Persival_Morgana, keys.Mordred, keys.King, keys.Oberon]
         self.checked_optional_characters = [f"{keys.check_box}{name}" for name in self.optional_characters]
         self.Evil_team_id = list()
 
+        # commander parameters
         self.commander_order = list()
         self.current_commander = str()
         self.shuffle_commander_order = False
 
+        # committee parameters
         self.committee_voters = list()
         self.committee_votes = list()
 
+        # mission parameters
         self.mission_voters = list()
         self.mission_votes = list()
 
+        # king parameters
         self.king_id = int()
         self.names_to_send_to_king = list()
         self.checked_names_to_send_to_king = list()
         self.kings_guess = list()
         
+        # assassin parameters
         self.assassin_id = int()
         self.names_to_send_to_assassin = list()
         self.checked_names_to_send_to_assassin = list()
         self.assassins_guess = str()
 
-        self.summary_voting_text = list()
-
+        # Admin request parameters
         self.someone_requested = False
         self.requested_name = None
+
+        # summary parameters
         self.committee_summary = str()
         self.mission_summary = str()
         self.all_time_summary = str()
@@ -97,18 +89,22 @@ class Bot():
 
     def __init__(self):
 
+        # Initializing the bot
         self.initial_condition()
         self.bot = telebot.TeleBot(TOKEN)
 
-        #### Initializing the bot ####
+        # defining bot handlders
         logger.info("Defining the handlers ...")
         self.handlers()
 
-        #### Running the bot ####
+        # Start polling
         logger.info("Starting the bots ...")
         self.bot.infinity_polling()
 
     def grab_name(self, message):
+        '''
+        this function extract the names from the message of the players.
+        '''
         
         name = str()
 
@@ -125,6 +121,11 @@ class Bot():
 
     def fix_name(self, currupted_name):
 
+        '''
+        This function return the uncheked version of a checked name.
+        if the names is unchecked already, it returns the names itself.
+        '''
+
         if currupted_name[0:len(keys.check_box)] == keys.check_box:
 
             return currupted_name[len(keys.check_box):]
@@ -135,18 +136,22 @@ class Bot():
     
     def add_player(self, message):
 
+        '''
+        this function add the players info name to the game 
+        when pressing join game or create game by the players.
+        '''
+
         name = self.grab_name(message)
         id = message.chat.id
 
         if name in self.names:
 
-            similar_name = self.names.count(name)
-            name = f"{name}_{similar_name}"
+            similar_name_count = self.names.count(name)
+            name = f"{name}_{similar_name_count}"
+            self.checked_names.append(emojize(f"{keys.check_box}{name}"))
 
             self.names.append(name)
             self.ids.append(id)
-
-            self.checked_names.append(emojize(f"{keys.check_box}{name}"))
 
             self.names_to_ids[name] = id
             self.ids_to_names[id] = name
@@ -155,18 +160,20 @@ class Bot():
 
             self.names.append(name)
             self.ids.append(id)
-
             self.checked_names.append(emojize(f"{keys.check_box}{name}"))
-
             self.names_to_ids[name] = id
             self.ids_to_names[id] = name
 
     def define_game(self):
+
+        '''
+        this function define the define the game engin using
+        the names of the players and the prefered characters.
+        '''
         
         name_for_game = self.names[:]
-        character_fo_game = self.choosed_characters[:]
-
-        self.Game = Avalon_Engine(name_for_game, character_fo_game)
+        character_for_game = self.choosed_characters[:]
+        self.Game = Avalon_Engine(name_for_game, character_for_game)
     
     def handlers(self):
 
@@ -177,47 +184,35 @@ class Bot():
 
             if self.game_state == States.no_game:
 
-                #### TEXT ####
                 text =("""Hello and Welcome to this bot. \n\n"""
                         """You are currently the admin. Let's start a new game""")
-                                        
-                #### KEYBOARD ####
+
                 buttons_text= [keys.new_game]
                 buttons = map(types.KeyboardButton, buttons_text)
                 keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
                 keyboard.add(*buttons)
-
-                #### MESSAGE ####
                 self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
 
             elif self.game_state == States.starting:
 
-                #### TEXT ####
                 text =("""Hello and Welcome to this bot. \n\n"""
                        """A game already exist and you can join it.""")
                                         
-                #### KEYBOARD ####
                 buttons_text= [keys.join_game]
                 buttons = map(types.KeyboardButton, buttons_text)
                 keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
                 keyboard.add(*buttons)
-
-                #### MESSAGE ####
                 self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
 
             elif self.game_state == States.ongoing:
 
-                #### TEXT ####
                 text =("""Hello and Welcome to this bot. \n\n"""
                         """A game is ongoing. Check again later.""")
-                                     
-                #### KEYBOARD ####
+
                 buttons_text= [keys.bot_status]
                 buttons = map(types.KeyboardButton, buttons_text)
                 keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
                 keyboard.add(*buttons)
-
-                #### MESSAGE ####
                 self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
          
         ######################### Start Command #########################
@@ -225,18 +220,13 @@ class Bot():
         def start_command(message):
             print("start_command")
 
-            #### TEXT ####
             text =("""Hello and Welcome to this bot. \n\n"""
                     """Let's see the bot status""")
-
-            #### KEYBOARD ####
 
             buttons_text= [keys.bot_status, keys.i_am_admin]
             buttons = map(types.KeyboardButton, buttons_text)
             keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
             keyboard.add(*buttons)
-
-            #### MESSAGE ####
             self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
 
         ######################### I Am Admin Button #########################
@@ -245,48 +235,36 @@ class Bot():
             print("start_command")
             
             if self.game_state == States.no_game:
-
-                #### TEXT ####
+                
                 text =("""Hello and Welcome to this bot. \n\n"""
                         """You are currently the admin. Let's start a new game.""")
                                         
-                #### KEYBOARD ####
                 buttons_text= [keys.new_game]
                 buttons = map(types.KeyboardButton, buttons_text)
                 keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
                 keyboard.add(*buttons)
-
-                #### MESSAGE ####
                 self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
 
             elif self.game_state == States.starting:
 
-                #### TEXT ####
                 text =("""Hello and Welcome to this bot. \n\n"""
                        """A game already exist and you can join it.""")
                                         
-                #### KEYBOARD ####
                 buttons_text= [keys.join_game]
                 buttons = map(types.KeyboardButton, buttons_text)
                 keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
                 keyboard.add(*buttons)
-
-                #### MESSAGE ####
                 self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
 
             elif self.game_state == States.ongoing:
-
-                #### TEXT ####
+                
                 text =("""Hello and Welcome to this bot. \n\n"""
                         """A game is ongoing. Check again later.""")
-                                     
-                #### KEYBOARD ####
+
                 buttons_text= [keys.bot_status]
                 buttons = map(types.KeyboardButton, buttons_text)
                 keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
                 keyboard.add(*buttons)
-
-                #### MESSAGE ####
                 self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
 
         ######################### Fake Admin Button #########################
@@ -294,16 +272,11 @@ class Bot():
         def fake_admin_button(message):
             print("fake_admin_button")
 
-            #### TEXT ####
             text =(emojize(":slightly_smiling_face: Nope, you are not"))
-                                     
-            #### KEYBOARD ####
             buttons_text= [keys.bot_status, keys.i_am_admin]
             buttons = map(types.KeyboardButton, buttons_text)
             keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
             keyboard.add(*buttons)
-
-            #### MESSAGE ####
             self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
         
         ######################### Status Button #########################
@@ -313,66 +286,52 @@ class Bot():
             
             if self.game_state == States.no_game:
 
-                #### TEXT ####
                 text =("""No game exist. wait for the admin to create a game.""")
-                                     
-                #### KEYBOARD ####
                 buttons_text= [keys.bot_status, keys.i_am_admin]
                 buttons = map(types.KeyboardButton, buttons_text)
                 keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
                 keyboard.add(*buttons)
-
-                #### MESSAGE ####
                 self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
                 
             elif self.game_state == States.ongoing:
 
-                #### TEXT ####
+                
                 text =("""A game is ongoing. Check again later.""")
                                      
-                #### KEYBOARD ####
+                
                 buttons_text= [keys.bot_status]
                 buttons = map(types.KeyboardButton, buttons_text)
                 keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
                 keyboard.add(*buttons)
-
-                #### MESSAGE ####
                 self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
 
             elif self.game_state == States.starting:
 
-                #### TEXT ####
                 text =("""A game already exist and you can join it.""")
-                                     
-                #### KEYBOARD ####
                 buttons_text= [keys.join_game]
                 buttons = map(types.KeyboardButton, buttons_text)
                 keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
                 keyboard.add(*buttons)
 
-                #### MESSAGE ####
+                
                 self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
         
         ######################### Creat Game #########################
         @self.bot.message_handler(func=self.is_admin, regexp=keys.new_game)
         def creat_game(message):
             print("create_game")
-
-            #### ACTIONS ####
+            
             self.game_admin_id = message.chat.id
             self.game_state = States.starting
             self.add_player(message)
-            
-            #### TEXT ####
-            text =("Ok, ask your friends to join the game")
 
-            #### KEYBOARD ####
+            text =("Ok, ask your friends to join the game")
             buttons_text= [keys.choose_character]
             buttons = map(types.KeyboardButton, buttons_text)
             keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
             keyboard.add(*buttons)
 
-            #### MESSAGE ####
+            
             self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
 
         ######################### Terminate Game #########################
@@ -380,20 +339,18 @@ class Bot():
         def terminate_game(message):
             print("terminate_game")
 
-            #### ACTIONS ####
+            
             self.initial_condition()
 
-            #### TEXT ####
+            
             text = "The game has been terminated"
 
-            #### KEYBOARD ####
+            
             markup = types.ReplyKeyboardRemove()
 
-            #### MESSAGE ####
+            
             for id in self.ids:
                 self.bot.send_message(id, text, reply_markup=markup)
-
-            self.game_state = States.no_game
         
         ######################### Start Game #########################
         @self.bot.message_handler(func=self.is_game_admin, regexp=keys.choose_character)
@@ -402,11 +359,11 @@ class Bot():
 
             self.game_state = States.ongoing
 
-            #### TEXT ####
+            
             text = 'OK, choose your prefered character in the game.'
             keyboard = self.character_keyboard()
 
-            #### MESSAGE ####
+            
             self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
         
         ######################### admin choosing character #########################
@@ -434,7 +391,7 @@ class Bot():
         def join_game(message):
             print("join_game")
             
-            #### ACTIONS ####
+            
             self.add_player(message)
             name = self.ids_to_names[message.chat.id]
 
@@ -452,7 +409,7 @@ class Bot():
         def send_info(message):
             print("send_info")
 
-            #### ACTIONS ####
+            
             self.define_game()
             self.committee_choosing_init()
             keyboard = self.remove_keyboard()
@@ -965,8 +922,51 @@ class Bot():
             print("print_function")
             
             self.bot.send_message(message.chat.id, demojize(message.text))
+    
+    ######################### auxilary functions #########################
+    # the following functions helps the game be functinality.
+    def resolve_commander(self):
+        
+        self.current_commander = self.commander_order[0]
+        self.commander_order.append(self.commander_order[0])
+        del self.commander_order [0]
+
+    def transfer_committee_vote(self, message):
+
+        if message.text == keys.agree:
+            self.committee_votes.append(1)
+
+        elif message.text == keys.disagree:
+            self.committee_votes.append(0)
+
+    def transfer_mission_vote(self, message):
+
+        if message.text == keys.success:
+            self.mission_votes.append(1)
+
+        elif message.text == keys.fail:
+            self.mission_votes.append(0)
+
+    def committee_choosing_init(self):
+
+        self.game_state = States.committee_choose
+
+    def committee_voting_init(self):
+
+        self.game_state = States.committee_voting
+        self.committee_voters = self.names[:]
+        self.committee_votes = list()
+
+    def mission_voting_init(self):
+
+        self.mission_voters = list()
+        self.mission_votes = list()
+        self.game_state = States.mission_voting
 
     ######################### rule checkers #########################
+    # the following functions check the necessary rules
+    # for each message handler. their output is either True or False.
+
     def is_super_admin(self, message):
         print("is_super_admin")
 
@@ -1103,6 +1103,7 @@ class Bot():
         return c_1 and c_2 and c_3
 
     ######################### keyboard makers #########################
+    # the following functions make keyboard for players.
     def decline_accept_keyboard(self):
 
         keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
@@ -1235,49 +1236,12 @@ class Bot():
     def remove_keyboard(self):
         return types.ReplyKeyboardRemove()
 
-    ######################### auxilary functions #########################
-    def resolve_commander(self):
-        
-        self.current_commander = self.commander_order[0]
-        self.commander_order.append(self.commander_order[0])
-        del self.commander_order [0]
-
-    def transfer_committee_vote(self, message):
-
-        if message.text == keys.agree:
-            self.committee_votes.append(1)
-
-        elif message.text == keys.disagree:
-            self.committee_votes.append(0)
-
-    def transfer_mission_vote(self, message):
-
-        if message.text == keys.success:
-            self.mission_votes.append(1)
-
-        elif message.text == keys.fail:
-            self.mission_votes.append(0)
-
-    def committee_choosing_init(self):
-
-        self.game_state = States.committee_choose
-
-    def committee_voting_init(self):
-
-        self.game_state = States.committee_voting
-        self.committee_voters = self.names[:]
-        self.committee_votes = list()
-
-    def mission_voting_init(self):
-
-        self.mission_voters = list()
-        self.mission_votes = list()
-        self.game_state = States.mission_voting
-
-        
+    ######################### keyboard makers #########################
+    # the following function are to make summary during 
+    # the fellow of the game.
 
     def add_committee_header(self, round, rejected_count):
-
+        
         return (f"committee votes (round: {round}, rejected: {rejected_count}):" +
                 "\n" + (f"-" * 10) + 
                 "\n")
