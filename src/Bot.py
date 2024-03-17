@@ -28,22 +28,22 @@ class Bot():
 
         # players parameters
         ############### Temp ###############
-        self.names = ["Amir Hamidi", "Amir 1", "Amir 2", "amir 3"]
-        self.checked_names = [emojize(f"{keys.check_box}{name}") for name in self.names]
+        # self.names = ["Amir Hamidi", "Amir 1", "Amir 2", "amir 3"]
+        # self.checked_names = [emojize(f"{keys.check_box}{name}") for name in self.names]
 
-        self.ids = [224775397, 224775397, 224775397, 224775397]
+        # self.ids = [224775397, 224775397, 224775397, 224775397]
 
-        self.names_to_ids = {name : id for name, id in zip(self.names, self.ids)}
-        self.ids_to_names = {id : name for name, id in zip(self.names, self.ids)}
+        # self.names_to_ids = {name : id for name, id in zip(self.names, self.ids)}
+        # self.ids_to_names = {id : name for name, id in zip(self.names, self.ids)}
         ############### Temp ###############
 
         ############### main ###############
-        # self.names = list()
-        # self.checked_names = list()
-        # self.ids = list()
+        self.names = list()
+        self.checked_names = list()
+        self.ids = list()
 
-        # self.ids_to_names = dict()
-        # self.names_to_ids = dict()
+        self.ids_to_names = dict()
+        self.names_to_ids = dict()
         ############### main ###############
         
         # Character parameters
@@ -142,27 +142,30 @@ class Bot():
         '''
 
         name = self.grab_name(message)
+        temp_name = name
+
         id = message.chat.id
+        similar_name_count = 0
 
-        if name in self.names:
+        while True:
 
-            similar_name_count = self.names.count(name)
-            name = f"{name}_{similar_name_count}"
-            self.checked_names.append(emojize(f"{keys.check_box}{name}"))
+            if temp_name in self.names:
 
-            self.names.append(name)
-            self.ids.append(id)
+                similar_name_count += 1
+                temp_name = f"{name}_{similar_name_count}"
 
-            self.names_to_ids[name] = id
-            self.ids_to_names[id] = name
+            else:
+                
+                name = temp_name
+                break
 
-        else:
+        self.names.append(name)
+        self.ids.append(id)
 
-            self.names.append(name)
-            self.ids.append(id)
-            self.checked_names.append(emojize(f"{keys.check_box}{name}"))
-            self.names_to_ids[name] = id
-            self.ids_to_names[id] = name
+        self.checked_names.append(emojize(f"{keys.check_box}{name}"))
+
+        self.names_to_ids[name] = id
+        self.ids_to_names[id] = name
 
     def define_game(self):
 
