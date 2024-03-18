@@ -15,6 +15,7 @@ keys = SimpleNamespace(
     King='King Arthur',
     Mordred='Mordred',
     Oberon='Oberon',
+    Letsgo = emojize(':check_mark_button: Lets Go'), 
     finished_choosing=emojize(':check_mark_button: Finished Choosing'),
     fail=emojize(':red_circle: Fail'),
     success=emojize(':green_circle: success'),
