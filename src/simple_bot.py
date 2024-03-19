@@ -84,15 +84,19 @@ class Bot():
             self.game_admin_id = message.chat.id
             self.game_state = States.starting
             self.add_player(message)
-            ######################################################## add what name you was added to the game ####################
 
-            text =("The game was created, ask your friends to join the game")
+            name = name = self.ids_to_names[message.chat.id]
+            Created_game_message ="The game was created, ask your friends to join the game"
+            joining_game_message = f"You have join the game sucessfuly \n"\
+                                    f"your name in the game: {name}.\n\n"
+
             buttons_text= [keys.Letsgo]
             buttons = map(types.KeyboardButton, buttons_text)
             keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
             keyboard.add(*buttons)
 
-            self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
+            self.bot.send_message(message.chat.id, text=Created_game_message)
+            self.bot.send_message(message.chat.id, text = joining_game_message, reply_markup=keyboard)
 
         ######################### Terminate Game #########################
         @self.bot.message_handler(regexp=self.terminating_word)
@@ -121,7 +125,7 @@ class Bot():
                 
             elif self.game_state == States.ongoing:
                 
-                text =("A game is ongoing. Check again later.")
+                text =("A game is ongoing. try again later ...")
                 self.bot.send_message(message.chat.id, text=text)
 
             elif self.game_state == States.starting:
@@ -156,58 +160,67 @@ class Bot():
         def send_info(message):
             print("send_info")
             
-            self.define_game()
-            self.committee_choosing_init()
-            keyboard = self.remove_keyboard()
+            if self.game_state == States.starting:
 
-            for name, character in self.game.assigned_character.items():
+                self.game_state = States.ongoing
+                self.define_game()
+                self.committee_choosing_init()
+                keyboard = self.remove_keyboard()
 
-                message = character.message
-                self.bot.send_message(self.names_to_ids[name], message)
+                for name, character in self.game.assigned_character.items():
 
-                if character.name == "Assassin":
-                    self.assassin_id = self.names_to_ids[name]
-                    
-                if character.has_info:
-                    
-                    c_1 = character.name == "Minion"
-                    c_2 = character.name == "Assassin"
+                    message = character.message
+                    self.bot.send_message(self.names_to_ids[name], message)
 
-                    if c_1 or c_2:
-
-                        info = "\n".join(self.game.all_info["Evil_Team"])
-                        self.bot.send_message(self.names_to_ids[name], info, reply_markup=keyboard)
-                        self.Evil_team_id.append(self.names_to_ids[name])
-
-                    else:
+                    if character.name == "Assassin":
+                        self.assassin_id = self.names_to_ids[name]
                         
-                        info = "\n".join(self.game.all_info[character.name])
-                        self.bot.send_message(self.names_to_ids[name], info, reply_markup=keyboard)
+                    if character.has_info:
+                        
+                        c_1 = character.name == "Minion"
+                        c_2 = character.name == "Assassin"
+
+                        if c_1 or c_2:
+
+                            info = "\n".join(self.game.all_info["Evil_Team"])
+                            self.bot.send_message(self.names_to_ids[name], info, reply_markup=keyboard)
+                            self.Evil_team_id.append(self.names_to_ids[name])
+
+                        else:
+                            
+                            info = "\n".join(self.game.all_info[character.name])
+                            self.bot.send_message(self.names_to_ids[name], info, reply_markup=keyboard)
 
 
-            self.commander_order = self.names[:]
-            if self.shuffle_commander_order:
+                self.commander_order = self.names[:]
+                if self.shuffle_commander_order:
 
-                shuffle(self.commander_order)
-        
-            commander_order_message_1 = "Here is the order of the commanders.\n"
-            commander_order_message_2 = "\n:downwards_button:\n".join(self.commander_order)
-            text = emojize(commander_order_message_1 + commander_order_message_2)
+                    shuffle(self.commander_order)
+            
+                commander_order_message_1 = "Here is the order of the commanders.\n"
+                commander_order_message_2 = "\n:downwards_button:\n".join(self.commander_order)
+                text = emojize(commander_order_message_1 + commander_order_message_2)
 
-            for id in self.ids:
+                for id in self.ids:
 
-                self.bot.send_message(id, text)
+                    self.bot.send_message(id, text)
 
-            self.resolve_commander()
-            commander_id = self.names_to_ids[self.current_commander]
+                self.resolve_commander()
+                commander_id = self.names_to_ids[self.current_commander]
 
-            n_committee = self.game.all_round[self.game.round]
-            commander_text = f"It's your turn to choose your committee. In this round, you should pick {n_committee} player."
+                n_committee = self.game.all_round[self.game.round]
+                commander_text = f"It's your turn to choose your committee. In this round, you should pick {n_committee} player."
 
-            keyboard = self.commander_keyboard()
-            self.bot.send_message(commander_id, commander_text, reply_markup = keyboard)
+                keyboard = self.commander_keyboard()
+                self.bot.send_message(commander_id, commander_text, reply_markup = keyboard)
+
+            else:
+                
+                text =("A game is ongoing.")
+                self.bot.send_message(message.chat.id, text=text)
+
             # to committee chosing
-
+                
         ######################### ccommander choosing name #########################
         @self.bot.message_handler(func=self.is_commander_choosing_name)
         def commander_choose_name(message):
@@ -339,10 +352,9 @@ class Bot():
 
                             self.bot.send_message(id, members_text)
 
-                        keyboard = self.mission_keyboard()
-
                         for name in self.mission_voters:
 
+                            keyboard = self.mission_keyboard()
                             id = self.names_to_ids[name]
                             self.bot.send_message(id, committee_text, reply_markup=keyboard)
 
@@ -406,15 +418,16 @@ class Bot():
 
                 self.transfer_mission_vote(message)
                 text = emojize(f"your vote has been received")
-                self.bot.send_message(message.chat.id, text)
+                keyboard = self.remove_keyboard()
+                self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
                 # to mission_voting(Done)
 
             else:
 
                 self.transfer_mission_vote(message)
                 text = emojize(f"your vote has been received")
-
-                self.bot.send_message(message.chat.id, text)
+                keyboard = self.remove_keyboard()
+                self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
 
                 self.game.mission_result(self.mission_votes)
 
@@ -787,6 +800,7 @@ class Bot():
     def mission_keyboard(self):
 
         buttons_str = [keys.success, keys.fail]
+        shuffle(buttons_str)
         buttons = map(types.KeyboardButton, buttons_str)
         keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
         keyboard.add(*buttons)
