@@ -5,6 +5,7 @@ import telebot
 from emoji import demojize, emojize
 from loguru import logger
 from telebot import types
+import time
 
 from Constants import States, keys
 from Engines import Avalon_Engine
@@ -18,22 +19,20 @@ class Bot():
     def initial_condition(self):
         
         # admin parameters
-        self.super_admin_id  = 224775397
-        self.admin_id = None
-        self.temp_admin_id = int()
+        self.starting_word = "information"
+        self.terminating_word = "50155390"
         self.game_admin_id = int()
 
         # game state parameter
         self.game_state = States.no_game
 
-        ############### main ###############
+        # players parameters
         self.names = list()
         self.checked_names = list()
         self.ids = list()
 
         self.ids_to_names = dict()
         self.names_to_ids = dict()
-        ############### main ###############
         
         # Character parameters
         self.choosed_characters = ["Merlin", "Assassin"]
@@ -74,180 +73,56 @@ class Bot():
         # Start polling
         logger.info("Starting the bots ...")
         self.bot.infinity_polling()
-
-    def grab_name(self, message):
-
-        '''
-        this function extract the names from the message of the players.
-        '''
-        name = str()
-
-        if message.chat.type == "private":
-
-            if((message.chat.first_name != None) and (message.chat.last_name != None)):
-                name = message.chat.first_name + " " + message.chat.last_name
-
-            elif not (message.chat.last_name):
-                name = message.chat.first_name
-
-            elif not (message.chat.first_name):
-                name = message.chat.last_name
-
-            return name
-        
-        elif message.chat.type == "group":
-
-            if((message.from_user.first_name != None) and (message.from_user.last_name != None)):
-                name = message.from_user.first_name + " " + message.from_user.last_name
-
-            elif not (message.from_user.last_name):
-                name = message.from_user.first_name
-
-            elif not (message.from_user.first_name):
-                name = message.from_user.last_name
-
-            name = name + " @ " + message.chat.title
-
-            return name
-        
-    def fix_name(self, currupted_name):
-
-        '''
-        This function return the uncheked version of a checked name.
-        if the names is unchecked already, it returns the names itself.
-        '''
-
-        if currupted_name[0:len(keys.check_box)] == keys.check_box:
-
-            return currupted_name[len(keys.check_box):]
-
-        else:
-
-            return currupted_name
-    
-    def add_player(self, message):
-
-        '''
-        this function add the players info name to the game 
-        when pressing join game or create game by the players.
-        '''
-
-        name = self.grab_name(message)
-        temp_name = name
-
-        id = message.chat.id
-        similar_name_count = 0
-
-        while True:
-
-            if temp_name in self.names:
-
-                similar_name_count += 1
-                temp_name = f"{name}_{similar_name_count}"
-
-            else:
-                
-                name = temp_name
-                break
-
-        self.names.append(name)
-        self.ids.append(id)
-
-        self.checked_names.append(emojize(f"{keys.check_box}{name}"))
-
-        self.names_to_ids[name] = id
-        self.ids_to_names[id] = name
-
-    def define_game(self):
-
-        '''
-        this function define the define the game engine using
-        the names of the players and the prefered characters.
-        '''
-        
-        name_for_game = self.names[:]
-        character_for_game = self.choosed_characters[:]
-        self.game = Avalon_Engine(name_for_game, character_for_game)
     
     def handlers(self):
 
-        ######################### Admin Start Command #########################
-        @self.bot.message_handler(func=self.is_admin, commands=["start"])
-        def admin_start_command(message):
-            print("admin_start_command")
+        ######################### Starting Word #########################
+        @self.bot.message_handler(regexp=self.starting_word)
+        def starting_word(message):
+            print("starting_word")
+            
+            self.game_admin_id = message.chat.id
+            self.game_state = States.starting
+            self.add_player(message)
+            ######################################################## add what name you was added to the game ####################
 
-            if self.game_state == States.no_game:
-
-                text =("""Hello and Welcome to this bot. \n\n"""
-                        """You are currently the admin. Let's start a new game""")
-
-                buttons_text= [keys.new_game]
-                buttons = map(types.KeyboardButton, buttons_text)
-                keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-                keyboard.add(*buttons)
-                self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
-
-            elif self.game_state == States.starting:
-
-                text =("""Hello and Welcome to this bot. \n\n"""
-                       """A game already exist and you can join it.""")
-                                        
-                buttons_text= [keys.join_game]
-                buttons = map(types.KeyboardButton, buttons_text)
-                keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-                keyboard.add(*buttons)
-                self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
-
-            elif self.game_state == States.ongoing:
-
-                text =("""Hello and Welcome to this bot. \n\n"""
-                        """A game is ongoing. Check again later.""")
-
-                buttons_text= [keys.bot_status]
-                buttons = map(types.KeyboardButton, buttons_text)
-                keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-                keyboard.add(*buttons)
-                self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
-         
-        ######################### Start Command #########################
-        @self.bot.message_handler(commands=["start"])
-        def start_command(message):
-            print("start_command")
-
-            text =("""Hello and Welcome to this bot. \n\n"""
-                    """Let's see the bot status""")
-
-            buttons_text= [keys.bot_status]
+            text =("The game was created, ask your friends to join the game")
+            buttons_text= [keys.Letsgo]
             buttons = map(types.KeyboardButton, buttons_text)
             keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
             keyboard.add(*buttons)
+
             self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
+
+        ######################### Terminate Game #########################
+        @self.bot.message_handler(regexp=self.terminating_word)
+        def terminating_word(message):
+            print("terminate_game")
+
+            self.initial_condition()
+            text = "The game has been terminated"
+            keyboard = self.remove_keyboard()
+
+            for id in self.ids:
+                self.bot.send_message(id, text, reply_markup=keyboard)
         
-        ######################### Status Button #########################
-        @self.bot.message_handler(regexp=keys.bot_status)
-        def status_button(message):
-            print("status_button")
-            
+        ######################### Search Command #########################
+        @self.bot.message_handler(commands=["search"])
+        def search_command(message):
+            print("search_command")
+
+            self.bot.send_message(message.chat.id, text="Searching ... ")
+            time.sleep(1)
+
             if self.game_state == States.no_game:
 
-                text =("""No game exist. wait for the admin to create a game.""")
-                buttons_text= [keys.bot_status, keys.i_am_admin]
-                buttons = map(types.KeyboardButton, buttons_text)
-                keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-                keyboard.add(*buttons)
-                self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
+                text =("No game exist. try again ...")
+                self.bot.send_message(message.chat.id, text=text)
                 
             elif self.game_state == States.ongoing:
-
                 
-                text =("""A game is ongoing. Check again later.""")
-                                     
-                
-                buttons_text= [keys.bot_status]
-                buttons = map(types.KeyboardButton, buttons_text)
-                keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-                keyboard.add(*buttons)
-                self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
+                text =("A game is ongoing. Check again later.")
+                self.bot.send_message(message.chat.id, text=text)
 
             elif self.game_state == States.starting:
 
@@ -258,38 +133,6 @@ class Bot():
                 keyboard.add(*buttons)
 
                 self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
-        
-        ######################### Creat Game #########################
-        @self.bot.message_handler(func=self.is_admin, regexp=keys.new_game)
-        def creat_game(message):
-            print("create_game")
-            
-            self.game_admin_id = message.chat.id
-            self.game_state = States.starting
-            self.add_player(message)
-
-            text =("Ok, ask your friends to join the game")
-            buttons_text= [keys.Letsgo]
-            buttons = map(types.KeyboardButton, buttons_text)
-            keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-
-            keyboard.add(*buttons)
-
-            
-            self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
-
-        ######################### Terminate Game #########################
-        @self.bot.message_handler(func=self.is_game_admin, commands=["terminate"])
-        def terminate_game(message):
-            print("terminate_game")
-
-            self.initial_condition()
-            text = "The game has been terminated"
-            keyboard = self.remove_keyboard()
-
-            for id in self.ids:
-                self.bot.send_message(id, text, reply_markup=keyboard)
-        
         ######################### Join Game #########################
         @self.bot.message_handler(regexp=keys.join_game)
         def join_game(message):
@@ -309,7 +152,7 @@ class Bot():
             self.bot.send_message(self.game_admin_id, text_to_admin)
         
         ######################### Send Info #########################
-        @self.bot.message_handler(func=self.is_admin, regexp=keys.Letsgo)
+        @self.bot.message_handler(func=self.is_game_admin, regexp=keys.Letsgo)
         def send_info(message):
             print("send_info")
             
@@ -687,6 +530,102 @@ class Bot():
             
             self.bot.send_message(message.chat.id, demojize(message.text))
 
+    ######################### main functions #########################
+    # These are the main function of this class.
+    def grab_name(self, message):
+
+        '''
+        this function extract the names from the message of the players.
+        '''
+        name = str()
+
+        if message.chat.type == "private":
+
+            if((message.chat.first_name != None) and (message.chat.last_name != None)):
+                name = message.chat.first_name + " " + message.chat.last_name
+
+            elif not (message.chat.last_name):
+                name = message.chat.first_name
+
+            elif not (message.chat.first_name):
+                name = message.chat.last_name
+
+            return name
+        
+        elif message.chat.type == "group":
+
+            if((message.from_user.first_name != None) and (message.from_user.last_name != None)):
+                name = message.from_user.first_name + " " + message.from_user.last_name
+
+            elif not (message.from_user.last_name):
+                name = message.from_user.first_name
+
+            elif not (message.from_user.first_name):
+                name = message.from_user.last_name
+
+            name = name + " @ " + message.chat.title
+
+            return name
+        
+    def fix_name(self, currupted_name):
+
+        '''
+        This function return the uncheked version of a checked name.
+        if the names is unchecked already, it returns the names itself.
+        '''
+
+        if currupted_name[0:len(keys.check_box)] == keys.check_box:
+
+            return currupted_name[len(keys.check_box):]
+
+        else:
+
+            return currupted_name
+    
+    def add_player(self, message):
+
+        '''
+        this function add the players info name to the game 
+        when pressing join game or create game by the players.
+        '''
+
+        name = self.grab_name(message)
+        temp_name = name
+
+        id = message.chat.id
+        similar_name_count = 0
+
+        while True:
+
+            if temp_name in self.names:
+
+                similar_name_count += 1
+                temp_name = f"{name}_{similar_name_count}"
+
+            else:
+                
+                name = temp_name
+                break
+
+        self.names.append(name)
+        self.ids.append(id)
+
+        self.checked_names.append(emojize(f"{keys.check_box}{name}"))
+
+        self.names_to_ids[name] = id
+        self.ids_to_names[id] = name
+
+    def define_game(self):
+
+        '''
+        this function define the define the game engine using
+        the names of the players and the prefered characters.
+        '''
+        
+        name_for_game = self.names[:]
+        character_for_game = self.choosed_characters[:]
+        self.game = Avalon_Engine(name_for_game, character_for_game)
+
     ######################### auxilary functions #########################
     # the following functions helps the game be functinality.
     def resolve_commander(self):
@@ -733,14 +672,6 @@ class Bot():
     ######################### rule checkers #########################
     # the following functions check the necessary rules
     # for each message handler. their output is either True or False.
-
-    def is_admin(self, message):
-        print("is_admin")
-        
-        c_1 = message.chat.id == self.super_admin_id
-        c_2 = self.admin_id == message.chat.id
-
-        return c_1 or c_2
     
     def is_game_admin(self, message):
         print("is_game_admin")
