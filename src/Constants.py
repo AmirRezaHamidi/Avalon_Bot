@@ -24,7 +24,7 @@ keys = SimpleNamespace(
     check_box=emojize(':check_box_with_check:'),
     agree=emojize(':thumbs_up:Agree'),
     disagree=emojize(':thumbs_down: Disagree'),
-    assassin_shoots=emojize(':gun: Shoot'),
+    assassin_shoots=emojize(':water_pistol: Shoot'),
     kings_guess=emojize(':dice: Guess')
 )
 
