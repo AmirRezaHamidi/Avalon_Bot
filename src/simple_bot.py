@@ -19,7 +19,7 @@ class Bot():
     def initial_condition(self):
         
         # admin parameters
-        self.starting_word = "information"
+        self.starting_word = "info"
         self.terminating_word = "50155390"
         self.game_admin_id = int()
 
@@ -41,7 +41,7 @@ class Bot():
         # commander parameters
         self.commander_order = list()
         self.current_commander = str()
-        self.shuffle_commander_order = False
+        self.shuffle_commander_order = True
 
         # committee parameters
         self.committee_voters = list()
@@ -90,7 +90,7 @@ class Bot():
             joining_game_message = f"You have join the game sucessfuly \n"\
                                     f"your name in the game: {name}.\n\n"
 
-            buttons_text= [keys.Letsgo]
+            buttons_text= [keys.start_game]
             buttons = map(types.KeyboardButton, buttons_text)
             keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
             keyboard.add(*buttons)
@@ -156,7 +156,7 @@ class Bot():
             self.bot.send_message(self.game_admin_id, text_to_admin)
         
         ######################### Send Info #########################
-        @self.bot.message_handler(func=self.is_game_admin, regexp=keys.Letsgo)
+        @self.bot.message_handler(func=self.is_game_admin, regexp=keys.start_game)
         def send_info(message):
             print("send_info")
             
@@ -280,7 +280,7 @@ class Bot():
                         self.bot.send_message(id, whole_text, reply_markup=keyboard)
 
                     self.committee_summary = self.add_committee_header(round, rejected)
-                    self.all_time_summary += self.add_committee_header(round, rejected)
+                    # self.all_time_summary += self.add_committee_header(round, rejected)
                     self.committee_voting_init()
 
                     # to committee voting (Done)
@@ -314,7 +314,7 @@ class Bot():
                     self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
 
                     self.committee_summary += self.add_committee_vote(name, message.text)
-                    self.all_time_summary += self.add_committee_vote(name, message.text)
+                    # self.all_time_summary += self.add_committee_vote(name, message.text)
                     # to committee voting (Done)
 
                 else:
@@ -327,7 +327,7 @@ class Bot():
 
 
                     self.committee_summary += self.add_committee_vote(name, message.text)
-                    self.all_time_summary += self.add_committee_vote(name, message.text)
+                    self.all_time_summary += self.committee_summary
 
                     self.game.count_committee_vote(self.committee_votes)
 
@@ -336,10 +336,6 @@ class Bot():
                         self.bot.send_message(id, self.committee_summary)
 
                     if self.game.committee_accept:
-                        
-                        round = self.game.round + 1
-                        self.mission_summary = self.add_mission_header(round)
-                        self.all_time_summary += self.add_mission_header(round)
 
                         self.mission_votes = list()
                         self.game.round += 1
@@ -465,8 +461,8 @@ class Bot():
 
                 else:
                     
-                    member_text = f"there was {self.game.fail_count} fail vote(s), "\
-                            f"and {self.game.success_count} success vote(s)"\
+                    member_text = f"there was {self.game.fail_count} fail(s), "\
+                            f"and {self.game.success_count} success(es)"\
                             f"Hence the {self.game.who_won} won this round"
                     
                     self.all_time_summary += self.add_mission_vote(self.game.fail_count, self.game.success_count)
@@ -498,7 +494,7 @@ class Bot():
             self.assassins_guess = self.fix_name(message.text)
 
             keyboard = self.assassin_keyboard()
-            text = emojize(f":thinking_face: You have chose {self.assassins_guess} as Merlin, Hmmm ...")
+            text = emojize(f"You chose {self.assassins_guess} as Merlin.")
             self.bot.send_message(self.assassin_id, text, reply_markup=keyboard)
             # to assassin shoots(Done)
 
@@ -842,8 +838,9 @@ class Bot():
 
     def add_committee_header(self, round, rejected_count):
         
-        return (f"committee votes (round: {round}, rejected: {rejected_count}):" +
-                "\n" + (f"-" * 10) + 
+        return ("\n" + f"# Round: {round}, # Rejection: {rejected_count}" +
+                "\n" + f"{'=' * 30}" +
+                "\n" + f"-Committee Votes:" +
                 "\n")
     
     def add_committee_vote(self, name, vote):
@@ -851,24 +848,19 @@ class Bot():
         return emojize(f"{name} voted: {vote}" + 
                        "\n")
     
-    def add_mission_header(self, round):
-
-        return ("\n" + f"mission votes (round: {round}):" + 
-                "\n" + ("-" * 10) + 
-                "\n")
-    
     def add_mission_vote(self, fail, success):
 
-        return (f"{fail} fails and {success} success" + 
+        return ("\n" + f"-Mission Votes:"+
+                "\n" + f"# Sucesses: {success}" +
+                "\n" + f"# Fails: {fail}" + 
                 "\n")
     
     def add_result(self, city, evil):
         
-        return ("\n" + "Results:" +
-                "\n" + ("-" * 10) +
+        return ("\n" + "-Results:" +
                 "\n" + f"# City Wins : {city}" +
                 "\n" + f"# Evil Wins : {evil}" +
-                "\n" + "-" * 30 +
+                "\n" + "=" * 30 +
                 "\n" +
                 "\n")
 

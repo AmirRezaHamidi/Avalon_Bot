@@ -78,20 +78,20 @@ class Avalon_Engine():
 
         if self.optional_characters is not None:
 
-            if keys.Persival_Morgana in self.optional_characters:
+            if keys.persival_morgana in self.optional_characters:
 
                 self.game_character.append(Morgana())
                 self.game_character.append(Persival())
 
-            if keys.Mordred in self.optional_characters:
+            if keys.mordred in self.optional_characters:
 
                 self.game_character.append(Mordred())
 
-            if keys.King in self.optional_characters:
+            if keys.king in self.optional_characters:
 
                 self.game_character.append(King())
 
-            if keys.Oberon in self.optional_characters:
+            if keys.oberon in self.optional_characters:
 
                 self.game_character.append(Oberon())
 
