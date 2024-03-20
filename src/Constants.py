@@ -30,10 +30,9 @@ States = SimpleNamespace(
 
 Sub_States = SimpleNamespace(
     character_choosing='character_choosing',
-    committee_choose='committee_choose',
+    committee_choosing='committee_choosing',
     committee_voting='committee_voting',
     mission_voting='mission_voting',
-    kings_guessing='kings_guessing',
     assassin_shooting='assassin_shooting',
     assassin_shooted = "assassin_shooted"
 )
