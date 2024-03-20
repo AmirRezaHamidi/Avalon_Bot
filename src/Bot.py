@@ -307,7 +307,7 @@ class Bot():
         def commander_press_button(message):#OKSTATE
             print("commander_press_button")
 
-            if self.game_substate == Sub_States.committee_choosing:
+            if self.game_sub_state == Sub_States.committee_choosing:
 
                 self.game.check_committee(self.mission_voters)
                 
@@ -432,10 +432,10 @@ class Bot():
                             self.bot.send_message(id, members_text)
                         
                         committee_text  ="Choose between Fail and Success"
-                        keyboard = self.mission_keyboard()
 
                         for name in self.mission_voters:
 
+                            keyboard = self.mission_keyboard()
                             id = self.names_to_ids[name]
                             self.bot.send_message(id, committee_text, reply_markup=keyboard)
 
@@ -797,7 +797,7 @@ class Bot():
 
     def assassin_shooting_state(self):
 
-        self.game_substate = Sub_States.assassin_shooting
+        self.game_sub_state = Sub_States.assassin_shooting
         
     def ended_game_state(self):
 
@@ -970,7 +970,7 @@ class Bot():
     
     def add_mission_vote(self, fail, success, city, evil):
 
-        return ("-" * 10 + "\n" + f"-Mission Votes:"+
+        return ("\n" + f"-Mission Votes:"+
                 "\n" + f"# Sucesses: {success}" +
                 "\n" + f"# Fails: {fail}" +
                 "\n" + "-" * 10 +
