@@ -7,7 +7,6 @@ keys = SimpleNamespace(
     join_game=emojize(':plus: Joing the game'),
     choose_character=emojize(':performing_arts: Lets choose characters'),
     persival_morgana='Persival_Morgana',
-    king='King Arthur',
     mordred='Mordred',
     oberon='Oberon',
     finished_choosing=emojize(':check_mark_button: Finished Choosing'),
@@ -18,8 +17,7 @@ keys = SimpleNamespace(
     check_box=emojize(':check_box_with_check:'),
     agree=emojize(':thumbs_up:Agree'),
     disagree=emojize(':thumbs_down: Disagree'),
-    assassin_shoots=emojize(':water_pistol: Shoot'),
-    kings_guess=emojize(':dice: Guess')
+    assassin_shoots=emojize(':water_pistol: Shoot')
 )
 
 States = SimpleNamespace(

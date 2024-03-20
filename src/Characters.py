@@ -49,29 +49,6 @@ class Merlin():
         self.has_info = True
 
 
-class King():
-    def __init__(self):
-
-        self.message = 'Character: King Arthor\n'\
-                       'Side: City\n'\
-                       'Power: If you lose the game in rounds, you '\
-                       'have a last chance to gauss the members '\
-                       'of the evil at the end of the game. If you '\
-                       'gauss "ALL" the names right '\
-                       'including but not limited to Oberan and Mordered,'\
-                       'You will win the game.\n'\
-                       'Note 1: If you win the game by guessing all '\
-                       'the names right, '\
-                       'Assassin will still have the chance to '\
-                       'shoot the "Merlin" and you will lose.\n'\
-                       'Note 2: Your identity as "King Aurthor" '\
-                       'will be revealed '\
-                       'to everyone while you are gussing the names.'
-
-        self.name = "King"
-        self.side = "City"
-        self.has_info = False
-
 # Mordered Side
 class Minion():
 

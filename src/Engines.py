@@ -1,6 +1,6 @@
 import random
 from Constants import keys
-from Characters import (Assassin, King, Merlin, Minion, Mordred, Morgana,
+from Characters import (Assassin, Merlin, Minion, Mordred, Morgana,
                         Oberon, Persival, Servant)
 
 
@@ -86,10 +86,6 @@ class Avalon_Engine():
 
                 self.game_character.append(Mordred())
 
-            if keys.king in self.optional_characters:
-
-                self.game_character.append(King())
-
             if keys.oberon in self.optional_characters:
 
                 self.game_character.append(Oberon())
@@ -174,7 +170,6 @@ class Avalon_Engine():
     def character_message(self):
 
         self.all_info = dict()
-        self.all_info["King"] = []
         self.all_info["Merlin"] = []
         self.all_info["Persival"] = []
         self.all_info["Evil_Team"] = []
@@ -188,10 +183,6 @@ class Avalon_Engine():
             if (character.side == "Evil") and (character.name != "Mordred"):
 
                 self.all_info["Merlin"].append(name)
-
-            if (character.side == "Evil"):
-
-                self.all_info["King"].append(name)
 
         if "Persival" in self.string_character:
 
@@ -260,20 +251,6 @@ class Avalon_Engine():
 
                 self.city_wins += 1
                 self.who_won = "City"
-
-    def king_guess(self, guesses):
-
-        king_point = 0
-
-        for name in guesses:
-
-            if name in self.all_info["King"]:
-
-                king_point += 1
-
-        if king_point == len(self.all_info["King"]):
-
-            self.king_guessed_right = True
 
     def assassin_shoot(self, shooted_name):
 
