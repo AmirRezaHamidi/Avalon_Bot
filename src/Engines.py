@@ -222,6 +222,7 @@ class Avalon_Engine():
         if positive_votes >= negative_votes:
 
             self.committee_accept = True
+            self.round += 1
             self.reject_count = 0
 
         else:
