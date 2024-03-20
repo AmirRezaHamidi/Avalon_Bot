@@ -16,11 +16,11 @@ TOKEN = read_txt_file(f"{current_working_directory}\\src\\Data\\Bot_Token.txt")
 
 class Bot():
 
-    def initial_condition(self):
+    def initial_condition(self): #STATELESS
         
         # admin parameters
-        self.starting_word = "info"
-        self.terminating_word = "50155390"
+        self.starting_word = "amirhamidi"
+        self.terminating_word = "amiramiri"
         self.game_admin_id = int()
 
         # game state parameter
@@ -58,9 +58,9 @@ class Bot():
         # summary parameters
         self.committee_summary = str()
         self.mission_summary = str()
-        self.all_time_summary = f"{'*' * 30}\n"
+        self.all_time_summary = f"{'*' * 30}"
 
-    def __init__(self):
+    def __init__(self): #STATELESS
 
         # Initializing the bot
         self.initial_condition()
@@ -78,41 +78,47 @@ class Bot():
 
         ######################### Starting Word #########################
         @self.bot.message_handler(regexp=self.starting_word)
-        def starting_word(message):
+        def starting_word(message): #STATEOK
             print("starting_word")
             
-            self.game_admin_id = message.chat.id
-            self.game_state = States.starting
-            self.add_player(message)
+            if self.game_state == States.no_game:
+                
+                self.game_admin_id = message.chat.id
+                self.game_state = States.starting
+                self.add_player(message)
 
-            name = name = self.ids_to_names[message.chat.id]
-            Created_game_message ="The game was created, ask your friends to join the game"
-            joining_game_message = f"You have join the game sucessfuly \n"\
-                                    f"your name in the game: {name}.\n\n"
+                name = name = self.ids_to_names[message.chat.id]
+                Created_game_message ="The game was created, ask your friends to join the game"
+                joining_game_message = f"Your name in the game: {name}.\n\n"
 
-            buttons_text= [keys.start_game]
-            buttons = map(types.KeyboardButton, buttons_text)
-            keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-            keyboard.add(*buttons)
+                buttons_text= [keys.start_game]
+                buttons = map(types.KeyboardButton, buttons_text)
+                keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+                keyboard.add(*buttons)
 
-            self.bot.send_message(message.chat.id, text=Created_game_message)
-            self.bot.send_message(message.chat.id, text = joining_game_message, reply_markup=keyboard)
+                self.bot.send_message(message.chat.id, text=Created_game_message)
+                self.bot.send_message(message.chat.id, text = joining_game_message, reply_markup=keyboard)
+
+            else:
+
+                text =("A game is ongoing. Find it using search command")
+                self.bot.send_message(message.chat.id, text=text)
 
         ######################### Terminate Game #########################
         @self.bot.message_handler(regexp=self.terminating_word)
-        def terminating_word(message):
+        def terminating_word(message):#STATEOK
             print("terminate_game")
 
-            self.initial_condition()
             text = "The game has been terminated"
             keyboard = self.remove_keyboard()
 
             for id in self.ids:
                 self.bot.send_message(id, text, reply_markup=keyboard)
-        
+
+            self.initial_condition()
         ######################### Search Command #########################
         @self.bot.message_handler(commands=["search"])
-        def search_command(message):
+        def search_command(message):#STATEOK
             print("search_command")
 
             self.bot.send_message(message.chat.id, text="Searching ... ")
@@ -120,17 +126,17 @@ class Bot():
 
             if self.game_state == States.no_game:
 
-                text =("No game exist. try again ...")
+                text ="No game exist. try again ..."
                 self.bot.send_message(message.chat.id, text=text)
                 
             elif self.game_state == States.ongoing:
                 
-                text =("A game is ongoing. try again later ...")
+                text ="A game is ongoing. try again later ..."
                 self.bot.send_message(message.chat.id, text=text)
 
             elif self.game_state == States.starting:
 
-                text =("""A game already exist and you can join it.""")
+                text ="A game already exist and you can join it."
                 buttons_text= [keys.join_game]
                 buttons = map(types.KeyboardButton, buttons_text)
                 keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
@@ -139,22 +145,28 @@ class Bot():
                 self.bot.send_message(message.chat.id, text=text, reply_markup=keyboard)
         ######################### Join Game #########################
         @self.bot.message_handler(regexp=keys.join_game)
-        def join_game(message):
+        def join_game(message):#STATEOK
             print("join_game")
             
-            self.add_player(message)
-            name = self.ids_to_names[message.chat.id]
+            if message.chat.id not in self.ids:
 
-            text = f"You have join the game sucessfuly \n"\
-                    f"your name in the game: {name}.\n\n"\
-                        "Wait for the admin to start the game."
-            
-            text_to_admin = f"{name} has joined the game"
-            keyboard = self.remove_keyboard()
+                self.add_player(message)
+                name = self.ids_to_names[message.chat.id]
 
-            self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
-            self.bot.send_message(self.game_admin_id, text_to_admin)
-        
+                text = f"You have join the game sucessfuly \n"\
+                        f"your name in the game: {name}."
+                
+                text_to_admin = f"{name} has joined the game"
+                keyboard = self.remove_keyboard()
+
+                self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
+                self.bot.send_message(self.game_admin_id, text_to_admin)
+
+            else:
+
+                text = "you have already joined the game"
+                self.bot.send_message(message.chat.id, text=text)
+
         ######################### Send Info #########################
         @self.bot.message_handler(func=self.is_game_admin, regexp=keys.start_game)
         def send_info(message):
@@ -218,14 +230,14 @@ class Bot():
 
             else:
                 
-                text =("A game is ongoing.")
+                text =("The game has already started.")
                 self.bot.send_message(message.chat.id, text=text)
 
             # to committee chosing
                 
         ######################### ccommander choosing name #########################
         @self.bot.message_handler(func=self.is_commander_choosing_name)
-        def commander_choose_name(message):
+        def commander_choose_name(message):#STATEOK
             print("commander_choose_name")
 
             add_remove_name = self.fix_name(message.text)
@@ -263,10 +275,9 @@ class Bot():
                     for id in self.ids:
 
                         self.bot.send_message(id, whole_text)
-
                     # to committee choosing (Done)
 
-                elif message.text == keys.final:
+                elif message.text == keys.final: #STATE_CHANGE
 
                     text = f"{keys.final}:\n"
                     committee_member_text = "\n".join(self.mission_voters)
@@ -456,7 +467,7 @@ class Bot():
                     keyboard = self.assassin_keyboard()
                     self.bot.send_message(self.assassin_id, assassin_text, reply_markup=keyboard)
 
-                    self.game_state = States.assassin_shoots
+                    self.game_state = States.assassin_shooting
                     # to assassin shoots(write function)
 
                 else:
@@ -514,14 +525,16 @@ class Bot():
 
                 if self.game.assassin_shooted_right:
                     
-                    text = f"Assassins shooted {name} which was Merlin.\n The Evil won."
+                    text = f"Assassins shooted {name} which was Merlin.\n"\
+                            "The Evil won."
                     
                     for id in self.ids:
                         self.bot.send_message(id, text, reply_markup=keyboard)
 
                 else:
 
-                    text = f"Assassins shooted {name} which was not Merlin.\n The City won."
+                    text = f"Assassins shooted {name} which was not Merlin.\n"\
+                            "The City won."
 
                     for id in self.ids:
                         self.bot.send_message(id, text, reply_markup=keyboard)
@@ -611,7 +624,7 @@ class Bot():
                 
                 name = temp_name
                 break
-
+        
         self.names.append(name)
         self.ids.append(id)
 
@@ -740,7 +753,7 @@ class Bot():
     def is_assassin_choosing_name(self, message):
         print("is_assassin_choosing_name")
 
-        c_1 = self.game_state == States.assassin_shoots
+        c_1 = self.game_state == States.assassin_shooting
         c_2 = message.chat.id == self.assassin_id
         c_3 = message.text != keys.assassin_shoots
 
@@ -749,7 +762,7 @@ class Bot():
     def is_assassin_pressing_button(self, message):
         print("is_assassin_pressing_button")
 
-        c_1 = self.game_state == States.assassin_shoots
+        c_1 = self.game_state == States.assassin_shooting
         c_2 = message.chat.id == self.assassin_id
         c_3 = message.text == keys.assassin_shoots
         print(c_1, c_2, c_3)

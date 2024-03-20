@@ -14,13 +14,12 @@ class Avalon_Engine():
         self.names = names
         self.optional_characters = optional_characters
 
-        self.round = int()
+        self.round = 1
         self.city_wins = int()
         self.evil_wins = int()
         self.reject_count = int()
         self.win_side = "Not Determined"
 
-        self.continues = True
         self.acceptable_round = False
         self.committee_accept = False
         self.king_guessed_right = False
@@ -33,27 +32,27 @@ class Avalon_Engine():
     def round_info(self):
 
         if len(self.names) == 5:
-            self.all_round = [2, 3, 2, 3, 3]
+            self.all_round = [0, 2, 3, 2, 3, 3]
             self.two_fails = False
 
         elif len(self.names) == 6:
-            self.all_round = [2, 3, 4, 3, 4]
+            self.all_round = [0, 2, 3, 4, 3, 4]
             self.two_fails = False
 
         elif len(self.names) == 7:
-            self.all_round = [2, 3, 3, 4, 4]
+            self.all_round = [0, 2, 3, 3, 4, 4]
             self.two_fails = True
 
         elif len(self.names) == 8:
-            self.all_round = [3, 4, 4, 5, 5]
+            self.all_round = [0, 3, 4, 4, 5, 5]
             self.two_fails = True
 
         elif len(self.names) == 9:
-            self.all_round = [3, 4, 4, 5, 5]
+            self.all_round = [0, 3, 4, 4, 5, 5]
             self.two_fails = True
 
         elif len(self.names) == 10:
-            self.all_round = [3, 4, 4, 5, 5]
+            self.all_round = [0, 3, 4, 4, 5, 5]
             self.two_fails = True
 
     def count_side(self):
@@ -206,9 +205,9 @@ class Avalon_Engine():
 
             random.shuffle(self.all_info["Persival"])
 
-    def check_committee(self, committee_names):
+    def check_committee(self, mission_voters):
 
-        if len(committee_names) == self.all_round[self.round]:
+        if len(mission_voters) == self.all_round[self.round]:
             self.acceptable_round = True
 
         else:
@@ -235,7 +234,7 @@ class Avalon_Engine():
         self.fail_count = mission_votes.count(0)
         self.success_count = mission_votes.count(1)
 
-        condition_1 = self.round == 3
+        condition_1 = self.round == 4
         condition_2 = self.two_fails is True
 
         if (condition_1) and (condition_2):
