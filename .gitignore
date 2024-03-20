@@ -161,4 +161,6 @@ cython_debug/
 
 # custom ignore
 src/Data/Bot_Token.txt
+src/Data/Starting_Word.txt
+src/Data/Terminating_Word.txt
 src/test
