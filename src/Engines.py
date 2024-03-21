@@ -215,7 +215,6 @@ class Avalon_Engine():
         if positive_votes >= negative_votes:
 
             self.committee_accept = True
-            self.round += 1
 
         else:
 
@@ -225,7 +224,8 @@ class Avalon_Engine():
 
         self.fail_count = mission_votes.count(0)
         self.success_count = mission_votes.count(1)
-
+        print(self.round)
+        print(self.two_fails)
         condition_1 = self.round == 4
         condition_2 = self.two_fails is True
 
@@ -252,7 +252,8 @@ class Avalon_Engine():
 
                 self.city_wins += 1
                 self.who_won = "City"
-
+        
+        self.round += 1
     def assassin_shoot(self, shooted_name):
 
         if self.assigned_character[shooted_name].name == "Merlin":

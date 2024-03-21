@@ -97,9 +97,7 @@ class Bot():
                 self.add_player(message)
                 name = self.ids_to_names[id]
                 keyboard = self.start_game_keyboard()
-
-                self.bot.send_message(id, text=Texts.CG)
-                self.bot.send_message(id, f"{Texts.YN}{name}.\n\n", reply_markup=keyboard)
+                self.bot.send_message(id, f"{Texts.CG}{name}.", reply_markup=keyboard)
 
             else:
 
@@ -117,7 +115,7 @@ class Bot():
 
             if self.game_state == States.no_game:
                 
-                self.bot.send_message(id, Texts.NEGT)
+                self.bot.send_message(id, Texts.NGET)
 
                 ##########################
                 #State Less
@@ -177,7 +175,7 @@ class Bot():
                 self.add_player(message)
                 name = self.ids_to_names[id]
 
-                text = f"{Texts.YJGS}\n{Texts.YN} {name}."
+                text = f"{Texts.YJGS}\n{Texts.YN}{name}."
                 
                 text_to_admin = f"{name} {Texts.GAJG}"
                 keyboard = self.remove_keyboard()
@@ -240,10 +238,8 @@ class Bot():
                     if self.shuffle_commander_order:
 
                         shuffle(self.commander_order)
-                
-                    commander_order = "\n:downwards_button:\n".join(self.commander_order)
 
-                    text = emojize(f"{Texts.CO}\n" + commander_order)
+                    text = emojize(f"{Texts.CO}\n" + self.order(self.commander_order))
                     keyboard = self.remove_keyboard()
 
                     for id in self.ids:
@@ -280,12 +276,12 @@ class Bot():
             if add_remove_name in self.mission_voters:
 
                 self.mission_voters.remove(add_remove_name)
-                text = f"{add_remove_name}{Texts.ATC}"
+                text = f"{add_remove_name}{Texts.RFC}"
 
             else:
 
                 self.mission_voters.append(add_remove_name)
-                text = f"{add_remove_name}{Texts.RFC}"
+                text = f"{add_remove_name}{Texts.ATC}"
 
             keyboard = self.commander_keyboard()
             self.bot.send_message(id, text, reply_markup=keyboard)
@@ -306,24 +302,21 @@ class Bot():
                 
                 if self.game.acceptable_round:
 
-                    if message.text == Texts.propose:
+                    if message.text == Keys.propose:
 
-                        text = f"{Texts.propose}:\n"
-                        committee_member_text = "\n".join(self.mission_voters)
-                        whole_text = text + committee_member_text
-                        keyboard = self.remove_keyboard()
+                        text = f"{Texts.propose}\n-" + "\n-".join(self.mission_voters)
 
                         for id in self.ids:
 
-                            self.bot.send_message(id, whole_text)
+                            self.bot.send_message(id, text)
 
                     ##########################
                     #Return State
                     ##########################
 
-                    elif message.text == Texts.final:
+                    elif message.text == Keys.final:
 
-                        text = f"{Texts.final}:\n"+"\n".join(self.mission_voters)
+                        text = f"{Texts.final}\n-" + "\n-".join(self.mission_voters)
                         keyboard = self.committee_vote_keyboard()
                         self.committee_voters = self.names[:]
 
@@ -502,6 +495,7 @@ class Bot():
 
                     self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
                     self.game.mission_result(self.mission_votes)
+                    print("Stop1")
 
                     Round = self.game.round - 1
                     who_won = self.game.who_won
@@ -511,9 +505,9 @@ class Bot():
                     self.all_time_summary += self.add_mission_vote(names, self.game.fail_count,
                                                                    self.game.success_count,
                                                                    who_won, Round, commander)
-                    
+                    print("Stop2")
                     if self.game.evil_wins == 3:
-                        
+                        print("Stop3")
                         text = "Evil won."
                         keyboard = self.remove_keyboard()
 
@@ -528,7 +522,7 @@ class Bot():
 
 
                     elif self.game.city_wins == 3:
-
+                        print("Stop4")
                         text = "City won 3 rounds, it's time for assassin to shoot"
                         keyboard = self.remove_keyboard()
 
@@ -546,7 +540,7 @@ class Bot():
                         ##########################
 
                     else:
-                        
+                        print("Stop5")
                         keyboard = self.remove_keyboard()
                         self.resolve_commander()
 
@@ -556,12 +550,12 @@ class Bot():
                         n_committee = self.game.all_round[self.game.round]
                         commander_text = "It's your turn to choose your committee. "\
                                         f"In this round, you should pick {n_committee} player."
-                        
+                        print("Stop6")
                         for id in self.ids:
 
                             self.bot.send_message(id, self.all_time_summary, reply_markup=keyboard) 
                             self.bot.send_message(id, text)
-
+                        print("Stop7")
                         ##########################
                         self.committee_choosing_state()
                         ##########################
@@ -675,9 +669,16 @@ class Bot():
             name = name + " @ " + message.chat.title
 
             return name
-        
-        print("whaaat")
-        print(message.chat.type)
+    def order(self, commander_order):
+
+        commander_order_show = str()
+
+        for i , name in enumerate(commander_order):
+
+            commander_order_show += f"{i +1 }-" +  f"{name}\n"
+
+        return commander_order_show
+    
     def fix_name(self, currupted_name):
 
         '''
