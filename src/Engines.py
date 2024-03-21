@@ -2,7 +2,7 @@ import random
 from Constants import keys
 from Characters import (Assassin, Merlin, Minion, Mordred, Morgana,
                         Oberon, Persival, Servant)
-
+from Constants import Texts
 
 class Avalon_Engine():
 
@@ -104,16 +104,20 @@ class Avalon_Engine():
             for _ in range(evil_diff):
                 self.game_character.append(Minion())
         else:
-            message = "Number of characters does not match the number of players."
+            message = Texts.PCE
             raise ValueError(message)
 
     def resolve_character(self):
 
         self.power_character()
 
-        if len(self.game_character) > len(self.names):
+        if len(self.names) < 5:
 
-            message = "Number of characters are more than number of players :)"
+            message = Texts.PNE
+            raise ValueError(message)
+        
+        if len(self.names) < len(self.game_character):
+            message = Texts.PCE
             raise ValueError(message)
 
         else:
@@ -213,12 +217,10 @@ class Avalon_Engine():
 
             self.committee_accept = True
             self.round += 1
-            self.reject_count = 0
 
         else:
 
             self.committee_accept = False
-            self.reject_count += 1
 
     def mission_result(self, mission_votes):
 

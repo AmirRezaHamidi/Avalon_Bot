@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from types import SimpleNamespace
 from emoji import emojize
 
@@ -10,14 +11,16 @@ keys = SimpleNamespace(
     mordred='Mordred',
     oberon='Oberon',
     finished_choosing=emojize(':check_mark_button: Finished Choosing'),
-    success=emojize(':green_circle: success'),
+    success=emojize(':green_circle: Success'),
     fail=emojize(':red_circle: Fail'),
     propose=emojize(':loudspeaker: Propose'),
     final=emojize(':hundred_points: Final Decision'),
     check_box=emojize(':check_box_with_check:'),
     agree=emojize(':thumbs_up:Agree'),
     disagree=emojize(':thumbs_down: Disagree'),
-    assassin_shoots=emojize(':water_pistol: Shoot')
+    assassin_shoots=emojize(':water_pistol: Shoot'),
+    accept = emojize(":check_mark_button: Accept"),
+    declined = emojize(":prohibited: Declined")
 )
 
 States = SimpleNamespace(
@@ -33,4 +36,10 @@ Sub_States = SimpleNamespace(
     mission_voting='mission_voting',
     assassin_shooting='assassin_shooting',
     assassin_shooted = "assassin_shooted"
+)
+
+Texts = SimpleNamespace(
+
+    PCE="There are too many characters",
+    PNE="Not Enough Players, There should be atleast 5 players.",
 )
