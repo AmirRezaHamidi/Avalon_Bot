@@ -1,5 +1,4 @@
 import random
-from Constants import keys
 from Characters import (Assassin, Merlin, Minion, Mordred, Morgana,
                         Oberon, Persival, Servant)
 from Constants import Texts
@@ -77,16 +76,16 @@ class Avalon_Engine():
 
         if self.optional_characters is not None:
 
-            if keys.persival_morgana in self.optional_characters:
+            if Texts.persival_morgana in self.optional_characters:
 
                 self.game_character.append(Morgana())
                 self.game_character.append(Persival())
 
-            if keys.mordred in self.optional_characters:
+            if Texts.mordred in self.optional_characters:
 
                 self.game_character.append(Mordred())
 
-            if keys.oberon in self.optional_characters:
+            if Texts.oberon in self.optional_characters:
 
                 self.game_character.append(Oberon())
 
