@@ -62,10 +62,7 @@ class Bot():
 
         # summary parameters
         self.committee_summary = str()
-        first_committee_summary = True
-
         self.mission_summary = str()
-        first_mission_summary = True
         self.all_time_summary = "Game Summary: \n"\
                                 f"{'*' * 30}"
 
@@ -325,15 +322,31 @@ class Bot():
 
     ######################### reducing functions #########################
     # the following functions helps reduce the amount of code.
+    
+    def my_wait(self, k):
+
+        n = len(self.names) / k
+
+        for i in range(1, 4):
+        
+            for id in self.ids:
+                
+                self.bot.send_message(id, "." * i)
+
+                time.sleep(1/n)
+    
     def send_info(self):
 
         self.define_game()
         self.started_game_state()
 
-        for name, character in self.game.assigned_character.items():
+        for id in self.ids:
 
-            message = character.message
-            self.bot.send_message(self.names_to_ids[name], message)
+                self.bot.send_message(id, Texts.YR)
+
+        self.my_wait(1)
+    
+        for name, character in self.game.assigned_character.items():
 
             if character.name == "Assassin":
                 self.assassin_id = self.names_to_ids[name]
@@ -345,14 +358,20 @@ class Bot():
 
                 if c_1 or c_2:
 
-                    info = "\n".join(self.game.all_info["Evil_Team"])
-                    self.bot.send_message(self.names_to_ids[name], info)
+                    info = "-" + "\n-".join(self.game.all_info["Evil_Team"])
+                    message = character.message + info
                     self.Evil_team_id.append(self.names_to_ids[name])
 
                 else:
                     
-                    info = "\n".join(self.game.all_info[character.name])
-                    self.bot.send_message(self.names_to_ids[name], info)
+                    info = "-" + "\n-".join(self.game.all_info[character.name])
+                    message = character.message + info
+
+            else:
+
+                message = character.message
+
+            self.bot.send_message(self.names_to_ids[name], message)
 
     def send_commander_order(self):
 
@@ -363,7 +382,7 @@ class Bot():
             shuffle(self.commander_order)
 
         keyboard = self.remove_keyboard()
-        text = emojize(f"{Texts.CO}\n" + self.order(self.commander_order))
+        text = emojize(f"{Texts.CO}\n\n" + self.order(self.commander_order))
 
         for id in self.ids:
 
@@ -558,7 +577,6 @@ class Bot():
     def end_assassin_shot(self):
 
         self.game.assassin_shoot(self.assassins_guess)
-        keyboard = self.remove_keyboard()
 
         if self.game.assassin_shooted_right:
             
@@ -568,23 +586,7 @@ class Bot():
 
             text = f"{Texts.CW}{Texts.RCW}"
         
-        for id in self.ids:
-            
-            self.bot.send_message(id, ".", reply_markup=keyboard)
-
-        time.sleep(1)
-
-        for id in self.ids:
-            
-            self.bot.send_message(id, ".", reply_markup=keyboard)
-
-        time.sleep(2)
-
-        for id in self.ids:
-            
-            self.bot.send_message(id, ".", reply_markup=keyboard)
-
-        time.sleep(3)
+        self.my_wait(1)
 
         for id in self.ids:
 
@@ -996,6 +998,7 @@ class Bot():
                                                         who_won, Round, commander)
         
         keyboard = self.remove_keyboard()
+        self.my_wait(0.5)
 
         for id in self.ids:
 

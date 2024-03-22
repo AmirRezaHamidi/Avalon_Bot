@@ -56,6 +56,7 @@ Texts = SimpleNamespace(
     GAJG="has joined the game.",
     PCE="There are too many characters.",
     PNE="Not Enough players, there should be atleast 5 players.",
+    YR="We are preparing roles for you ...",
     CO="Here is the order of the commanders.",
     CCN1="You are the commander in this round. ",
     CCN2_1="You should pick ",
