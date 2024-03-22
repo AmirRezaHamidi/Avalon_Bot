@@ -63,8 +63,7 @@ class Bot():
         # summary parameters
         self.committee_summary = str()
         self.mission_summary = str()
-        self.all_time_summary = "Game Summary: \n"\
-                                f"{'*' * 30}"
+        self.all_time_summary = list()
 
     def __init__(self): #STATELESS
 
@@ -322,7 +321,94 @@ class Bot():
 
     ######################### reducing functions #########################
     # the following functions helps reduce the amount of code.
+            
+    def grab_name(self, message):
+
+        name = str()
+
+        if message.chat.type == "private":
+
+            print("private")
+
+            if((message.chat.first_name != None) and (message.chat.last_name != None)):
+                name = message.chat.first_name + " " + message.chat.last_name
+
+            elif not (message.chat.last_name):
+                name = message.chat.first_name
+
+            elif not (message.chat.first_name):
+                name = message.chat.last_name
+
+            return name
+        
+        elif message.chat.type == "group" or message.chat.type =="supergroup":
+            print("group")
+            
+            if((message.from_user.first_name != None) and (message.from_user.last_name != None)):
+                name = message.from_user.first_name + " " + message.from_user.last_name
+
+            elif not (message.from_user.last_name):
+                name = message.from_user.first_name
+
+            elif not (message.from_user.first_name):
+                name = message.from_user.last_name
+
+            name = name + " @ " + message.chat.title
+
+            return name
+    def order(self, commander_order):
+
+        commander_order_show = str()
+
+        for i , name in enumerate(commander_order):
+
+            commander_order_show += f"{i +1 }-" +  f"{name}\n"
+
+        return commander_order_show
     
+    def fix_name(self, currupted_name):
+
+        if currupted_name[0:len(Keys.check_box)] == Keys.check_box:
+
+            return currupted_name[len(Keys.check_box):]
+
+        else:
+
+            return currupted_name
+    
+    def add_player(self, message):
+
+        name = self.grab_name(message)
+        temp_name = name
+
+        id = message.chat.id
+        similar_name_count = 0
+
+        while True:
+
+            if temp_name in self.names:
+
+                similar_name_count += 1
+                temp_name = f"{name}_{similar_name_count}"
+
+            else:
+                
+                name = temp_name
+                break
+        
+        self.names.append(name)
+        self.ids.append(id)
+
+        self.checked_names.append(emojize(f"{Keys.check_box}{name}"))
+
+        self.names_to_ids[name] = id
+        self.ids_to_names[id] = name
+
+    def define_game(self):
+        
+        name_for_game = self.names[:]
+        character_for_game = self.choosed_characters[:]
+        self.game = Avalon_Engine(name_for_game, character_for_game)
     def my_wait(self, k):
 
         n = len(self.names) / k
@@ -541,7 +627,6 @@ class Bot():
 
         for id in self.ids:
             
-            self.bot.send_message(id, self.all_time_summary)
             self.bot.send_message(id, Texts.CW3R, reply_markup=keyboard)
 
         keyboard = self.assassin_keyboard()
@@ -551,6 +636,7 @@ class Bot():
 
     def assassin_choose_name(self, message):
 
+        self.bot.delete_message(message.chat.id, message.id)
         self.assassins_guess = self.fix_name(message.text)
 
         keyboard = self.assassin_keyboard()
@@ -562,17 +648,6 @@ class Bot():
 
         keyboard = self.assassin_keyboard()
         self.bot.send_message(self.assassin_id, Texts.ASS3, reply_markup=keyboard)
-
-    def end_5_reject(self):
-
-        keyboard = self.remove_keyboard()
-        text = f"{Texts.EW}{Texts.REW1}"
-        
-        for id in self.ids:
-            
-            self.bot.send_message(id, text, reply_markup=keyboard)
-
-        self.ended_game_state()
 
     def end_assassin_shot(self):
 
@@ -600,120 +675,24 @@ class Bot():
 
         for id in self.ids:
             
-            self.bot.send_message(id, self.all_time_summary)
             self.bot.send_message(id, f"{Texts.EW}{Texts.REW3}", reply_markup=keyboard)
         
         self.ended_game_state()
 
-    ######################### main functions #########################
-    # These are the main function of this class.
-    def grab_name(self, message):
+    def end_5_reject(self):
 
-        '''
-        this function extract the names from the message of the players.
-        '''
-        name = str()
-
-        if message.chat.type == "private":
-
-            print("private")
-
-            if((message.chat.first_name != None) and (message.chat.last_name != None)):
-                name = message.chat.first_name + " " + message.chat.last_name
-
-            elif not (message.chat.last_name):
-                name = message.chat.first_name
-
-            elif not (message.chat.first_name):
-                name = message.chat.last_name
-
-            return name
+        keyboard = self.remove_keyboard()
+        text = f"{Texts.EW}{Texts.REW1}"
         
-        elif message.chat.type == "group" or message.chat.type =="supergroup":
-            print("group")
+        for id in self.ids:
             
-            if((message.from_user.first_name != None) and (message.from_user.last_name != None)):
-                name = message.from_user.first_name + " " + message.from_user.last_name
+            self.bot.send_message(id, text, reply_markup=keyboard)
 
-            elif not (message.from_user.last_name):
-                name = message.from_user.first_name
-
-            elif not (message.from_user.first_name):
-                name = message.from_user.last_name
-
-            name = name + " @ " + message.chat.title
-
-            return name
-    def order(self, commander_order):
-
-        commander_order_show = str()
-
-        for i , name in enumerate(commander_order):
-
-            commander_order_show += f"{i +1 }-" +  f"{name}\n"
-
-        return commander_order_show
-    
-    def fix_name(self, currupted_name):
-
-        '''
-        This function return the uncheked version of a checked name.
-        if the names is unchecked already, it returns the names itself.
-        '''
-
-        if currupted_name[0:len(Keys.check_box)] == Keys.check_box:
-
-            return currupted_name[len(Keys.check_box):]
-
-        else:
-
-            return currupted_name
-    
-    def add_player(self, message):
-
-        '''
-        this function add the players info name to the game 
-        when pressing join game or create game by the players.
-        '''
-
-        name = self.grab_name(message)
-        temp_name = name
-
-        id = message.chat.id
-        similar_name_count = 0
-
-        while True:
-
-            if temp_name in self.names:
-
-                similar_name_count += 1
-                temp_name = f"{name}_{similar_name_count}"
-
-            else:
-                
-                name = temp_name
-                break
-        
-        self.names.append(name)
-        self.ids.append(id)
-
-        self.checked_names.append(emojize(f"{Keys.check_box}{name}"))
-
-        self.names_to_ids[name] = id
-        self.ids_to_names[id] = name
-
-    def define_game(self):
-
-        '''
-        this function define the define the game engine using
-        the names of the players and the prefered characters.
-        '''
-        
-        name_for_game = self.names[:]
-        character_for_game = self.choosed_characters[:]
-        self.game = Avalon_Engine(name_for_game, character_for_game)
+        self.ended_game_state()
 
     ######################### State functions #########################
+    # These functions help keep track of the state during the game.
+        
     def created_game_state(self, message):
 
         self.game_state = States.starting
@@ -943,27 +922,24 @@ class Bot():
         return (sep +
                 "\n" + "Committee Result:"
                 "\n" + sign)
-
+    
     def add_mission_vote(self, names, fail, success, who_won, Round, commander):
 
         sign = ":red_square:" if who_won == "Evil" else ":green_square:"
         sep = "-" * 15
         round_sep = "*" * 30
 
-        return ("\n" +
-                "\n" + f"Round: {Round} (Commander: {commander})" +
-                "\n" + f"{sep}" +
+        return (f"Round: {Round} (Commander: {commander})" +
+                "\n" + sep +
                 "\n" + f"Committee Memebers:"+
                 "\n" + "-" + names +
-                "\n" + f"{sep}" +
+                "\n" + sep +
                 "\n" + f"Mission Results:"+
                 "\n" + f"# Sucesses: {success}" +
                 "\n" + f"# Fails: {fail}" +
-                "\n" + f"{sep}" +
+                "\n" + sep +
                 "\n" + f"Round Winner:" +
-                "\n" + emojize(f"{sign} {who_won}") +
-                "\n" +
-                "\n" + f"{round_sep}")
+                "\n" + emojize(f"{sign} {who_won}"))
     
     def send_committee_summary(self):
 
@@ -993,16 +969,16 @@ class Bot():
         names = "\n-".join(self.mission_voters_name)
         commander = self.current_commander
 
-        self.all_time_summary += self.add_mission_vote(names, self.game.fail_count,
+        self.all_time_summary.append(self.add_mission_vote(names, self.game.fail_count,
                                                         self.game.success_count,
-                                                        who_won, Round, commander)
+                                                        who_won, Round, commander))
         
         keyboard = self.remove_keyboard()
         self.my_wait(0.5)
 
         for id in self.ids:
-
-            self.bot.send_message(id, self.all_time_summary, reply_markup=keyboard) 
+            for i in range(len(self.all_time_summary)):
+                self.bot.send_message(id, self.all_time_summary[i], reply_markup=keyboard) 
 
 if __name__ == "__main__":
 
