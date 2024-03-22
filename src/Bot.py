@@ -126,6 +126,7 @@ class Bot():
                 keyboard = self.remove_keyboard()
 
                 for id in self.ids:
+                    
                     self.bot.send_message(id, Texts.TGT, reply_markup=keyboard)
 
                 ##########################
@@ -166,179 +167,60 @@ class Bot():
 
         ######################### Join Game #########################
         @self.bot.message_handler(regexp=Keys.join_game)
-        def join_game(message):#OKSTATE
+        def joining_game(message):#OKSTATE
             print("join_game")
-            
-            id = message.chat.id
-            if id not in self.ids:
+
+            if message.chat.id not in self.ids:
 
                 self.add_player(message)
-                name = self.ids_to_names[id]
+                name = self.ids_to_names[message.chat.id]
 
                 text = f"{Texts.YJGS}\n{Texts.YN}{name}."
                 
                 text_to_admin = f"{name} {Texts.GAJG}"
                 keyboard = self.remove_keyboard()
 
-                self.bot.send_message(id, text, reply_markup=keyboard)
+                self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
                 self.bot.send_message(self.game_admin_id, text_to_admin)
 
             else:
 
-                self.bot.send_message(id, Texts.YAJ)
-            
-            ##########################
-            #State Less
-            ##########################
+                self.bot.send_message(message.chat.id, Texts.YAJ)
 
         ######################### Send Info #########################
         @self.bot.message_handler(func=self.is_game_admin, regexp=Keys.start_game)
-        def send_info(message):#OKSTATE
-            print("send_info")
-            
-            id = message.chat.id
+        def starting_game(message):#OKSTATE
+            print("starting_game")
 
             if self.game_state == States.starting:
-
-                try:
-
-                    self.define_game()
-
-                    ##########################
-                    self.started_game_state()
-                    ##########################
-
-                    for name, character in self.game.assigned_character.items():
-
-                        message = character.message
-                        self.bot.send_message(self.names_to_ids[name], message)
-
-                        if character.name == "Assassin":
-                            self.assassin_id = self.names_to_ids[name]
-                            
-                        if character.has_info:
-                            
-                            c_1 = character.name == "Minion"
-                            c_2 = character.name == "Assassin"
-
-                            if c_1 or c_2:
-
-                                info = "\n".join(self.game.all_info["Evil_Team"])
-                                self.bot.send_message(self.names_to_ids[name], info)
-                                self.Evil_team_id.append(self.names_to_ids[name])
-
-                            else:
-                                
-                                info = "\n".join(self.game.all_info[character.name])
-                                self.bot.send_message(self.names_to_ids[name], info)
-
-
-                    self.commander_order = self.names[:]
-
-                    if self.shuffle_commander_order:
-
-                        shuffle(self.commander_order)
-
-                    keyboard = self.remove_keyboard()
-                    text = emojize(f"{Texts.CO}\n" + self.order(self.commander_order))
-
-                    for id in self.ids:
-
-                        self.bot.send_message(id, text, reply_markup=keyboard)
-
-                    self.go_to_next_commander(0)
-
-                except ValueError as e:
-
-                    self.bot.send_message(id, e.args[0])
+                
+                self.start_game(message)
 
             else:
                 
-                self.bot.send_message(id, Texts.TGHS)
-                ##########################
-                #Return State
-                ##########################
+                self.bot.send_message(message.chat.id, Texts.TGHS)
                 
         ######################### ccommander choosing name #########################
         @self.bot.message_handler(func=self.is_commander_choosing_name)
-        def commander_choose_name(message):#OKSTATE
-            print("commander_choose_name")
-            id = message.chat.id
-            add_remove_name = self.fix_name(message.text)
+        def commander_choosing_name(message):#OKSTATE
+            print("commander_choosing_name")
 
-            if add_remove_name in self.mission_voters:
-
-                self.mission_voters.remove(add_remove_name)
-                text = f"{add_remove_name}{Texts.RFC}"
-
-            else:
-
-                self.mission_voters.append(add_remove_name)
-                text = f"{add_remove_name}{Texts.ATC}"
-
-            keyboard = self.commander_keyboard()
-            self.bot.send_message(id, text, reply_markup=keyboard)
-
-            ##########################
-            #Return State
-            ##########################
+            self.commander_choose_name(message)
 
         ######################### commander pressing button #########################
         @self.bot.message_handler(func=self.is_commander_pressing_button)
         def commander_press_button(message):#OKSTATE
             print("commander_press_button")
 
-            id = message.chat.id
-            if self.game_sub_state == Sub_States.committee_choosing:
-
-                self.game.check_committee(self.mission_voters)
+            self.game.check_committee(self.mission_voters)
+            
+            if self.game.acceptable_round:
                 
-                if self.game.acceptable_round:
-
-                    if message.text == Keys.propose:
-
-                        text = f"{Texts.propose}\n-" + "\n-".join(self.mission_voters)
-
-                        for id in self.ids:
-
-                            self.bot.send_message(id, text)
-
-                    ##########################
-                    #Return State
-                    ##########################
-
-                    elif message.text == Keys.final:
-
-                        text = f"{Texts.final}\n-" + "\n-".join(self.mission_voters)
-                        keyboard = self.committee_vote_keyboard()
-                        self.committee_voters = self.names[:]
-
-                        for id in self.ids:
-                            self.bot.send_message(id, text, reply_markup=keyboard)
-
-                        ##########################
-                        self.committee_voting_state()
-                        ##########################
-
-                else:
-
-                    n_committee = self.game.all_round[self.game.round]
-                    text = f"{Texts.CCN2_1}{n_committee}{Texts.CCN2_2}"
-                    keyboard = self.commander_keyboard()
-                    id = message.chat.id
-                    self.bot.send_message(id, text, reply_markup=keyboard)
-
-                    ##########################
-                    #Return State
-                    ##########################
+                self.commander_decision(message)
 
             else:
 
-                self.bot.send_message(id, Texts.YHFYD)
-
-                ##########################
-                #Return State
-                ##########################
+                self.pick_right_players(message)
 
         ######################### committee vote #########################
         @self.bot.message_handler(func=self.is_eligible_vote)
@@ -359,7 +241,7 @@ class Bot():
                     
                     self.handle_committee_vote(message)
                     self.game.count_committee_vote(self.committee_votes)
-                    self.make_committee_summary()
+                    self.send_committee_summary()
 
                     if self.game.reject_count == 5:
 
@@ -367,12 +249,11 @@ class Bot():
 
                     elif self.game.committee_accept:
 
-                        
                         self.go_to_mission_voting()
                         
                     else:
                         
-                        self.go_to_next_commander(1)
+                        self.go_to_next_commander()
 
             else:
 
@@ -397,7 +278,7 @@ class Bot():
                     
                     self.handle_mission_vote(message)
                     self.game.mission_result(self.mission_votes)
-                    self.make_mission_summary()
+                    self.send_mission_summary()
                     
                     if self.game.evil_wins == 3:
 
@@ -409,7 +290,7 @@ class Bot():
 
                     else:
 
-                        self.go_to_next_commander(1)
+                        self.go_to_next_commander()
 
             else:
 
@@ -420,7 +301,7 @@ class Bot():
         def assassin_choosing_name(message):#STATEOK
             print("assassin_choosing_name")
             
-            self.choose_assassin_name(message)
+            self.assassin_choose_name(message)
 
         @self.bot.message_handler(func=self.is_assassin_pressing_button)
         def assassin_pressing_button(message):#STATEOK
@@ -443,6 +324,62 @@ class Bot():
 
     ######################### reducing functions #########################
     # the following functions helps reduce the amount of code.
+    def send_info(self):
+
+        self.define_game()
+        self.started_game_state()
+
+        for name, character in self.game.assigned_character.items():
+
+            message = character.message
+            self.bot.send_message(self.names_to_ids[name], message)
+
+            if character.name == "Assassin":
+                self.assassin_id = self.names_to_ids[name]
+                
+            if character.has_info:
+                
+                c_1 = character.name == "Minion"
+                c_2 = character.name == "Assassin"
+
+                if c_1 or c_2:
+
+                    info = "\n".join(self.game.all_info["Evil_Team"])
+                    self.bot.send_message(self.names_to_ids[name], info)
+                    self.Evil_team_id.append(self.names_to_ids[name])
+
+                else:
+                    
+                    info = "\n".join(self.game.all_info[character.name])
+                    self.bot.send_message(self.names_to_ids[name], info)
+
+    def send_commander_order(self):
+
+        self.commander_order = self.names[:]
+
+        if self.shuffle_commander_order:
+
+            shuffle(self.commander_order)
+
+        keyboard = self.remove_keyboard()
+        text = emojize(f"{Texts.CO}\n" + self.order(self.commander_order))
+
+        for id in self.ids:
+
+            self.bot.send_message(id, text, reply_markup=keyboard)
+
+    def start_game(self, message):
+
+        try:
+
+            self.send_info()
+            self.send_commander_order()
+            self.go_to_next_commander()
+
+        except ValueError as e:
+
+            self.bot.send_message(message.chat.id, e.args[0])
+    
     def resolve_commander(self):
         
         self.current_commander = self.commander_order[0]
@@ -465,30 +402,17 @@ class Bot():
         elif message.text == Keys.fail:
             self.mission_votes.append(0)
 
-    def go_to_next_commander(self, state):
+    def go_to_next_commander(self):
 
         keyboard = self.remove_keyboard()
         self.resolve_commander()
 
         commander_id = self.names_to_ids[self.current_commander]
         text = f"{Texts.NC}{self.current_commander}"
-
-        if state == 1:
             
-            for id in self.ids:
+        for id in self.ids:
 
-                print("Waiting to send message")
-
-                self.bot.send_message(id, self.all_time_summary, reply_markup=keyboard) 
-                self.bot.send_message(id, text)
-
-                print("message sent")
-
-        elif state == 0:
-
-            for id in self.ids:
-
-                self.bot.send_message(id, text)
+            self.bot.send_message(id, text)
 
         self.committee_choosing_state()
 
@@ -498,12 +422,52 @@ class Bot():
         keyboard = self.commander_keyboard()
         self.bot.send_message(commander_id, commander_text, reply_markup=keyboard)
 
+    def commander_decision(self, message):
+
+        if message.text == Keys.propose:
+
+            text = f"{Texts.propose}\n-" + "\n-".join(self.mission_voters)
+
+            for id in self.ids:
+
+                self.bot.send_message(id, text)
+
+        elif message.text == Keys.final:
+
+            text = f"{Texts.final}\n-" + "\n-".join(self.mission_voters)
+            keyboard = self.committee_vote_keyboard()
+            self.committee_voters = self.names[:]
+
+            for id in self.ids:
+                self.bot.send_message(id, text, reply_markup=keyboard)
+
+            self.committee_voting_state()
+
+    def commander_choose_name(self, message):
+
+        add_remove_name = self.fix_name(message.text)
+
+        if add_remove_name in self.mission_voters:
+
+            self.mission_voters.remove(add_remove_name)
+            text = f"{add_remove_name}{Texts.RFC}"
+
+        else:
+
+            self.mission_voters.append(add_remove_name)
+            text = f"{add_remove_name}{Texts.ATC}"
+
+        keyboard = self.commander_keyboard()
+        self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
+        
+    def pick_right_players(self, message):
+
+        n_committee = self.game.all_round[self.game.round]
+        text = f"{Texts.CCN2_1}{n_committee}{Texts.CCN2_2}"
+        keyboard = self.commander_keyboard()
+        self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
+
     def go_to_mission_voting(self):
-
-        keyboard = self.remove_keyboard()
-        for id in self.ids:
-
-            self.bot.send_message(id, self.committee_summary, reply_markup=keyboard)
 
         for name in self.mission_voters:
 
@@ -514,7 +478,6 @@ class Bot():
             self.bot.send_message(id, Texts.CM, reply_markup=keyboard)
 
         self.mission_voting_state()
-
 
     def handle_committee_vote(self,message):
 
@@ -551,7 +514,7 @@ class Bot():
 
         self.assassin_shooting_state()
 
-    def choose_assassin_name(self, message):
+    def assassin_choose_name(self, message):
 
         self.assassins_guess = self.fix_name(message.text)
 
@@ -573,7 +536,6 @@ class Bot():
         for id in self.ids:
             
             self.bot.send_message(id, text, reply_markup=keyboard)
-            self.bot.send_message(id, self.all_time_summary)
 
         self.ended_game_state()
 
@@ -967,13 +929,14 @@ class Bot():
                 "\n" +
                 "\n" + f"{round_sep}")
     
-    def make_committee_summary(self):
+    def send_committee_summary(self):
 
         if self.game.committee_accept:
 
             self.game.reject_count = 0
 
         else:
+
             self.game.reject_count += 1
             
         rejected = self.game.reject_count
@@ -981,7 +944,13 @@ class Bot():
         self.committee_summary = self.add_committee_header(rejected) + self.committee_summary
         self.committee_summary += self.add_committee_footer()
 
-    def make_mission_summary(self):
+        keyboard = self.remove_keyboard()
+
+        for id in self.ids:
+
+            self.bot.send_message(id, self.committee_summary, reply_markup=keyboard)
+        
+    def send_mission_summary(self):
 
         Round = self.game.round - 1
         who_won = self.game.who_won
@@ -991,6 +960,13 @@ class Bot():
         self.all_time_summary += self.add_mission_vote(names, self.game.fail_count,
                                                         self.game.success_count,
                                                         who_won, Round, commander)
+        
+        keyboard = self.remove_keyboard()
+
+        for id in self.ids:
+
+            self.bot.send_message(id, self.all_time_summary, reply_markup=keyboard) 
+
 if __name__ == "__main__":
 
     my_bot = Bot()
