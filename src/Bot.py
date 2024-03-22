@@ -64,7 +64,8 @@ class Bot():
         self.committee_summary = str()
         self.mission_summary = str()
         self.all_time_summary = list()
-        self.do_wait = True
+        self.do_wait = False
+        
     def __init__(self): #STATELESS
 
         # Initializing the bot
@@ -411,15 +412,17 @@ class Bot():
         self.game = Avalon_Engine(name_for_game, character_for_game)
     def my_wait(self, k):
 
-        n = len(self.names) / k
+        if self.do_wait:
 
-        for i in range(1, 4):
-        
-            for id in self.ids:
-                
-                self.bot.send_message(id, "." * i)
+            n = len(self.names) / k
 
-                time.sleep(1/n)
+            for i in range(1, 4):
+            
+                for id in self.ids:
+                    
+                    self.bot.send_message(id, "." * i)
+
+                    time.sleep(1/n)
     
     def send_info(self):
 
@@ -429,8 +432,8 @@ class Bot():
         for id in self.ids:
 
                 self.bot.send_message(id, Texts.YR)
-        if self.do_wait:
-            self.my_wait(1)
+
+        self.my_wait(1)
     
         for name, character in self.game.assigned_character.items():
 
@@ -660,8 +663,8 @@ class Bot():
         else:
 
             text = f"{Texts.CW}{Texts.RCW}"
-        if self.do_wait:
-            self.my_wait(1)
+
+        self.my_wait(1)
 
         for id in self.ids:
 
@@ -974,8 +977,8 @@ class Bot():
                                                         who_won, Round, commander))
         
         keyboard = self.remove_keyboard()
-        if self.do_wait:
-            self.my_wait(0.5)
+
+        self.my_wait(0.5)
 
         for id in self.ids:
             for i in range(len(self.all_time_summary)):
