@@ -64,7 +64,7 @@ class Bot():
         self.committee_summary = str()
         self.mission_summary = str()
         self.all_time_summary = list()
-
+        self.do_wait = True
     def __init__(self): #STATELESS
 
         # Initializing the bot
@@ -429,8 +429,8 @@ class Bot():
         for id in self.ids:
 
                 self.bot.send_message(id, Texts.YR)
-
-        self.my_wait(1)
+        if self.do_wait:
+            self.my_wait(1)
     
         for name, character in self.game.assigned_character.items():
 
@@ -660,8 +660,8 @@ class Bot():
         else:
 
             text = f"{Texts.CW}{Texts.RCW}"
-        
-        self.my_wait(1)
+        if self.do_wait:
+            self.my_wait(1)
 
         for id in self.ids:
 
@@ -974,7 +974,8 @@ class Bot():
                                                         who_won, Round, commander))
         
         keyboard = self.remove_keyboard()
-        self.my_wait(0.5)
+        if self.do_wait:
+            self.my_wait(0.5)
 
         for id in self.ids:
             for i in range(len(self.all_time_summary)):
