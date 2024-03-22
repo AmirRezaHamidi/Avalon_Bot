@@ -39,15 +39,15 @@ Texts = SimpleNamespace(
     persival_morgana='Persival_Morgana',
     mordred='Mordred',
     oberon='Oberon',
-    CG="The game was created. "\
-     "\nAsk you friend to join the game. "\
+    CG="The game was created."\
+     "\nAsk you friend to join the game."\
      "\nYou name in the game is ",
     YN="You name in the game is ",
-    GOG="A game already exists. "\
+    GOG="A game already exists."\
       "\nFind it using the search command.",
     NGET="No game exists.",
     TGT="The was terminated.",
-    SFG="Searching ... ",
+    SFG="Searching ...",
     NGSC="No game exist. Try again ...",
     GOSC="A game is ongoing. Try again later ...",
     GESC="A game already exist and you can join it.",
@@ -66,9 +66,8 @@ Texts = SimpleNamespace(
     RFC=" was removed from the committee.",
     propose=emojize(':loudspeaker: Proposed committee by commander:'),
     final=emojize(':hundred_points: Final committee by commander:'),
-    YHFYD="You have already finalized your committee",
     CV="Your vote: ",
-    CM='Choose between "Fail" and "Success"',
+    CM='Choose between "Fail" and "Success".',
     ATC=" was add to the committee.",
     NC= "The next commander is ",
     YVB=":slightly_smiling_face: you have voted before",
@@ -76,12 +75,12 @@ Texts = SimpleNamespace(
     REW1="\nReason: The Committee was rejected 5 times in a row.",
     REW2="\nReason: Assassin Shooted the Merlin.",
     REW3="\nReason: Evil won three rounds.",
-    CW3R="City won 3 rounds, it's time for assassin to shoot",
-    CW="City Won",
-    RCW="\nReason: Assassin guesed the wrong person as merlin",
+    CW3R="City won 3 rounds, it's time for assassin to shoot.",
+    CW="City Won.",
+    RCW="\nReason: Assassin guesed the wrong person as merlin.",
     ASS1="Who do you want to shoot?",
-    ASS2_1="You chose",
-    ASS2_2="as the Merlin",
+    ASS2_1="You chose ",
+    ASS2_2=" as the Merlin.",
     ASSE_3="You should choose someone !!",
 
 )
