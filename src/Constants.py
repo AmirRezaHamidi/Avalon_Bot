@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from types import SimpleNamespace
 from emoji import emojize
 
@@ -36,6 +35,7 @@ Sub_States = SimpleNamespace(
 )
 
 Texts = SimpleNamespace(
+    
     persival_morgana='Persival_Morgana',
     mordred='Mordred',
     oberon='Oberon',

@@ -202,9 +202,11 @@ class Avalon_Engine():
     def check_committee(self, mission_voters):
 
         if len(mission_voters) == self.all_round[self.round]:
+
             self.acceptable_round = True
 
         else:
+            
             self.acceptable_round = False
 
     def count_committee_vote(self, committee_votes):
@@ -253,6 +255,7 @@ class Avalon_Engine():
                 self.who_won = "City"
         
         self.round += 1
+
     def assassin_shoot(self, shooted_name):
 
         if self.assigned_character[shooted_name].name == "Merlin":
