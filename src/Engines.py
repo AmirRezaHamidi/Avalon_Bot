@@ -224,8 +224,7 @@ class Avalon_Engine():
 
         self.fail_count = mission_votes.count(0)
         self.success_count = mission_votes.count(1)
-        print(self.round)
-        print(self.two_fails)
+
         condition_1 = self.round == 4
         condition_2 = self.two_fails is True
 
