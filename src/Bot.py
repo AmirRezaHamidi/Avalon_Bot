@@ -486,8 +486,8 @@ class Bot():
 
             if index == self.commander_number - 1:
 
-                commander_order_show += emojize(f"{name} --> :crown:\
-                                                ({n_committee} players)\n")
+                commander_order_show += emojize(f"{name} --> :crown: " +
+                                                f"({n_committee} players)\n")
 
             else:
 
