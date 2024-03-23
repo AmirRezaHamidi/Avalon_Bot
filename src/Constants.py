@@ -3,7 +3,7 @@ from emoji import emojize
 
 Keys = SimpleNamespace(
 
-    start_game=emojize(':check_mark_button: Start Game'), 
+    start_game=emojize(':check_mark_button: Start Game'),
     join_game=emojize(':plus: Joing the game'),
     choose_character=emojize(':performing_arts: Lets choose characters'),
     finished_choosing=emojize(':check_mark_button: Finished Choosing'),
@@ -15,8 +15,8 @@ Keys = SimpleNamespace(
     agree=emojize(':thumbs_up:Agree'),
     disagree=emojize(':thumbs_down: Disagree'),
     assassin_shoots=emojize(':water_pistol: Shoot'),
-    accept = emojize(":check_mark_button: Accept"),
-    declined = emojize(":prohibited: Declined")
+    accept=emojize(":check_mark_button: Accept"),
+    declined=emojize(":prohibited: Declined")
 )
 
 States = SimpleNamespace(
@@ -31,20 +31,20 @@ Sub_States = SimpleNamespace(
     committee_voting='committee_voting',
     mission_voting='mission_voting',
     assassin_shooting='assassin_shooting',
-    assassin_shooted = "assassin_shooted"
+    assassin_shooted="assassin_shooted"
 )
 
 Texts = SimpleNamespace(
-    
+
     persival_morgana='Persival_Morgana',
     mordred='Mordred',
     oberon='Oberon',
-    CG="The game was created."\
-     "\nAsk you friend to join the game."\
-     "\nYou name in the game is ",
+    CG="The game was created."
+    "\nAsk you friend to join the game."
+    "\nYou name in the game is ",
     YN="You name in the game is ",
-    GOG="A game already exists."\
-      "\nFind it using the search command.",
+    GOG="A game already exists."
+    "\nFind it using the search command.",
     NGET="No game exists.",
     TGT="The was terminated.",
     SFG="Searching ...",
@@ -70,16 +70,15 @@ Texts = SimpleNamespace(
     CM='Choose between "Fail" and "Success".',
     ATC=" was add to the committee.",
     YVB=":slightly_smiling_face: you have voted before",
-    EW = "Evil Won.", 
+    EW="Evil Won.",
     REW1="\nReason: The Committee was rejected 5 times in a row.",
     REW2="\nReason: Assassin Shooted the Merlin.",
     REW3="\nReason: Evil won three rounds.",
     CW3R="City won 3 rounds, it's time for assassin to shoot.",
     CW="City Won.",
-    RCW="\nReason: Assassin guesed the wrong person as Merlin.",
+    RCW="\nReason: Assassin guessed the wrong person as Merlin.",
     ASS1="Who do you want to shoot?",
     ASS2_1="You chose ",
     ASS2_2=" as the Merlin.",
     ASSE_3="You should choose someone !!",
-
 )

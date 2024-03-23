@@ -3,6 +3,7 @@ from Characters import (Assassin, Merlin, Minion, Mordred, Morgana,
                         Oberon, Persival, Servant)
 from Constants import Texts
 
+
 class Avalon_Engine():
 
     def __init__(self, names, optional_characters=None):
@@ -114,7 +115,7 @@ class Avalon_Engine():
 
             message = Texts.PNE
             raise ValueError(message)
-        
+
         if len(self.names) < len(self.game_character):
             message = Texts.PCE
             raise ValueError(message)
@@ -164,7 +165,7 @@ class Avalon_Engine():
         self.string_character = list()
 
         random.shuffle(self.names)
-        
+
         for index, name in enumerate(self.names):
 
             self.assigned_character[name] = self.game_character[index]
@@ -206,7 +207,7 @@ class Avalon_Engine():
             self.acceptable_round = True
 
         else:
-            
+
             self.acceptable_round = False
 
     def count_committee_vote(self, committee_votes):
@@ -253,7 +254,7 @@ class Avalon_Engine():
 
                 self.city_wins += 1
                 self.who_won = "City"
-        
+
         self.round += 1
 
     def assassin_shoot(self, shooted_name):

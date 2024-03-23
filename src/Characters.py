@@ -12,9 +12,9 @@ class Persival():
 
     def __init__(self):
 
-        self.message = ('You are the "Persival".' + 
+        self.message = ('You are the "Persival".' +
                         "\n" + "Merlin and Morgana:" +
-                        "\n"+
+                        "\n" +
                         "\n")
         self.name = "Persival"
         self.side = "City"
@@ -25,9 +25,9 @@ class Merlin():
 
     def __init__(self):
 
-        self.message = ('You are the "Merlin".' + 
+        self.message = ('You are the "Merlin".' +
                         "\n" + "Mafia Team:" +
-                        "\n"+
+                        "\n" +
                         "\n")
         self.name = "Merlin"
         self.side = "City"
@@ -39,9 +39,9 @@ class Minion():
 
     def __init__(self):
 
-        self.message = ('You are a "Mafia Mamooli".' + 
-                        "\n" +"Mafia Team:"
-                        "\n"+
+        self.message = ('You are a "Mafia Mamooli".' +
+                        "\n" + "Mafia Team:"
+                        "\n" +
                         "\n")
         self.name = "Minion"
         self.side = "Evil"
@@ -52,9 +52,9 @@ class Morgana():
 
     def __init__(self):
 
-        self.message = ('You are the "Morgana".' + 
-                        "\n" +"Mafia Team:" +
-                        "\n"+
+        self.message = ('You are the "Morgana".' +
+                        "\n" + "Mafia Team:" +
+                        "\n" +
                         "\n")
         self.name = "Morgana"
         self.side = "Evil"
@@ -65,9 +65,9 @@ class Assassin():
 
     def __init__(self):
 
-        self.message = ('You are the "Assassin".' + 
-                        "\n" +"Mafia Team:"+
-                        "\n"+
+        self.message = ('You are the "Assassin".' +
+                        "\n" + "Mafia Team:" +
+                        "\n" +
                         "\n")
         self.name = "Assassin"
         self.side = "Evil"
@@ -83,13 +83,14 @@ class Oberon():
         self.side = "Evil"
         self.has_info = False
 
+
 class Mordred():
 
     def __init__(self):
 
-        self.message = ('You are the "Mordred".' + 
-                        "\n" +"Mafia Team:"+
-                        "\n"+
+        self.message = ('You are the "Mordred".' +
+                        "\n" + "Mafia Team:" +
+                        "\n" +
                         "\n")
         self.name = "Mordred"
         self.side = "Evil"
