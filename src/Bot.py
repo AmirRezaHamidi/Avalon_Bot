@@ -995,6 +995,4 @@ class Bot():
             for i in range(len(self.all_time_summary)):
                 self.bot.send_message(id, self.all_time_summary[i], reply_markup=keyboard) 
 
-if __name__ == "__main__":
-
-    my_bot = Bot()
+my_bot = Bot()
