@@ -18,7 +18,7 @@ terminating_word = read_txt_file(f"{current_working_directory}\\src\\Data\\Termi
 
 class Bot():
 
-    def initial_condition(self): #STATELESS
+    def initial_condition(self):
         
         # admin parameters
         self.starting_word = starting_word
@@ -44,7 +44,9 @@ class Bot():
         # commander parameters
         self.commander_order = list()
         self.current_commander = str()
+        self.first_commander = True
         self.shuffle_commander_order = True
+        self.commander_number = 0
 
         # committee parameters
         self.committee_voters = list()
@@ -65,7 +67,7 @@ class Bot():
         self.all_time_summary = list()
         self.do_wait = False
 
-    def __init__(self): #STATELESS
+    def __init__(self):
 
         # Initializing the bot ...
         self.initial_condition()
@@ -154,10 +156,6 @@ class Bot():
 
                 text = Texts.YAJ
                 self.bot.send_message(message.chat.id, text)
-
-            ##########################
-            #State Less
-            ##########################
 
         ######################### Join Game #########################
         @self.bot.message_handler(regexp=Keys.join_game)
@@ -317,7 +315,7 @@ class Bot():
         def print_function(message):
             print("print_function")
 
-            text = message.text
+            text = demojize(message.text)
             self.bot.send_message(message.chat.id, text)
 
     ######################### main functions #########################
@@ -354,16 +352,6 @@ class Bot():
             name = name + " @ " + message.chat.title
 
             return name
-    
-    def order(self, commander_order):
-
-        commander_order_show = str()
-
-        for i , name in enumerate(commander_order):
-
-            commander_order_show += f"{i +1 }-" +  f"{name}\n"
-
-        return commander_order_show
     
     def fix_name(self, currupted_name):
 
@@ -461,38 +449,70 @@ class Bot():
 
             self.bot.send_message(self.names_to_ids[name], message)
 
-    def send_commander_order(self):
+    def make_commander_order(self):
 
         self.commander_order = self.names[:]
 
         if self.shuffle_commander_order:
-
+            
             shuffle(self.commander_order)
 
-        text = emojize(f"{Texts.CO}\n\n" + self.order(self.commander_order))
+    def resolve_commander(self):
+        
+        if self.commander_number == len(self.names):
+
+            self.commander_number = 0
+
+        self.current_commander = self.commander_order[self.commander_number] 
+        self.commander_number += 1
+    
+    def send_commander_order(self):
+
+        commander_order_show = str()
+        n_committee = self.game.all_round[self.game.round]
+
+        for index, name in enumerate(self.commander_order):
+
+                if index == self.commander_number - 1:
+
+                    commander_order_show += emojize(f"{name} --> :crown: ({n_committee} players)\n")
+
+                else:
+
+                    commander_order_show += f"{name}\n"
+
+        text = emojize(f"{Texts.CO}\n\n" + commander_order_show)
         keyboard = self.remove_keyboard()
 
         for id in self.ids:
 
             self.bot.send_message(id, text, reply_markup=keyboard)
 
+    def go_to_next_commander(self):
+
+        self.committee_choosing_state()
+        self.resolve_commander()
+        self.send_commander_order()
+
+        commander_id = self.names_to_ids[self.current_commander]
+        n_committee = self.game.all_round[self.game.round]
+
+        text = f"{Texts.CCN1}{Texts.CCN2_1}{n_committee}{Texts.CCN2_2}"
+        keyboard = self.commander_keyboard()
+
+        self.bot.send_message(commander_id, text, reply_markup=keyboard)
+        
     def start_game(self, message):
 
         try:
 
             self.send_info()
-            self.send_commander_order()
+            self.make_commander_order()
             self.go_to_next_commander()
 
         except ValueError as e:
 
             self.bot.send_message(message.chat.id, e.args[0])
-    
-    def resolve_commander(self):
-        
-        self.current_commander = self.commander_order[0]
-        self.commander_order.append(self.commander_order[0])
-        del self.commander_order [0]
 
     def transfer_committee_vote(self, message):
 
@@ -509,26 +529,6 @@ class Bot():
 
         elif message.text == Keys.fail:
             self.mission_votes.append(0)
-
-    def go_to_next_commander(self):
-
-        self.committee_choosing_state()
-        self.resolve_commander()
-        
-        text = f"{Texts.NC}{self.current_commander}"
-        keyboard = self.remove_keyboard()
-            
-        for id in self.ids:
-
-            self.bot.send_message(id, text, reply_markup=keyboard)
-
-        commander_id = self.names_to_ids[self.current_commander]
-        n_committee = self.game.all_round[self.game.round]
-
-        text = f"{Texts.CCN1}{Texts.CCN2_1}{n_committee}{Texts.CCN2_2}"
-        keyboard = self.commander_keyboard()
-
-        self.bot.send_message(commander_id, text, reply_markup=keyboard)
     
     def commander_choose_name(self, message):
 
@@ -614,18 +614,12 @@ class Bot():
         keyboard = self.remove_keyboard()
 
         self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
-
-        time.sleep(1)
-        self.bot.delete_message(message.chat.id, message.id - 1)
-        self.bot.delete_message(message.chat.id, message.id)
-        self.bot.delete_message(message.chat.id, message.id + 1)
-        
+        self.bot.delete_message(message.chat.id, message.id)        
 
     def you_voted(self, message):
 
-        self.bot.delete_message(message.chat.id, message.id)
         self.bot.send_message(message.chat.id, emojize(Texts.YVB))
-        self.bot.delete_message(message.chat.id, message.id + 1)
+        self.bot.delete_message(message.chat.id, message.id)
 
     def city_3_won(self):
 
@@ -718,6 +712,7 @@ class Bot():
 
     def committee_choosing_state(self):
 
+        self.game_state = States.ongoing
         self.game_sub_state = Sub_States.committee_choosing
         self.mission_voters = list()
         self.mission_voters_name = list()
