@@ -992,7 +992,9 @@ class Bot():
         self.my_wait(0.5)
 
         for id in self.ids:
+
             for i in range(len(self.all_time_summary)):
+                
                 self.bot.send_message(id, self.all_time_summary[i], reply_markup=keyboard) 
 
 my_bot = Bot()
