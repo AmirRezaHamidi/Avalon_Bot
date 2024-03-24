@@ -13,7 +13,7 @@ from utils.io import read_txt_file
 
 current_working_directory = os.getcwd()
 TOKEN = read_txt_file(f"{current_working_directory}\\src\\Data\\Bot_Token.txt")
-starting_word = read_txt_file(
+initiating_word = read_txt_file(
     f"{current_working_directory}\\src\\Data\\Starting_Word.txt")
 terminating_word = read_txt_file(
     f"{current_working_directory}\\src\\Data\\Terminating_Word.txt")
@@ -24,7 +24,7 @@ class Bot():
     def initial_condition(self):
 
         # admin parameters
-        self.starting_word = starting_word
+        self.starting_word = initiating_word
         self.terminating_word = terminating_word
         self.game_admin_id = int()
 

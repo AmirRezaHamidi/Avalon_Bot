@@ -3,4 +3,3 @@ telebot
 
 loguru==0.7.2
 emoji==2.10.1
-
