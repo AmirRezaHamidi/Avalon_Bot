@@ -4,7 +4,7 @@ from emoji import emojize
 Keys = SimpleNamespace(
 
     start_game=emojize(':check_mark_button: Start Game'),
-    join_game=emojize(':plus: Joing the game'),
+    join_game=emojize(':plus: Join the Game'),
     choose_character=emojize(':performing_arts: Lets choose characters'),
     finished_choosing=emojize(':check_mark_button: Finished Choosing'),
     propose=emojize(':loudspeaker: Propose'),
@@ -15,8 +15,6 @@ Keys = SimpleNamespace(
     agree=emojize(':thumbs_up:Agree'),
     disagree=emojize(':thumbs_down: Disagree'),
     assassin_shoots=emojize(':water_pistol: Shoot'),
-    accept=emojize(":check_mark_button: Accept"),
-    declined=emojize(":prohibited: Declined")
 )
 
 States = SimpleNamespace(
@@ -40,34 +38,34 @@ Texts = SimpleNamespace(
     mordred='Mordred',
     oberon='Oberon',
     CG="The game was created."
-    "\nAsk you friend to join the game."
-    "\nYou name in the game is ",
-    YN="You name in the game is ",
+    "\nAsk your friends to join the game."
+    "\nYour name in the game is: ",
+    YN="Your name in the game is: ",
     GOG="A game already exists."
     "\nFind it using the search command.",
     NGET="No game exists.",
-    TGT="The was terminated.",
+    TGT="The game was terminated.",
     SFG="Searching ...",
     NGSC="No game exist. Try again ...",
     GOSC="A game is ongoing. Try again later ...",
-    GESC="A game already exist and you can join it.",
     YAJ="you have already joined the game.",
+    GESC="A game already exists and you can join it.",
     YJGS="You have joined the game sucessfuly.",
-    GAJG="has joined the game.",
+    GAJG=" has joined the game.",
     PCE="There are too many characters.",
     PNE="Not Enough players, there should be atleast 5 players.",
     YR="We are preparing roles for you ...",
-    CO="Commander:",
-    CCN1="You are the commander in this round. ",
+    CO="Commanders:",
+    CCN1="You are the commander in this round.",
     CCN2_1="You should pick ",
     CCN2_2=" players.",
     TGHS="The game has already started.",
     SFV="Your vote has been received.",
-    RFC=" was removed from the committee.",
     propose=emojize(':loudspeaker: Proposed committee by commander:'),
     final=emojize(':hundred_points: Final committee by commander:'),
     CV="Your vote: ",
     CM='Choose between "Fail" and "Success".',
+    RFC=" was removed from the committee.",
     ATC=" was add to the committee.",
     YVB=":slightly_smiling_face: you have voted before",
     EW="Evil Won.",

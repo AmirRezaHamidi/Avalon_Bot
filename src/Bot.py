@@ -179,7 +179,7 @@ class Bot():
                 self.bot.send_message(
                     message.chat.id, text, reply_markup=keyboard)
 
-                text = f"{name} {Texts.GAJG}"
+                text = f"{name}{Texts.GAJG}"
 
                 self.bot.send_message(self.game_admin_id, text)
 
