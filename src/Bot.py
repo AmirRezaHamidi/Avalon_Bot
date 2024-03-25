@@ -511,7 +511,7 @@ class Bot():
             round_info += sign
             round_info += f"{text: ^10}"
 
-        win_info = "Wins:\n\n"
+        win_info = "Result:\n\n"
 
         for index, result in enumerate(self.game.all_wins[1:]):
 
