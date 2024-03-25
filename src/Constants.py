@@ -15,6 +15,12 @@ Keys = SimpleNamespace(
     agree=emojize(':thumbs_up:Agree'),
     disagree=emojize(':thumbs_down: Disagree'),
     assassin_shoots=emojize(':water_pistol: Shoot'),
+    accept=emojize(":check_mark_button: Accept"),
+    declined=emojize(":prohibited: Declined"),
+    natural=emojize(":white_small_square:"),
+    evil_win=emojize(":red_square:"),
+    city_win=(emojize(":green_square:"))
+
 )
 
 States = SimpleNamespace(
@@ -55,7 +61,7 @@ Texts = SimpleNamespace(
     PCE="There are too many characters.",
     PNE="Not Enough players, there should be atleast 5 players.",
     YR="We are preparing roles for you ...",
-    CO="Commanders:",
+    CO="Commander's order:",
     CCN1="You are the commander in this round.",
     CCN2_1="You should pick ",
     CCN2_2=" players.",

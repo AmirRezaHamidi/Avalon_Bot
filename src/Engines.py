@@ -19,6 +19,7 @@ class Avalon_Engine():
         self.evil_wins = int()
         self.reject_count = int()
         self.win_side = "Not Determined"
+        self.all_wins = [0] * 6
 
         self.acceptable_round = False
         self.committee_accept = False
@@ -237,11 +238,13 @@ class Avalon_Engine():
 
                 self.evil_wins += 1
                 self.who_won = "Evil"
+                self.all_wins[self.round] = -1
 
             else:
 
                 self.city_wins += 1
                 self.who_won = "City"
+                self.all_wins[self.round] = 1
 
         else:
 
@@ -249,11 +252,13 @@ class Avalon_Engine():
 
                 self.evil_wins += 1
                 self.who_won = "Evil"
+                self.all_wins[self.round] = -1
 
             else:
 
                 self.city_wins += 1
                 self.who_won = "City"
+                self.all_wins[self.round] = 1
 
         self.round += 1
 

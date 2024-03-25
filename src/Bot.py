@@ -477,23 +477,83 @@ class Bot():
         self.current_commander = self.commander_order[self.commander_number]
         self.commander_number += 1
 
+    def send_round_info(self):
+
+        all_info = str()
+        round_info = "Rounds:\n\n"
+        two_fail = "(2)" if self.game.two_fails else ""
+        print(two_fail)
+
+        for index, this_round in enumerate(self.game.all_round[1:]):
+
+            sign = "" if index == 0 else "|"
+
+            if index + 1 == 4:
+
+                if index + 1 == self.game.round:
+
+                    text = emojize(f":keycap_{this_round}: {two_fail}")
+
+                else:
+
+                    text = f"{this_round} {two_fail}"
+
+            else:
+
+                if index + 1 == self.game.round:
+
+                    text = emojize(f":keycap_{this_round}:")
+
+                else:
+
+                    text = f"{this_round}"
+
+            round_info += sign
+            round_info += f"{text: ^10}"
+
+        win_info = "Wins:\n\n"
+
+        for index, result in enumerate(self.game.all_wins[1:]):
+
+            sign = "" if index == 0 else "|"
+
+            if result == 0:
+
+                text = f"{Keys.natural}"
+
+            elif result == 1:
+
+                text = f"{Keys.city_win}"
+
+            elif result == -1:
+
+                text = f"{Keys.evil_win}"
+
+            win_info += sign
+            win_info += f"{text: ^7}"
+
+        all_info = round_info + "\n\n" + win_info
+
+        for id in self.ids:
+
+            self.bot.send_message(id, all_info)
+
     def send_commander_order(self):
 
         commander_order_show = str()
-        n_committee = self.game.all_round[self.game.round]
 
         for index, name in enumerate(self.commander_order):
 
             if index == self.commander_number - 1:
 
-                commander_order_show += emojize(f"{name} --> :crown: " +
-                                                f"({n_committee} players)\n")
+                commander_order_show += emojize(f"{name} --> (:crown:)\n")
 
             else:
 
                 commander_order_show += f"{name}\n"
 
-        text = emojize(f"{Texts.CO}\n\n" + commander_order_show)
+        n_players = f"{len(self.names)} Players"
+        text = emojize(f"{Texts.CO} ({n_players})\n\n" + commander_order_show)
         keyboard = self.remove_keyboard()
 
         for id in self.ids:
@@ -504,6 +564,7 @@ class Bot():
 
         self.committee_choosing_state()
         self.resolve_commander()
+        self.send_round_info()
         self.send_commander_order()
 
         commander_id = self.names_to_ids[self.current_commander]
@@ -636,6 +697,7 @@ class Bot():
 
     def city_3_won(self):
 
+        self.send_round_info()
         text = Texts.CW3R
         keyboard = self.remove_keyboard()
 
@@ -691,6 +753,7 @@ class Bot():
 
     def end_evil_3_won(self):
 
+        self.send_round_info()
         text = f"{Texts.EW}{Texts.REW3}"
         keyboard = self.remove_keyboard()
 
@@ -948,8 +1011,6 @@ class Bot():
 
     def add_mission_vote(self, names, fail, success, who_won, Round,
                          commander):
-
-        sign = ":red_square:" if who_won == "Evil" else ":green_square:"
         sep = "-" * 15
 
         return (f"Round: {Round} (Commander: {commander})" +
@@ -959,10 +1020,7 @@ class Bot():
                 "\n" + sep +
                 "\n" + "Mission Results:" +
                 "\n" + f"# Sucesses: {success}" +
-                "\n" + f"# Fails: {fail}" +
-                "\n" + sep +
-                "\n" + "Round Winner:" +
-                "\n" + emojize(f"{sign} {who_won}"))
+                "\n" + f"# Fails: {fail}")
 
     def send_committee_summary(self):
 
