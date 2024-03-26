@@ -20,7 +20,6 @@ Keys = SimpleNamespace(
     natural=emojize(":white_small_square:"),
     evil_win=emojize(":red_square:"),
     city_win=(emojize(":green_square:"))
-
 )
 
 States = SimpleNamespace(
@@ -40,13 +39,18 @@ Sub_States = SimpleNamespace(
 
 Texts = SimpleNamespace(
 
-    persival_morgana='Persival_Morgana',
+    merlin="Merlin",
+    assassin="Assassin",
+    persival_morgana='Persival/Morgana',
     mordred='Mordred',
     oberon='Oberon',
+    lady="Lady",
     CG="The game was created."
     "\nAsk your friends to join the game."
     "\nYour name in the game is: ",
     YN="Your name in the game is: ",
+    RFG=" was removed from the game.",
+    ATG=" was add to the game.",
     GOG="A game already exists."
     "\nFind it using the search command.",
     NGET="No game exists.",
@@ -67,8 +71,8 @@ Texts = SimpleNamespace(
     CCN2_2=" players.",
     TGHS="The game has already started.",
     SFV="Your vote has been received.",
-    propose=emojize(':loudspeaker: Proposed committee by commander:'),
-    final=emojize(':hundred_points: Final committee by commander:'),
+    propose='Proposed committee by commander:',
+    final='Final committee by commander:',
     CV="Your vote: ",
     CM='Choose between "Fail" and "Success".',
     RFC=" was removed from the committee.",

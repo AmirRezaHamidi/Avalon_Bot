@@ -26,7 +26,7 @@ class Bot():
         # admin parameters
         self.starting_word = initiating_word
         self.terminating_word = terminating_word
-        self.game_admin_id = int()
+        self.admin_id = int()
 
         # game state parameter
         self.game_state = States.no_game
@@ -41,7 +41,23 @@ class Bot():
         self.names_to_ids = dict()
 
         # Character parameters
-        self.choosed_characters = ["Merlin", "Assassin"]
+        # characters
+        merlin = Texts.merlin
+        assassin = Texts.assassin
+        mordred = Texts.mordred
+        obron = Texts.oberon
+        persival = Texts.persival_morgana
+        # lady = Texts.lady
+        key = Keys.check_box
+
+        # lists
+        choosed = [merlin, assassin]
+        self.choosed_characters = choosed
+
+        optional = [obron, mordred, persival]
+        self.optional_characters = optional
+
+        self.checked_optional_characters = [f"{key}{i}" for i in optional]
         self.Evil_team_id = list()
 
         # commander parameters
@@ -89,10 +105,8 @@ class Bot():
         # Starting Word #
         @self.bot.message_handler(regexp=self.starting_word)
         def starting_word(message):
-            
             print("starting_word")
 
-            self.bot.delete_message(message.chat.id, message.id)
             if self.game_state == States.no_game:
 
                 self.created_game_state(message)
@@ -100,7 +114,7 @@ class Bot():
 
                 name = self.ids_to_names[message.chat.id]
                 text = f"{Texts.CG}{name}."
-                keyboard = self.start_game_keyboard()
+                keyboard = self.character_keyboard()
 
                 self.bot.send_message(
                     message.chat.id, text, reply_markup=keyboard)
@@ -109,6 +123,12 @@ class Bot():
 
                 text = Texts.GOG
                 self.bot.send_message(message.chat.id, text)
+
+        # Choose_character
+        @self.bot.message_handler(func=self.is_admin_choosing_character)
+        def Choose_character(message):
+            print("choose_character")
+            self.admin_choose_characters(message)
 
         # Terminate Game #
         @self.bot.message_handler(regexp=self.terminating_word)
@@ -182,7 +202,7 @@ class Bot():
 
                 text = f"{name}{Texts.GAJG}"
 
-                self.bot.send_message(self.game_admin_id, text)
+                self.bot.send_message(self.admin_id, text)
 
             else:
 
@@ -191,7 +211,7 @@ class Bot():
 
         # Send Info #
         @self.bot.message_handler(
-                func=self.is_game_admin, regexp=Keys.start_game)
+                func=self.is_admin, regexp=Keys.start_game)
         def starting_game(message):
             print("starting_game")
 
@@ -402,6 +422,24 @@ class Bot():
 
         self.names_to_ids[name] = id
         self.ids_to_names[id] = name
+
+    def admin_choose_characters(self, message):
+
+        self.bot.delete_message(message.chat.id, message.id)
+        add_remove_name = self.fix_name(message.text)
+
+        if add_remove_name in self.choosed_characters:
+
+            self.choosed_characters.remove(add_remove_name)
+            text = f"{add_remove_name}{Texts.RFG}"
+
+        else:
+
+            self.choosed_characters.append(add_remove_name)
+            text = f"{add_remove_name}{Texts.ATG}"
+
+        keyboard = self.character_keyboard()
+        self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
 
     def define_game(self):
 
@@ -781,7 +819,7 @@ class Bot():
     def created_game_state(self, message):
 
         self.game_state = States.starting
-        self.game_admin_id = message.chat.id
+        self.admin_id = message.chat.id
 
     def started_game_state(self):
 
@@ -822,12 +860,21 @@ class Bot():
     # the following functions check the necessary rules
     # for each message handler. their output is either True or False.
 
-    def is_game_admin(self, message):
-        print("is_game_admin")
+    def is_admin(self, message):
+        print("is_admin")
 
-        c_1 = self.game_admin_id == message.chat.id
+        c_1 = self.admin_id == message.chat.id
 
         return c_1
+
+    def is_admin_choosing_character(self, message):
+
+        c_1 = self.game_state == States.starting
+        c_2 = self.admin_id == message.chat.id
+        c_3 = message.text in self.optional_characters
+        c_4 = message.text in self.checked_optional_characters
+
+        return c_1 and c_2 and (c_3 or c_4)
 
     def is_commander(self, message):
         print("is_commander")
@@ -842,6 +889,7 @@ class Bot():
 
         c_1 = self.game_state == States.ongoing
         c_2 = self.game_sub_state == Sub_States.committee_choosing
+
         c_3 = self.is_commander(message)
         c_4 = message.text in self.names
         c_5 = message.text in self.checked_names
@@ -904,6 +952,32 @@ class Bot():
         buttons = map(types.KeyboardButton, buttons_text)
         keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
         keyboard.add(*buttons)
+
+        return keyboard
+
+    def character_keyboard(self):
+
+        keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+        buttons = []
+
+        for character in self.optional_characters:
+
+            if character in self.choosed_characters:
+
+                temp_str = demojize(Keys.check_box)
+
+            else:
+
+                temp_str = ""
+
+            buttons.append(types.KeyboardButton(emojize(temp_str + character)))
+
+        keyboard.add(*buttons)
+        buttons_last_layers = [Keys.start_game]
+
+        last_layer_buttons = map(types.KeyboardButton, buttons_last_layers)
+
+        keyboard.add(*last_layer_buttons)
 
         return keyboard
 
