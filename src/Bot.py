@@ -89,6 +89,7 @@ class Bot():
         # Starting Word #
         @self.bot.message_handler(regexp=self.starting_word)
         def starting_word(message):
+            
             print("starting_word")
 
             self.bot.delete_message(message.chat.id, message.id)
