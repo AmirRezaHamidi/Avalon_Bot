@@ -42,7 +42,7 @@ class Bot():
 
         # Character parameters
         # characters
-        merlin = Texts.merlin
+        merlin = Texts.merlin 
         assassin = Texts.assassin
         mordred = Texts.mordred
         obron = Texts.oberon
