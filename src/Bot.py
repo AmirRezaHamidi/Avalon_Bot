@@ -48,16 +48,12 @@ class Bot():
         obron = Char_Texts.oberon
         persival = Char_Texts.persival_morgana
         # lady = Char_Texts.lady
+
         key = Keys.check_box
-
-        # lists
         self.choosed_characters = [merlin, assassin]
-
         optional = [obron, mordred, persival]
         self.optional_characters = optional
-
         self.checked_optional_characters = [f"{key}{i}" for i in optional]
-        self.Evil_team_id = list()
 
         # commander parameters
         self.commander_order = list()
@@ -1119,10 +1115,6 @@ class Bot():
         keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
 
         for name in self.names:
-
-            if self.names_to_ids[name] in self.Evil_team_id:
-
-                continue
 
             if name == self.assassins_guess:
 
