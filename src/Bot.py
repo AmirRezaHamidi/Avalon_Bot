@@ -7,7 +7,7 @@ from loguru import logger
 from telebot import types
 import time
 
-from Constants import Sub_States, States, Keys, Texts
+from Constants import Sub_States, States, Keys, Texts, Char_Texts
 from Engines import Avalon_Engine
 from utils.io import read_txt_file
 
@@ -42,17 +42,16 @@ class Bot():
 
         # Character parameters
         # characters
-        merlin = Texts.merlin
-        assassin = Texts.assassin
-        mordred = Texts.mordred
-        obron = Texts.oberon
-        persival = Texts.persival_morgana
-        # lady = Texts.lady
+        merlin = Char_Texts.merlin
+        assassin = Char_Texts.assassin
+        mordred = Char_Texts.mordred
+        obron = Char_Texts.oberon
+        persival = Char_Texts.persival_morgana
+        # lady = Char_Texts.lady
         key = Keys.check_box
 
         # lists
-        choosed = [merlin, assassin]
-        self.choosed_characters = choosed
+        self.choosed_characters = [merlin, assassin]
 
         optional = [obron, mordred, persival]
         self.optional_characters = optional
@@ -470,34 +469,14 @@ class Bot():
 
             self.bot.send_message(id, Texts.YR)
 
-        self.my_wait(1)
+        for name, character in self.game.names_to_characters.items():
 
-        for name, character in self.game.assigned_character.items():
-
-            if character.name == "Assassin":
+            if character.name == Char_Texts.assassin:
                 self.assassin_id = self.names_to_ids[name]
 
-            if character.has_info:
+            text = self.game.all_messages[character.name]
 
-                c_1 = character.name == "Minion"
-                c_2 = character.name == "Assassin"
-
-                if c_1 or c_2:
-
-                    info = "-" + "\n-".join(self.game.all_info["Evil_Team"])
-                    message = character.message + info
-                    self.Evil_team_id.append(self.names_to_ids[name])
-
-                else:
-
-                    info = "-" + "\n-".join(self.game.all_info[character.name])
-                    message = character.message + info
-
-            else:
-
-                message = character.message
-
-            self.bot.send_message(self.names_to_ids[name], message)
+            self.bot.send_message(self.names_to_ids[name], text)
 
     def make_commander_order(self):
 
@@ -667,7 +646,7 @@ class Bot():
 
         if message.text == Keys.propose:
 
-            text = f"{Texts.propose}\n-" + "\n-".join(self.mission_voters)
+            text = f"{Texts.PCC}\n-" + "\n-".join(self.mission_voters)
 
             for id in self.ids:
 
@@ -675,7 +654,7 @@ class Bot():
 
         elif message.text == Keys.final:
 
-            text = f"{Texts.final}\n-" + "\n-".join(self.mission_voters)
+            text = f"{Texts.FCC}\n-" + "\n-".join(self.mission_voters)
             keyboard = self.committee_vote_keyboard()
 
             for id in self.ids:
@@ -961,7 +940,7 @@ class Bot():
         c_2 = self.is_created_state()
 
         # what
-        c_3 = message.text = Keys.start_game
+        c_3 = message.text == Keys.start_game
 
         return c_1 and c_2 and c_3
 
@@ -975,7 +954,7 @@ class Bot():
         c_3 = self.is_started_state()
 
         # what
-        c_4 = message.text = self.terminating_game_word
+        c_4 = message.text == self.terminating_game_word
 
         return c_1 and (c_2 or c_3) and c_4
 

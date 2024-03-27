@@ -1,24 +1,31 @@
 import random
-from Characters import (Assassin, Merlin, Minion, Mordred, Morgana,
-                        Oberon, Persival, Servant)
-from Constants import Texts
+from Characters import (Assassin, Merlin, Minion, Mordred,
+                        Morgana, Oberon, Persival, Servant)
+from Constants import Char_Texts, Texts
 
 
 class Avalon_Engine():
 
     def __init__(self, names, optional_characters=None):
 
-        if optional_characters is []:
-            optional_characters = None
-
         self.names = names
+
+        # Character Parameters
         self.optional_characters = optional_characters
+        self.game_character = [Assassin(), Merlin()]
+        self.names_to_characters = dict()
+
+        self.mordred_in_game = False
+        self.morgana_in_game = False
+        self.persival_in_game = False
+
+        self.string_character = list()
+        self.all_messages = dict()
 
         self.round = 1
         self.city_wins = int()
         self.evil_wins = int()
         self.reject_count = int()
-        self.win_side = "Not Determined"
         self.all_wins = [0] * 6
 
         self.acceptable_round = False
@@ -63,31 +70,29 @@ class Avalon_Engine():
 
         for character in self.game_character:
 
-            if character.side == "City":
+            if character.side == Char_Texts.city_side:
 
                 current_city += 1
 
-            elif character.side == "Evil":
+            elif character.side == Char_Texts.evil_side:
                 current_evil += 1
 
         return current_city, current_evil
 
     def power_character(self):
 
-        self.game_character = [Assassin(), Merlin()]
-
         if self.optional_characters is not None:
 
-            if Texts.persival_morgana in self.optional_characters:
+            if Char_Texts.persival_morgana in self.optional_characters:
 
                 self.game_character.append(Morgana())
                 self.game_character.append(Persival())
 
-            if Texts.mordred in self.optional_characters:
+            if Char_Texts.mordred in self.optional_characters:
 
                 self.game_character.append(Mordred())
 
-            if Texts.oberon in self.optional_characters:
+            if Char_Texts.oberon in self.optional_characters:
 
                 self.game_character.append(Oberon())
 
@@ -162,44 +167,55 @@ class Avalon_Engine():
     def character_assignment(self):
 
         self.resolve_character()
-        self.assigned_character = dict()
-        self.string_character = list()
 
         random.shuffle(self.names)
 
         for index, name in enumerate(self.names):
 
-            self.assigned_character[name] = self.game_character[index]
+            self.names_to_characters[name] = self.game_character[index]
             self.string_character.append(self.game_character[index].name)
 
     def character_message(self):
 
-        self.all_info = dict()
-        self.all_info["Merlin"] = []
-        self.all_info["Persival"] = []
-        self.all_info["Evil_Team"] = []
+        for character in self.game_character:
 
-        for name, character in self.assigned_character.items():
+            self.all_messages[character.name] = character.message
 
-            if (character.side == "Evil") and (character.name != "Oberon"):
+            if character.name == Char_Texts.mordred:
+                self.mordred_in_game = True
 
-                self.all_info["Evil_Team"].append(name)
+            if character.name == Char_Texts.persival:
+                self.persival_in_game = True
 
-            if (character.side == "Evil") and (character.name != "Mordred"):
+            if character.name == Char_Texts.morgana:
+                self.morgana_in_game = True
 
-                self.all_info["Merlin"].append(name)
+        print(self.game_character)
 
-        if "Persival" in self.string_character:
+        for name, character in self.names_to_characters.items():
 
-            for name, character in self.assigned_character.items():
+            f_name = f"\n-{name}"
+            if character.has_info:
 
-                Persival_Condition_1 = character.name == "Merlin"
-                Persival_Condition_2 = character.name == "Morgana"
+                if character.side == Char_Texts.evil_side:
 
-                if (Persival_Condition_1) or (Persival_Condition_2):
-                    self.all_info["Persival"].append(name)
+                    if character.name != Char_Texts.mordred:
+                        self.all_messages[Char_Texts.merlin] += f_name
 
-            random.shuffle(self.all_info["Persival"])
+                    self.all_messages[Char_Texts.assassin] += f_name
+                    self.all_messages[Char_Texts.mafia] += f_name
+
+                    if self.morgana_in_game:
+                        self.all_messages[Char_Texts.morgana] += f_name
+
+                    if self.mordred_in_game:
+                        self.all_messages[Char_Texts.mordred] += f_name
+
+                    if self.persival_in_game:
+
+                        if Char_Texts.morgana:
+                            self.all_messages[Char_Texts.persival] += f_name
+                # add merlin to persival
 
     def check_committee(self, mission_voters):
 
@@ -237,13 +253,13 @@ class Avalon_Engine():
             if self.fail_count >= 2:
 
                 self.evil_wins += 1
-                self.who_won = "Evil"
+                self.who_won = Char_Texts.evil_side
                 self.all_wins[self.round] = -1
 
             else:
 
                 self.city_wins += 1
-                self.who_won = "City"
+                self.who_won = Char_Texts.city_side
                 self.all_wins[self.round] = 1
 
         else:
@@ -251,18 +267,18 @@ class Avalon_Engine():
             if self.fail_count >= 1:
 
                 self.evil_wins += 1
-                self.who_won = "Evil"
+                self.who_won = Char_Texts.evil_side
                 self.all_wins[self.round] = -1
 
             else:
 
                 self.city_wins += 1
-                self.who_won = "City"
+                self.who_won = Char_Texts.city_side
                 self.all_wins[self.round] = 1
 
         self.round += 1
 
     def assassin_shoot(self, shooted_name):
 
-        if self.assigned_character[shooted_name].name == "Merlin":
+        if self.names_to_characters[shooted_name].name == Char_Texts.merlin:
             self.assassin_shooted_right = True

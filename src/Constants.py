@@ -23,12 +23,14 @@ Keys = SimpleNamespace(
 )
 
 States = SimpleNamespace(
+
     no_game='no_game',
     created='created',
     started='started'
 )
 
 Sub_States = SimpleNamespace(
+
     character_choosing='character_choosing',
     committee_choosing='committee_choosing',
     committee_voting='committee_voting',
@@ -37,14 +39,24 @@ Sub_States = SimpleNamespace(
     assassin_shooted="assassin_shooted"
 )
 
+Char_Texts = SimpleNamespace(
+
+    city_side="City",
+    evil_side="Evil",
+    khiar="Khiar",
+    persival="Persival",
+    merlin="Merlin",
+    mafia="Mafia",
+    morgana="Morgana",
+    assassin="Assassin",
+    oberon='Oberon',
+    mordred='Mordred',
+    lady="Lady",
+    persival_morgana='Persival/Morgana',
+)
+
 Texts = SimpleNamespace(
 
-    merlin="Merlin",
-    assassin="Assassin",
-    persival_morgana='Persival/Morgana',
-    mordred='Mordred',
-    oberon='Oberon',
-    lady="Lady",
     CG="The game was created."
     "\nAsk your friends to join the game."
     "\nYour name in the game is: ",
@@ -71,8 +83,8 @@ Texts = SimpleNamespace(
     CCN2_2=" players.",
     TGHS="The game has already started.",
     SFV="Your vote has been received.",
-    propose='Proposed committee by commander:',
-    final='Final committee by commander:',
+    PCC='Proposed committee by commander:',
+    FCC='Final committee by commander:',
     CV="Your vote: ",
     CM='Choose between "Fail" and "Success".',
     RFC=" was removed from the committee.",

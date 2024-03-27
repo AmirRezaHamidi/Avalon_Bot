@@ -1,10 +1,13 @@
+from Constants import Char_Texts
+
+
 # Arthur Side
 class Servant():
 
     def __init__(self):
         self.message = 'You are a "Khiar".'
-        self.name = "Servant"
-        self.side = "City"
+        self.name = Char_Texts.khiar
+        self.side = Char_Texts.city_side
         self.has_info = False
 
 
@@ -16,8 +19,8 @@ class Persival():
                         "\n" + "Merlin and Morgana:" +
                         "\n" +
                         "\n")
-        self.name = "Persival"
-        self.side = "City"
+        self.name = Char_Texts.persival
+        self.side = Char_Texts.city_side
         self.has_info = True
 
 
@@ -29,8 +32,8 @@ class Merlin():
                         "\n" + "Mafia Team:" +
                         "\n" +
                         "\n")
-        self.name = "Merlin"
-        self.side = "City"
+        self.name = Char_Texts.merlin
+        self.side = Char_Texts.city_side
         self.has_info = True
 
 
@@ -43,8 +46,8 @@ class Minion():
                         "\n" + "Mafia Team:"
                         "\n" +
                         "\n")
-        self.name = "Minion"
-        self.side = "Evil"
+        self.name = Char_Texts.mafia
+        self.side = Char_Texts.evil_side
         self.has_info = True
 
 
@@ -56,8 +59,8 @@ class Morgana():
                         "\n" + "Mafia Team:" +
                         "\n" +
                         "\n")
-        self.name = "Morgana"
-        self.side = "Evil"
+        self.name = Char_Texts.morgana
+        self.side = Char_Texts.evil_side
         self.has_info = True
 
 
@@ -69,8 +72,8 @@ class Assassin():
                         "\n" + "Mafia Team:" +
                         "\n" +
                         "\n")
-        self.name = "Assassin"
-        self.side = "Evil"
+        self.name = Char_Texts.assassin
+        self.side = Char_Texts.evil_side
         self.has_info = True
 
 
@@ -79,8 +82,8 @@ class Oberon():
     def __init__(self):
 
         self.message = 'You are the "Oberon".'
-        self.name = "Oberon"
-        self.side = "Evil"
+        self.name = Char_Texts.oberon
+        self.side = Char_Texts.evil_side
         self.has_info = False
 
 
@@ -92,6 +95,6 @@ class Mordred():
                         "\n" + "Mafia Team:" +
                         "\n" +
                         "\n")
-        self.name = "Mordred"
-        self.side = "Evil"
+        self.name = Char_Texts.mordred
+        self.side = Char_Texts.evil_side
         self.has_info = True
