@@ -24,8 +24,8 @@ Keys = SimpleNamespace(
 
 States = SimpleNamespace(
     no_game='no_game',
-    starting='starting',
-    ongoing='ongoing'
+    created='created',
+    started='started'
 )
 
 Sub_States = SimpleNamespace(
