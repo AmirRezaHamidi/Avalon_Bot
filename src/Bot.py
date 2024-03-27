@@ -498,64 +498,57 @@ class Bot():
 
     def send_round_info(self):
 
-        all_info = str()
         round_info = "Rounds:\n\n"
         two_fail = "(2)" if self.game.two_fails else ""
-        print(two_fail)
 
         for index, this_round in enumerate(self.game.all_round[1:]):
 
-            sign = "" if index == 0 else "|"
+            if index + 1 >= self.game.round:
 
-            if index + 1 == 4:
+                sign = "" if index == 0 else "|"
 
-                if index + 1 == self.game.round:
+                if index + 1 == 4:
 
-                    text = emojize(f":keycap_{this_round}: {two_fail}")
+                    if index + 1 == self.game.round:
+
+                        text = emojize(f":keycap_{this_round}: {two_fail}")
+
+                    else:
+
+                        text = f"{this_round} {two_fail}"
 
                 else:
 
-                    text = f"{this_round} {two_fail}"
+                    if index + 1 == self.game.round:
+
+                        text = emojize(f":keycap_{this_round}:")
+
+                    else:
+
+                        text = f"{this_round}"
+
+                round_info += sign
+                round_info += f"{text: ^10}"
 
             else:
 
-                if index + 1 == self.game.round:
+                result = self.game.all_wins[index + 1]
+                sign = "" if index == 0 else "|"
 
-                    text = emojize(f":keycap_{this_round}:")
+                if result == 1:
 
-                else:
+                    text = f"{Keys.city_win}"
 
-                    text = f"{this_round}"
+                elif result == -1:
 
-            round_info += sign
-            round_info += f"{text: ^10}"
+                    text = f"{Keys.evil_win}"
 
-        win_info = "Result:\n\n"
-
-        for index, result in enumerate(self.game.all_wins[1:]):
-
-            sign = "" if index == 0 else "|"
-
-            if result == 0:
-
-                text = f"{Keys.natural}"
-
-            elif result == 1:
-
-                text = f"{Keys.city_win}"
-
-            elif result == -1:
-
-                text = f"{Keys.evil_win}"
-
-            win_info += sign
-            win_info += f"{text: ^7}"
-
-        all_info = round_info + "\n\n" + win_info
+                round_info += sign
+                round_info += f"{text: ^7}"
 
         for id in self.ids:
 
-            self.bot.send_message(id, all_info)
+            self.bot.send_message(id, round_info)
 
     def send_commander_order(self):
 

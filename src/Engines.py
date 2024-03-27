@@ -15,13 +15,15 @@ class Avalon_Engine():
         self.game_character = [Assassin(), Merlin()]
         self.names_to_characters = dict()
 
-        self.mordred_in_game = False
-        self.morgana_in_game = False
         self.persival_in_game = False
+        self.morgana_in_game = False
+        self.mafia_in_game = False
+        self.mordred_in_game = False
 
-        self.string_character = list()
+        self.show_role = True
         self.all_messages = dict()
 
+        # Rounc Parameters
         self.round = 1
         self.city_wins = int()
         self.evil_wins = int()
@@ -30,7 +32,6 @@ class Avalon_Engine():
 
         self.acceptable_round = False
         self.committee_accept = False
-        self.king_guessed_right = False
         self.assassin_shooted_right = False
 
         self.round_info()
@@ -87,10 +88,13 @@ class Avalon_Engine():
 
                 self.game_character.append(Morgana())
                 self.game_character.append(Persival())
+                self.persival_in_game = True
+                self.morgana_in_game = True
 
             if Char_Texts.mordred in self.optional_characters:
 
                 self.game_character.append(Mordred())
+                self.mordred_in_game = True
 
             if Char_Texts.oberon in self.optional_characters:
 
@@ -109,6 +113,7 @@ class Avalon_Engine():
 
             for _ in range(evil_diff):
                 self.game_character.append(Minion())
+
         else:
             message = Texts.PCE
             raise ValueError(message)
@@ -123,6 +128,7 @@ class Avalon_Engine():
             raise ValueError(message)
 
         if len(self.names) < len(self.game_character):
+
             message = Texts.PCE
             raise ValueError(message)
 
@@ -167,13 +173,11 @@ class Avalon_Engine():
     def character_assignment(self):
 
         self.resolve_character()
-
-        random.shuffle(self.names)
+        random.shuffle(self.game_character)
 
         for index, name in enumerate(self.names):
 
             self.names_to_characters[name] = self.game_character[index]
-            self.string_character.append(self.game_character[index].name)
 
     def character_message(self):
 
@@ -181,41 +185,101 @@ class Avalon_Engine():
 
             self.all_messages[character.name] = character.message
 
-            if character.name == Char_Texts.mordred:
-                self.mordred_in_game = True
+            if character.name == Char_Texts.mafia:
+                self.mafia_in_game = True
 
-            if character.name == Char_Texts.persival:
-                self.persival_in_game = True
-
-            if character.name == Char_Texts.morgana:
-                self.morgana_in_game = True
-
-        print(self.game_character)
+            print(self.game_character)
 
         for name, character in self.names_to_characters.items():
 
-            f_name = f"\n-{name}"
-            if character.has_info:
+            if self.show_role:
 
-                if character.side == Char_Texts.evil_side:
+                f_name = f"\n-{name} ({character.name})"
 
-                    if character.name != Char_Texts.mordred:
-                        self.all_messages[Char_Texts.merlin] += f_name
+            else:
 
-                    self.all_messages[Char_Texts.assassin] += f_name
+                f_name = f"\n-{name}"
+
+            if character.name == Char_Texts.merlin:
+
+                if self.persival_in_game:
+
+                    self.all_messages[Char_Texts.persival] += f"\n-{name}"
+
+            elif character.name == Char_Texts.mafia:
+
+                self.all_messages[Char_Texts.merlin] += f_name
+                self.all_messages[Char_Texts.assassin] += f_name
+
+                if self.mafia_in_game:
+
                     self.all_messages[Char_Texts.mafia] += f_name
 
-                    if self.morgana_in_game:
-                        self.all_messages[Char_Texts.morgana] += f_name
+                if self.morgana_in_game:
 
-                    if self.mordred_in_game:
-                        self.all_messages[Char_Texts.mordred] += f_name
+                    self.all_messages[Char_Texts.morgana] += f_name
 
-                    if self.persival_in_game:
+                if self.mordred_in_game:
 
-                        if Char_Texts.morgana:
-                            self.all_messages[Char_Texts.persival] += f_name
-                # add merlin to persival
+                    self.all_messages[Char_Texts.mordred] += f_name
+
+            elif character.name == Char_Texts.morgana:
+
+                self.all_messages[Char_Texts.merlin] += f_name
+                self.all_messages[Char_Texts.assassin] += f_name
+
+                if self.persival_in_game:
+
+                    self.all_messages[Char_Texts.persival] += f"\n-{name}"
+
+                if self.mafia_in_game:
+
+                    self.all_messages[Char_Texts.mafia] += f_name
+
+                if self.morgana_in_game:
+
+                    self.all_messages[Char_Texts.morgana] += f_name
+
+                if self.mordred_in_game:
+
+                    self.all_messages[Char_Texts.mordred] += f_name
+
+            elif character.name == Char_Texts.assassin:
+
+                self.all_messages[Char_Texts.merlin] += f_name
+                self.all_messages[Char_Texts.assassin] += f_name
+
+                if self.mafia_in_game:
+
+                    self.all_messages[Char_Texts.mafia] += f_name
+
+                if self.morgana_in_game:
+
+                    self.all_messages[Char_Texts.morgana] += f_name
+
+                if self.mordred_in_game:
+
+                    self.all_messages[Char_Texts.mordred] += f_name
+
+            elif character.name == Char_Texts.mordred:
+
+                self.all_messages[Char_Texts.assassin] += f_name
+
+                if self.mafia_in_game:
+
+                    self.all_messages[Char_Texts.mafia] += f_name
+
+                if self.morgana_in_game:
+
+                    self.all_messages[Char_Texts.morgana] += f_name
+
+                if self.mordred_in_game:
+
+                    self.all_messages[Char_Texts.mordred] += f_name
+
+            elif character.name == Char_Texts.oberon:
+
+                self.all_messages[Char_Texts.merlin] += f_name
 
     def check_committee(self, mission_voters):
 
