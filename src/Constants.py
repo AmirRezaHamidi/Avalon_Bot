@@ -1,5 +1,14 @@
 from types import SimpleNamespace
 from emoji import emojize
+import os
+
+current_working_directory = os.getcwd()
+Directories = SimpleNamespace(
+
+    Token=f"{current_working_directory}\\src\\Data\\Bot_Token.txt",
+    CGW=f"{current_working_directory}\\src\\Data\\creating_game_word.txt",
+    TGW=f"{current_working_directory}\\src\\Data\\terminating_game_word.txt",
+)
 
 Keys = SimpleNamespace(
 
@@ -39,7 +48,7 @@ Sub_States = SimpleNamespace(
     assassin_shooted="assassin_shooted"
 )
 
-Char_Texts = SimpleNamespace(
+Char_T = SimpleNamespace(
 
     city_side="City",
     evil_side="Evil",
@@ -55,14 +64,30 @@ Char_Texts = SimpleNamespace(
     persival_morgana='Persival/Morgana',
 )
 
-Texts = SimpleNamespace(
+CharM_T = SimpleNamespace(
+
+    khiar='You are a "Khiar".',
+    persival='You are the "Persival".\nMerlin and Morgana: \n\n\n',
+    merlin='You are the "Merlin".\nMafia Team: \n\n\n',
+    mafia='You are a "Mafia-e-Mamooli".\nMafia Team: \n\n\n',
+    morgana='You are the "Morgana".\nMafia Team: \n\n\n',
+    assassin='You are the "Assassin".\nMafia Team: \n\n\n',
+    mordred='You are the "Moredred".\nMafia Team: \n\n\n',
+    oberon='You are the "Oberon"'
+)
+
+Err_T = SimpleNamespace(
+
+    PCE="There are too many characters.",
+    PNE="Not Enough players, there should be atleast 5 players.",
+)
+
+GaS_T = SimpleNamespace(
 
     CG="The game was created."
     "\nAsk your friends to join the game."
     "\nYour name in the game is: ",
     YN="Your name in the game is: ",
-    RFG=" was removed from the game.",
-    ATG=" was add to the game.",
     GOG="A game already exists."
     "\nFind it using the search command.",
     NGET="No game exists.",
@@ -74,29 +99,46 @@ Texts = SimpleNamespace(
     GESC="A game already exists and you can join it.",
     YJGS="You have joined the game sucessfuly.",
     GAJG=" has joined the game.",
-    PCE="There are too many characters.",
-    PNE="Not Enough players, there should be atleast 5 players.",
-    YR="We are preparing roles for you ...",
+    TGHS="The game has already started.",
+    RFG=" was removed from the game.",
+    ATG=" was add to the game.",
+)
+
+
+Co_T = SimpleNamespace(
+
     CO="Commander's order:",
     CCN1="You are the commander in this round.",
     CCN2_1="You should pick ",
     CCN2_2=" players.",
-    TGHS="The game has already started.",
-    SFV="Your vote has been received.",
+    ATC=" was add to the committee.",
+    RFC=" was removed from the committee.",
     PCC='Proposed committee by commander:',
     FCC='Final committee by commander:',
-    CV="Your vote: ",
-    CM='Choose between "Fail" and "Success".',
-    RFC=" was removed from the committee.",
-    ATC=" was add to the committee.",
-    YVB=":slightly_smiling_face: you have voted before",
-    EW="Evil Won.",
+)
+
+GaSi_T = SimpleNamespace(
+
+    CW3R="City won 3 rounds, it's time for assassin to shoot.",
+    RCW="\nReason: Assassin guessed the wrong person as Merlin.",
+    CW="City Won.",
     REW1="\nReason: The Committee was rejected 5 times in a row.",
     REW2="\nReason: Assassin Shooted the Merlin.",
     REW3="\nReason: Evil won three rounds.",
-    CW3R="City won 3 rounds, it's time for assassin to shoot.",
-    CW="City Won.",
-    RCW="\nReason: Assassin guessed the wrong person as Merlin.",
+    EW="Evil Won.",
+)
+
+Oth_T = SimpleNamespace(
+
+    YR="We are preparing roles for you ...",
+    SFV="Your vote has been received.",
+    CV="Your vote: ",
+    MV='Choose between "Fail" and "Success".',
+    YVB=":slightly_smiling_face: you have voted before",
+)
+
+Ass_T = SimpleNamespace(
+
     ASS1="Who do you want to shoot?",
     ASS2_1="You chose ",
     ASS2_2=" as the Merlin.",

@@ -1,4 +1,3 @@
-import os
 from random import shuffle
 
 import telebot
@@ -7,16 +6,15 @@ from loguru import logger
 from telebot import types
 import time
 
-from Constants import Sub_States, States, Keys, Texts, Char_Texts
+from Constants import Directories, Keys, Sub_States, States, \
+    GaS_T, Char_T, Ass_T, GaSi_T, Co_T, Oth_T
 from Engines import Avalon_Engine
 from utils.io import read_txt_file
 
-current_working_directory = os.getcwd()
-TOKEN = read_txt_file(f"{current_working_directory}\\src\\Data\\Bot_Token.txt")
-creating_game_word = read_txt_file(
-    f"{current_working_directory}\\src\\Data\\creating_game_word.txt")
-terminating_game_word = read_txt_file(
-    f"{current_working_directory}\\src\\Data\\terminating_game_word.txt")
+
+TOKEN = read_txt_file(Directories.token)
+creating_game_word = read_txt_file(Directories.CGW)
+terminating_game_word = read_txt_file(Directories.TGW)
 
 
 class Bot():
@@ -42,12 +40,12 @@ class Bot():
 
         # Character parameters
         # characters
-        merlin = Char_Texts.merlin
-        assassin = Char_Texts.assassin
-        mordred = Char_Texts.mordred
-        obron = Char_Texts.oberon
-        persival = Char_Texts.persival_morgana
-        # lady = Char_Texts.lady
+        merlin = Char_T.merlin
+        assassin = Char_T.assassin
+        mordred = Char_T.mordred
+        obron = Char_T.oberon
+        persival = Char_T.persival_morgana
+        # lady = Char_T.lady
 
         key = Keys.check_box
         self.choosed_characters = [merlin, assassin]
@@ -109,7 +107,7 @@ class Bot():
                 self.add_player(message)
 
                 name = self.ids_to_names[message.chat.id]
-                text = f"{Texts.CG}{name}."
+                text = f"{GaS_T.CG}{name}."
                 keyboard = self.character_keyboard()
 
                 self.bot.send_message(
@@ -117,7 +115,7 @@ class Bot():
 
             else:
 
-                text = Texts.GOG
+                text = GaS_T.GOG
                 self.bot.send_message(message.chat.id, text)
 
         # Search Command #
@@ -128,7 +126,7 @@ class Bot():
             if message.chat.id not in self.ids:
 
                 keyboard = self.remove_keyboard()
-                text = Texts.SFG
+                text = GaS_T.SFG
 
                 self.bot.send_message(
                     message.chat.id, text, reply_markup=keyboard)
@@ -136,14 +134,14 @@ class Bot():
 
                 if self.game_state == States.no_game:
 
-                    text = Texts.NGSC
+                    text = GaS_T.NGSC
 
                 elif self.game_state == States.started:
-                    text = Texts.NGSC
+                    text = GaS_T.NGSC
 
                 elif self.game_state == States.created:
 
-                    text = Texts.GESC
+                    text = GaS_T.GESC
                     keyboard = self.join_game_keyboard()
 
                 self.bot.send_message(
@@ -151,7 +149,7 @@ class Bot():
 
             else:
 
-                text = Texts.YAJ
+                text = GaS_T.YAJ
                 self.bot.send_message(message.chat.id, text)
 
         # Join Game #
@@ -164,19 +162,19 @@ class Bot():
                 self.add_player(message)
                 name = self.ids_to_names[message.chat.id]
 
-                text = f"{Texts.YJGS}\n{Texts.YN}{name}."
+                text = f"{GaS_T.YJGS}\n{GaS_T.YN}{name}."
                 keyboard = self.remove_keyboard()
 
                 self.bot.send_message(
                     message.chat.id, text, reply_markup=keyboard)
 
-                text = f"{name}{Texts.GAJG}"
+                text = f"{name}{GaS_T.GAJG}"
 
                 self.bot.send_message(self.admin_id, text)
 
             else:
 
-                text = Texts.YAJ
+                text = GaS_T.YAJ
                 self.bot.send_message(message.chat.id, text)
 
         # Choose_character #
@@ -193,7 +191,7 @@ class Bot():
             self.bot.delete_message(message.chat.id, message.id)
             if self.game_state == States.no_game:
 
-                self.bot.send_message(message.chat.id, Texts.NGET)
+                self.bot.send_message(message.chat.id, GaS_T.NGET)
 
             else:
 
@@ -201,7 +199,7 @@ class Bot():
 
                 for id in self.ids:
 
-                    self.bot.send_message(id, Texts.TGT, reply_markup=keyboard)
+                    self.bot.send_message(id, GaS_T.TGT, reply_markup=keyboard)
 
                 self.ended_game_state()
 
@@ -216,7 +214,7 @@ class Bot():
 
             else:
 
-                text = Texts.TGHS
+                text = GaS_T.TGHS
                 self.bot.send_message(message.chat.id, text)
 
         # ccommander choosing name #
@@ -426,12 +424,12 @@ class Bot():
         if add_remove_name in self.choosed_characters:
 
             self.choosed_characters.remove(add_remove_name)
-            text = f"{add_remove_name}{Texts.RFG}"
+            text = f"{add_remove_name}{GaS_T.RFG}"
 
         else:
 
             self.choosed_characters.append(add_remove_name)
-            text = f"{add_remove_name}{Texts.ATG}"
+            text = f"{add_remove_name}{GaS_T.ATG}"
 
         keyboard = self.character_keyboard()
         self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
@@ -463,11 +461,11 @@ class Bot():
 
         for id in self.ids:
 
-            self.bot.send_message(id, Texts.YR)
+            self.bot.send_message(id, Oth_T.YR)
 
         for name, character in self.game.names_to_characters.items():
 
-            if character.name == Char_Texts.assassin:
+            if character.name == Char_T.assassin:
                 self.assassin_id = self.names_to_ids[name]
 
             text = self.game.all_messages[character.name]
@@ -561,7 +559,7 @@ class Bot():
                 commander_order_show += f"{name}\n"
 
         n_players = f"{len(self.names)} Players"
-        text = emojize(f"{Texts.CO} ({n_players})\n\n" + commander_order_show)
+        text = emojize(f"{Co_T.CO} ({n_players})\n\n" + commander_order_show)
         keyboard = self.remove_keyboard()
 
         for id in self.ids:
@@ -577,7 +575,7 @@ class Bot():
 
         n_committee = self.game.all_round[self.game.round]
 
-        text = f"{Texts.CCN1}{Texts.CCN2_1}{n_committee}{Texts.CCN2_2}"
+        text = f"{Co_T.CCN1}{Co_T.CCN2_1}{n_committee}{Co_T.CCN2_2}"
         keyboard = self.commander_keyboard()
 
         self.bot.send_message(self.current_commander_id,
@@ -619,12 +617,12 @@ class Bot():
         if add_remove_name in self.mission_voters:
 
             self.mission_voters.remove(add_remove_name)
-            text = f"{add_remove_name}{Texts.RFC}"
+            text = f"{add_remove_name}{Co_T.RFC}"
 
         else:
 
             self.mission_voters.append(add_remove_name)
-            text = f"{add_remove_name}{Texts.ATC}"
+            text = f"{add_remove_name}{Co_T.ATC}"
 
         keyboard = self.commander_keyboard()
         self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
@@ -635,7 +633,7 @@ class Bot():
 
         if message.text == Keys.propose:
 
-            text = f"{Texts.PCC}\n-" + "\n-".join(self.mission_voters)
+            text = f"{Co_T.PCC}\n-" + "\n-".join(self.mission_voters)
 
             for id in self.ids:
 
@@ -643,7 +641,7 @@ class Bot():
 
         elif message.text == Keys.final:
 
-            text = f"{Texts.FCC}\n-" + "\n-".join(self.mission_voters)
+            text = f"{Co_T.FCC}\n-" + "\n-".join(self.mission_voters)
             keyboard = self.committee_vote_keyboard()
 
             for id in self.ids:
@@ -656,14 +654,14 @@ class Bot():
         self.bot.delete_message(message.chat.id, message.id)
         n_committee = self.game.all_round[self.game.round]
 
-        text = f"{Texts.CCN2_1}{n_committee}{Texts.CCN2_2}"
+        text = f"{Co_T.CCN2_1}{n_committee}{Co_T.CCN2_2}"
         keyboard = self.commander_keyboard()
 
         self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
 
     def go_to_mission_voting(self):
 
-        text = Texts.CM
+        text = Oth_T.MV
 
         for name in self.mission_voters:
 
@@ -682,7 +680,7 @@ class Bot():
         name = self.ids_to_names[message.chat.id]
         self.transfer_committee_vote(message)
 
-        text = emojize(f"{Texts.CV}{message.text}")
+        text = emojize(f"{Oth_T.CV}{message.text}")
         keyboard = self.remove_keyboard()
 
         self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
@@ -692,7 +690,7 @@ class Bot():
 
         self.transfer_mission_vote(message)
 
-        text = Texts.SFV
+        text = Oth_T.SFV
         keyboard = self.remove_keyboard()
 
         self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
@@ -700,20 +698,20 @@ class Bot():
 
     def you_voted(self, message):
 
-        self.bot.send_message(message.chat.id, emojize(Texts.YVB))
+        self.bot.send_message(message.chat.id, emojize(Oth_T.YVB))
         self.bot.delete_message(message.chat.id, message.id)
 
     def city_3_won(self):
 
         self.send_round_info()
-        text = Texts.CW3R
+        text = GaSi_T.CW3R
         keyboard = self.remove_keyboard()
 
         for id in self.ids:
 
             self.bot.send_message(id, text, reply_markup=keyboard)
 
-        text = Texts.ASS1
+        text = Ass_T.ASS1
         keyboard = self.assassin_keyboard()
 
         self.bot.send_message(self.assassin_id, text, reply_markup=keyboard)
@@ -725,14 +723,14 @@ class Bot():
         self.bot.delete_message(message.chat.id, message.id)
         self.assassins_guess = self.fix_name(message.text)
 
-        text = emojize(f"{Texts.ASS2_1}{self.assassins_guess}{Texts.ASS2_2}")
+        text = emojize(f"{Ass_T.ASS2_1}{self.assassins_guess}{Ass_T.ASS2_2}")
         keyboard = self.assassin_keyboard()
 
         self.bot.send_message(self.assassin_id, text, reply_markup=keyboard)
 
     def choose_someone(self):
 
-        text = Texts.ASS3
+        text = Ass_T.ASS3
         keyboard = self.assassin_keyboard()
 
         self.bot.send_message(self.assassin_id, text, reply_markup=keyboard)
@@ -743,11 +741,11 @@ class Bot():
 
         if self.game.assassin_shooted_right:
 
-            text = f"{Texts.EW}{Texts.REW2}"
+            text = f"{GaSi_T.EW}{GaSi_T.REW2}"
 
         else:
 
-            text = f"{Texts.CW}{Texts.RCW}"
+            text = f"{GaSi_T.CW}{GaSi_T.RCW}"
 
         self.my_wait(1)
 
@@ -762,7 +760,7 @@ class Bot():
     def end_evil_3_won(self):
 
         self.send_round_info()
-        text = f"{Texts.EW}{Texts.REW3}"
+        text = f"{GaSi_T.EW}{GaSi_T.REW3}"
         keyboard = self.remove_keyboard()
 
         for id in self.ids:
@@ -773,7 +771,7 @@ class Bot():
 
     def end_5_reject(self):
 
-        text = f"{Texts.EW}{Texts.REW1}"
+        text = f"{GaSi_T.EW}{GaSi_T.REW1}"
         keyboard = self.remove_keyboard()
 
         for id in self.ids:
