@@ -6,13 +6,13 @@ from loguru import logger
 from telebot import types
 import time
 
-from Constants import Directories, Keys, Sub_States, States, \
+from Constants import Directories, \
+    Keys, Sub_States, States, \
     GaS_T, Char_T, Ass_T, GaSi_T, Co_T, Oth_T
 from Engines import Avalon_Engine
-from utils.io import read_txt_file
+from utils.io import read_txt_file  # write_json_file
 
-
-TOKEN = read_txt_file(Directories.token)
+TOKEN = read_txt_file(Directories.Token)
 creating_game_word = read_txt_file(Directories.CGW)
 terminating_game_word = read_txt_file(Directories.TGW)
 
@@ -34,6 +34,7 @@ class Bot():
         self.names = list()
         self.checked_names = list()
         self.ids = list()
+        self.cid_to_lmid = dict()
 
         self.ids_to_names = dict()
         self.names_to_ids = dict()
@@ -117,6 +118,11 @@ class Bot():
 
                 text = GaS_T.GOG
                 self.bot.send_message(message.chat.id, text)
+
+        @self.bot.message_handler(commands=["unpinall"])
+        def unpinall(message):
+
+            self.bot.unpin_all_chat_messages(message.chat.id)
 
         # Search Command #
         @self.bot.message_handler(commands=["search"])
@@ -336,11 +342,20 @@ class Bot():
         def print_function(message):
             print("print_function")
 
-            text = demojize(message.text)
-            self.bot.send_message(message.chat.id, text)
+            button_1 = types.InlineKeyboardButton(Keys.fail,
+                                                  callback_data=Keys.fail)
+            button_2 = types.InlineKeyboardButton(Keys.fail,
+                                                  callback_data=Keys.fail)
+            keyboard = types.InlineKeyboardMarkup().add(button_1, button_2)
+            self.bot.send_message(message.chat.id, Oth_T.CNF,
+                                  reply_markup=keyboard)
 
-    # main functions #
-    # the following functions are the main functions of the bot
+        @self.bot.callback_query_handler(func=lambda x: x)
+        def handle_fail(call):
+            text = "ohhh yeahhh"
+            print(text)
+            self.bot.answer_callback_query(call.message.chat.id, text,
+                                           cache_time=10)
 
     def grab_name(self, message):
 
@@ -1159,8 +1174,7 @@ class Bot():
                 "\n" + "Committee Result:"
                 "\n" + sign)
 
-    def add_mission_vote(self, names, fail, success, who_won, Round,
-                         commander):
+    def add_mission_vote(self, names, fail, success, Round, commander):
         sep = "-" * 15
 
         return (f"Round: {Round} (Commander: {commander})" +
@@ -1198,25 +1212,17 @@ class Bot():
     def send_mission_summary(self):
 
         Round = self.game.round - 1
-        who_won = self.game.who_won
         names = "\n-".join(self.mission_voters_name)
         commander = self.current_commander
-
-        self.all_time_summary.append(
-            self.add_mission_vote(names, self.game.fail_count,
-                                  self.game.success_count,
-                                  who_won, Round, commander))
+        summary = self.add_mission_vote(names, self.game.fail_count,
+                                        self.game.success_count,
+                                        Round, commander)
 
         keyboard = self.remove_keyboard()
 
-        self.my_wait(0.5)
-
         for id in self.ids:
 
-            for i in range(len(self.all_time_summary)):
-
-                self.bot.send_message(id, self.all_time_summary[i],
-                                      reply_markup=keyboard)
+            self.bot.send_message(id, summary, reply_markup=keyboard)
 
 
 my_bot = Bot()

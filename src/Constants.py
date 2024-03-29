@@ -135,6 +135,7 @@ Oth_T = SimpleNamespace(
     CV="Your vote: ",
     MV='Choose between "Fail" and "Success".',
     YVB=":slightly_smiling_face: you have voted before",
+    CNF="Not Valid !!!"
 )
 
 Ass_T = SimpleNamespace(
