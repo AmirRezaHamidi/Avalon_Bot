@@ -163,3 +163,4 @@ cython_debug/
 src/Data/Bot_Token.txt
 src/Data/creating_game_word.txt
 src/Data/terminating_game_word.txt
+src/Data/message_json.txt
