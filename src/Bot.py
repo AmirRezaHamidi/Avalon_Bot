@@ -78,8 +78,7 @@ class Bot():
         # summary parameters
         self.committee_summary = str()
         self.mission_summary = str()
-        self.all_time_summary = list()
-        self.do_wait = False
+        self.game_summary = str()
 
     def __init__(self):
 
@@ -108,21 +107,16 @@ class Bot():
                 self.add_player(message)
 
                 name = self.ids_to_names[message.chat.id]
-                text = f"{GaS_T.CG}{name}."
-                keyboard = self.character_keyboard()
+                self.bot.send_message(message.chat.id, f"{GaS_T.CG}{name}.")
 
-                self.bot.send_message(
-                    message.chat.id, text, reply_markup=keyboard)
+                keyboard = self.character_keyboard()
+                self.bot.send_message(message.chat.id,
+                                      GaS_T.CHC, reply_markup=keyboard)
 
             else:
 
                 text = GaS_T.GOG
                 self.bot.send_message(message.chat.id, text)
-
-        @self.bot.message_handler(commands=["unpinall"])
-        def unpinall(message):
-
-            self.bot.unpin_all_chat_messages(message.chat.id)
 
         # Search Command #
         @self.bot.message_handler(commands=["search"])
@@ -143,7 +137,7 @@ class Bot():
                     text = GaS_T.NGSC
 
                 elif self.game_state == States.started:
-                    text = GaS_T.NGSC
+                    text = GaS_T.GIOG
 
                 elif self.game_state == States.created:
 
@@ -163,31 +157,48 @@ class Bot():
         def joining_game(message):
             print("join_game")
 
-            if message.chat.id not in self.ids:
+            if self.game_state == States.created:
 
-                self.add_player(message)
-                name = self.ids_to_names[message.chat.id]
+                if message.chat.id not in self.ids:
 
-                text = f"{GaS_T.YJGS}\n{GaS_T.YN}{name}."
+                    self.add_player(message)
+                    name = self.ids_to_names[message.chat.id]
+
+                    text = f"{GaS_T.YJGS}\n{GaS_T.YN}{name}."
+                    keyboard = self.remove_keyboard()
+
+                    self.bot.send_message(
+                        message.chat.id, text, reply_markup=keyboard)
+
+                    text = f"{name}{GaS_T.GAJG}"
+
+                    self.bot.send_message(self.admin_id, text)
+
+                else:
+
+                    text = GaS_T.YAJ
+                    self.bot.send_message(message.chat.id, text)
+
+            elif self.game_state == States.started:
+
+                text = GaS_T.GIOG
                 keyboard = self.remove_keyboard()
+                self.bot.send_message(message.chat.id, text,
+                                      reply_markup=keyboard)
 
-                self.bot.send_message(
-                    message.chat.id, text, reply_markup=keyboard)
+            elif self.game_state == States.no_game:
 
-                text = f"{name}{GaS_T.GAJG}"
-
-                self.bot.send_message(self.admin_id, text)
-
-            else:
-
-                text = GaS_T.YAJ
-                self.bot.send_message(message.chat.id, text)
+                text = GaS_T.NGSC
+                keyboard = self.remove_keyboard()
+                self.bot.send_message(message.chat.id, text,
+                                      reply_markup=keyboard)
 
         # Choose_character #
-        @self.bot.message_handler(func=self.is_admin_choosing_character)
-        def Choose_character(message):
+        @self.bot.callback_query_handler(func=self.is_admin_choosing_character)
+        def Choose_character(call):
             print("choose_character")
-            self.admin_choose_characters(message)
+
+            self.admin_choose_characters(call)
 
         # Terminate Game #
         @self.bot.message_handler(func=self.is_admin_terminating_game)
@@ -210,28 +221,33 @@ class Bot():
                 self.ended_game_state()
 
         # Send Info #
-        @self.bot.message_handler(func=self.is_admin_starting_game)
-        def starting_game(message):
-            print("starting_game")
+        @self.bot.callback_query_handler(func=self.is_admin_starting_game)
+        def starting_game_query(query):
+            print("starting_game_query")
 
             if self.game_state == States.created:
 
-                self.start_game(message)
+                self.start_game(query)
+
+            elif self.game_state == States.no_game:
+
+                self.bot.answer_callback_query(query.id, GaS_T.YSCG)
 
             else:
 
                 text = GaS_T.TGHS
-                self.bot.send_message(message.chat.id, text)
+                self.bot.send_message(query.chat.id, text)
 
         # ccommander choosing name #
-        @self.bot.message_handler(func=self.is_commander_choosing_name)
+        @self.bot.callback_query_handler(func=self.is_commander_choosing_name)
         def commander_choosing_name(message):
             print("commander_choosing_name")
 
             self.commander_choose_name(message)
 
         # commander pressing button #
-        @self.bot.message_handler(func=self.is_commander_pressing_button)
+        @self.bot.callback_query_handler(
+                func=self.is_commander_pressing_button)
         def commander_press_button(message):
             print("commander_press_button")
 
@@ -246,11 +262,11 @@ class Bot():
                 self.pick_right_players(message)
 
         # committee vote #
-        @self.bot.message_handler(func=self.is_eligible_vote)
-        def vote_for_committee(message):
+        @self.bot.callback_query_handler(func=self.is_eligible_vote)
+        def vote_for_committee(query):
             print("vote_for_committee")
 
-            name = self.ids_to_names[message.chat.id]
+            name = self.ids_to_names[query.message.chat.id]
 
             if name in self.committee_voters:
 
@@ -258,11 +274,11 @@ class Bot():
 
                 if self.committee_voters:
 
-                    self.handle_committee_vote(message)
+                    self.handle_committee_vote(query)
 
                 else:
 
-                    self.handle_committee_vote(message)
+                    self.handle_committee_vote(query)
                     self.game.count_committee_vote(self.committee_votes)
                     self.send_committee_summary()
 
@@ -280,14 +296,14 @@ class Bot():
 
             else:
 
-                self.you_voted(message)
+                self.you_voted(query)
 
         # mission vote #
-        @self.bot.message_handler(func=self.is_eligible_fail_success)
-        def vote_for_mission(message):
+        @self.bot.callback_query_handler(func=self.is_eligible_fail_success)
+        def vote_for_mission(query):
             print("vote_for_mission")
 
-            name = self.ids_to_names[message.chat.id]
+            name = self.ids_to_names[query.message.chat.id]
 
             if name in self.mission_voters:
 
@@ -295,11 +311,11 @@ class Bot():
 
                 if self.mission_voters:
 
-                    self.handle_mission_vote(message)
+                    self.handle_mission_vote(query)
 
                 else:
 
-                    self.handle_mission_vote(message)
+                    self.handle_mission_vote(query)
                     self.game.mission_result(self.mission_votes)
                     self.send_mission_summary()
 
@@ -317,47 +333,59 @@ class Bot():
 
             else:
 
-                self.you_voted(message)
+                self.you_voted(query)
 
-        @self.bot.message_handler(func=self.is_assassin_choosing_name)
+        @self.bot.callback_query_handler(func=self.is_assassin_choosing_name)
         def assassin_choosing_name(message):
             print("assassin_choosing_name")
 
             self.assassin_choose_name(message)
 
-        @self.bot.message_handler(func=self.is_assassin_pressing_button)
-        def assassin_pressing_button(message):
+        @self.bot.callback_query_handler(func=self.is_assassin_pressing_button)
+        def assassin_pressing_button(query):
             print("assassin_pressing_button")
 
             if self.assassins_guess == str():
 
-                self.choose_someone()
+                self.choose_someone(query)
 
             else:
 
                 self.end_assassin_shot()
+
+        # Pin Query #
+        @self.bot.callback_query_handler(func=self.is_player_query_pin)
+        def pin_query(call):
+            print("pin_query")
+
+            chat_id = call.message.chat.id
+            message_id = call.message.id
+            self.bot.pin_chat_message(chat_id, message_id)
+
+        # OK Query #
+        @self.bot.callback_query_handler(func=self.is_player_query_ok)
+        def ok_query(query):
+            print("ok_query")
+
+            chat_id = query.message.chat.id
+            message_id = query.message.id
+            self.bot.delete_message(chat_id, message_id)
 
         # Print Input #
         @self.bot.message_handler()
         def print_function(message):
             print("print_function")
 
-            button_1 = types.InlineKeyboardButton(Keys.fail,
-                                                  callback_data=Keys.fail)
-            button_2 = types.InlineKeyboardButton(Keys.fail,
-                                                  callback_data=Keys.fail)
-            keyboard = types.InlineKeyboardMarkup().add(button_1, button_2)
-            self.bot.send_message(message.chat.id, Oth_T.CNF,
-                                  reply_markup=keyboard)
+            self.bot.send_message(message.chat.id, Oth_T.CNF)
 
+        # delete inline keyboard #
         @self.bot.callback_query_handler(func=lambda x: x)
-        def handle_fail(call):
-            text = "ohhh yeahhh"
-            print(text)
-            self.bot.answer_callback_query(call.message.chat.id, text,
-                                           cache_time=10)
+        def delete_inline_keyboards(call):
+            print("delete_inline_keyboard")
 
-    def grab_name(self, message):
+            self.bot.delete_message(call.message.chat.id, call.message.id)
+
+    def grab_name(self, message):   # OK
 
         name = str()
 
@@ -393,7 +421,7 @@ class Bot():
 
             return name
 
-    def fix_name(self, currupted_name):
+    def fix_name(self, currupted_name):   # OK
 
         if currupted_name[0:len(Keys.check_box)] == Keys.check_box:
 
@@ -403,7 +431,7 @@ class Bot():
 
             return currupted_name
 
-    def add_player(self, message):
+    def add_player(self, message):   # OK
 
         name = self.grab_name(message)
         temp_name = name
@@ -431,10 +459,9 @@ class Bot():
         self.names_to_ids[name] = id
         self.ids_to_names[id] = name
 
-    def admin_choose_characters(self, message):
+    def admin_choose_characters(self, query):  # OK
 
-        self.bot.delete_message(message.chat.id, message.id)
-        add_remove_name = self.fix_name(message.text)
+        add_remove_name = self.fix_name(query.data)
 
         if add_remove_name in self.choosed_characters:
 
@@ -446,37 +473,25 @@ class Bot():
             self.choosed_characters.append(add_remove_name)
             text = f"{add_remove_name}{GaS_T.ATG}"
 
-        keyboard = self.character_keyboard()
-        self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
+        self.bot.answer_callback_query(query.id, text)
 
-    def define_game(self):
+        chat_id = query.message.chat.id
+        message_id = query.message.id
+        keyboard = self.character_keyboard()
+
+        self.bot.edit_message_reply_markup(chat_id, message_id,
+                                           reply_markup=keyboard)
+
+    def define_game(self):  # OK
 
         name_for_game = self.names[:]
         character_for_game = self.choosed_characters[:]
         self.game = Avalon_Engine(name_for_game, character_for_game)
 
-    def my_wait(self, k):
-
-        if self.do_wait:
-
-            n = len(self.names) / k
-
-            for i in range(1, 4):
-
-                for id in self.ids:
-
-                    self.bot.send_message(id, "." * i)
-
-                    time.sleep(1/n)
-
-    def send_info(self):
+    def send_info(self):  # OK
 
         self.define_game()
         self.started_game_state()
-
-        for id in self.ids:
-
-            self.bot.send_message(id, Oth_T.YR)
 
         for name, character in self.game.names_to_characters.items():
 
@@ -484,10 +499,11 @@ class Bot():
                 self.assassin_id = self.names_to_ids[name]
 
             text = self.game.all_messages[character.name]
+            keyboard = self.ok_keyboard()
+            self.bot.send_message(self.names_to_ids[name],
+                                  text, reply_markup=keyboard)
 
-            self.bot.send_message(self.names_to_ids[name], text)
-
-    def make_commander_order(self):
+    def make_commander_order(self):  # OK
 
         self.commander_order = self.names[:]
 
@@ -495,7 +511,7 @@ class Bot():
 
             shuffle(self.commander_order)
 
-    def resolve_commander(self):
+    def resolve_commander(self):  # OK
 
         if self.commander_number == len(self.names):
 
@@ -505,9 +521,9 @@ class Bot():
         self.current_commander_id = self.names_to_ids[self.current_commander]
         self.commander_number += 1
 
-    def send_round_info(self):
+    def send_round_info(self):  # OK
 
-        round_info = "Rounds:\n\n"
+        round_info = "Game Results:\n\n"
         two_fail = "(2)" if self.game.two_fails else ""
 
         for index, this_round in enumerate(self.game.all_round[1:]):
@@ -555,11 +571,16 @@ class Bot():
                 round_info += sign
                 round_info += f"{text: ^7}"
 
-        for id in self.ids:
+        if self.game.round == 1:
 
-            self.bot.send_message(id, round_info)
+            for id in self.ids:
 
-    def send_commander_order(self):
+                self.bot.send_message(id, round_info)
+
+        else:
+            return round_info
+
+    def send_commander_order(self):  # OK
 
         commander_order_show = str()
 
@@ -575,7 +596,7 @@ class Bot():
 
         n_players = f"{len(self.names)} Players"
         text = emojize(f"{Co_T.CO} ({n_players})\n\n" + commander_order_show)
-        keyboard = self.remove_keyboard()
+        keyboard = self.pin_keyboard()
 
         for id in self.ids:
 
@@ -586,7 +607,9 @@ class Bot():
         self.committee_choosing_state()
         self.resolve_commander()
         self.send_round_info()
-        self.send_commander_order()
+
+        if self.game.round == 1:
+            self.send_commander_order()
 
         n_committee = self.game.all_round[self.game.round]
 
@@ -596,7 +619,7 @@ class Bot():
         self.bot.send_message(self.current_commander_id,
                               text, reply_markup=keyboard)
 
-    def start_game(self, message):
+    def start_game(self, query):  # OK
 
         try:
 
@@ -606,28 +629,27 @@ class Bot():
 
         except ValueError as e:
 
-            self.bot.send_message(message.chat.id, e.args[0])
+            self.bot.send_message(query.message.chat.id, e.args[0])
 
-    def transfer_committee_vote(self, message):
+    def transfer_committee_vote(self, query):
 
-        if message.text == Keys.agree:
+        if query.data == Keys.agree:
             self.committee_votes.append(1)
 
-        elif message.text == Keys.disagree:
+        elif query.data == Keys.disagree:
             self.committee_votes.append(0)
 
-    def transfer_mission_vote(self, message):
+    def transfer_mission_vote(self, query):
 
-        if message.text == Keys.success:
+        if query.data == Keys.success:
             self.mission_votes.append(1)
 
-        elif message.text == Keys.fail:
+        elif query.data == Keys.fail:
             self.mission_votes.append(0)
 
-    def commander_choose_name(self, message):
+    def commander_choose_name(self, query):  # OK
 
-        self.bot.delete_message(message.chat.id, message.id)
-        add_remove_name = self.fix_name(message.text)
+        add_remove_name = self.fix_name(query.data)
 
         if add_remove_name in self.mission_voters:
 
@@ -639,22 +661,27 @@ class Bot():
             self.mission_voters.append(add_remove_name)
             text = f"{add_remove_name}{Co_T.ATC}"
 
+        self.bot.answer_callback_query(query.id, text)
+
+        chat_id = query.message.chat.id
+        message_id = query.message.id
         keyboard = self.commander_keyboard()
-        self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
 
-    def commander_decision(self, message):
+        self.bot.edit_message_reply_markup(chat_id, message_id,
+                                           reply_markup=keyboard)
 
-        self.bot.delete_message(message.chat.id, message.id)
+    def commander_decision(self, query):  # OK
 
-        if message.text == Keys.propose:
+        if query.data == Keys.propose:
 
             text = f"{Co_T.PCC}\n-" + "\n-".join(self.mission_voters)
+            keyboard = self.ok_keyboard()
 
             for id in self.ids:
 
-                self.bot.send_message(id, text)
+                self.bot.send_message(id, text, reply_markup=keyboard)
 
-        elif message.text == Keys.final:
+        elif query.data == Keys.final:
 
             text = f"{Co_T.FCC}\n-" + "\n-".join(self.mission_voters)
             keyboard = self.committee_vote_keyboard()
@@ -662,16 +689,18 @@ class Bot():
             for id in self.ids:
                 self.bot.send_message(id, text, reply_markup=keyboard)
 
+            self.bot.delete_message(query.message.chat.id, query.message.id)
             self.committee_voting_state()
 
-    def pick_right_players(self, message):
+    def pick_right_players(self, message):  # OK
 
-        self.bot.delete_message(message.chat.id, message.id)
         n_committee = self.game.all_round[self.game.round]
 
         text = f"{Co_T.CCN2_1}{n_committee}{Co_T.CCN2_2}"
-        keyboard = self.commander_keyboard()
 
+        self.bot.answer_callback_query(message.id, text)
+
+        keyboard = self.commander_keyboard()
         self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
 
     def go_to_mission_voting(self):
@@ -688,37 +717,31 @@ class Bot():
 
         self.mission_voting_state()
 
-    def handle_committee_vote(self, message):
+    def handle_committee_vote(self, query):
 
-        self.bot.delete_message(message.chat.id, message.id)
+        name = self.ids_to_names[query.message.chat.id]
+        self.transfer_committee_vote(query)
 
-        name = self.ids_to_names[message.chat.id]
-        self.transfer_committee_vote(message)
+        text = emojize(f"{Oth_T.CV}{query.data}")
+        self.bot.answer_callback_query(query.id, text)
+        self.bot.delete_message(query.message.chat.id, query.message.id)
 
-        text = emojize(f"{Oth_T.CV}{message.text}")
-        keyboard = self.remove_keyboard()
+        self.committee_summary += self.add_committee_vote(name, query.data)
 
-        self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
-        self.committee_summary += self.add_committee_vote(name, message.text)
+    def handle_mission_vote(self, query):
 
-    def handle_mission_vote(self, message):
-
-        self.transfer_mission_vote(message)
+        self.transfer_mission_vote(query)
 
         text = Oth_T.SFV
-        keyboard = self.remove_keyboard()
+        self.bot.answer_callback_query(query.id, text)
+        self.bot.delete_message(query.message.chat.id, query.message.id)
 
-        self.bot.send_message(message.chat.id, text, reply_markup=keyboard)
-        self.bot.delete_message(message.chat.id, message.id)
+    def you_voted(self, query):
 
-    def you_voted(self, message):
-
-        self.bot.send_message(message.chat.id, emojize(Oth_T.YVB))
-        self.bot.delete_message(message.chat.id, message.id)
+        self.bot.answer_callback_query(query.id, emojize(Oth_T.YVB))
 
     def city_3_won(self):
 
-        self.send_round_info()
         text = GaSi_T.CW3R
         keyboard = self.remove_keyboard()
 
@@ -733,22 +756,24 @@ class Bot():
 
         self.assassin_shooting_state()
 
-    def assassin_choose_name(self, message):
+    def assassin_choose_name(self, query):
 
-        self.bot.delete_message(message.chat.id, message.id)
-        self.assassins_guess = self.fix_name(message.text)
+        self.assassins_guess = self.fix_name(query.data)
 
         text = emojize(f"{Ass_T.ASS2_1}{self.assassins_guess}{Ass_T.ASS2_2}")
+        self.bot.answer_callback_query(query.id, text)
+
+        chat_id = query.message.chat.id
+        message_id = query.message.id
         keyboard = self.assassin_keyboard()
 
-        self.bot.send_message(self.assassin_id, text, reply_markup=keyboard)
+        self.bot.edit_message_reply_markup(chat_id, message_id,
+                                           reply_markup=keyboard)
 
-    def choose_someone(self):
+    def choose_someone(self, query):
 
         text = Ass_T.ASS3
-        keyboard = self.assassin_keyboard()
-
-        self.bot.send_message(self.assassin_id, text, reply_markup=keyboard)
+        self.bot.answer_callback_query(query.id, text)
 
     def end_assassin_shot(self):
 
@@ -762,8 +787,6 @@ class Bot():
 
             text = f"{GaSi_T.CW}{GaSi_T.RCW}"
 
-        self.my_wait(1)
-
         keyboard = self.remove_keyboard()
 
         for id in self.ids:
@@ -774,7 +797,6 @@ class Bot():
 
     def end_evil_3_won(self):
 
-        self.send_round_info()
         text = f"{GaSi_T.EW}{GaSi_T.REW3}"
         keyboard = self.remove_keyboard()
 
@@ -838,33 +860,70 @@ class Bot():
 
         self.initial_condition()
 
+    def resovle_query(self, query):
+        print(query)
+
+        if isinstance(query, types.CallbackQuery):
+
+            print("qurery.message")
+            print(query.message)
+            return query.message
+
+        elif isinstance(query, types.Message):
+
+            return query
+
     # rule checkers
     # the following functions check the necessary rules
     # for each message handler. their output is either True or False.
 
     # Whos Conditions
-    def is_admin(self, message):
+    def is_admin(self, query):
         print("is_admin")
 
-        c_1 = self.admin_id == message.chat.id
+        if isinstance(query, types.Message):
+
+            c_1 = self.admin_id == query.chat.id
+
+        elif isinstance(query, types.CallbackQuery):
+            c_1 = self.admin_id == query.message.chat.id
+
         return c_1
 
-    def is_player(self, message):
+    def is_player(self, query):
         print("is_player")
 
-        c_1 = message.chat.id in self.ids
+        if isinstance(query, types.Message):
+
+            c_1 = query.chat.id in self.ids
+
+        elif isinstance(query, types.CallbackQuery):
+            c_1 = query.message.chat.id in self.ids
+
         return c_1
 
-    def is_commander(self, message):
+    def is_commander(self, query):
         print("is_commander")
 
-        c_1 = self.current_commander_id == message.chat.id
+        if isinstance(query, types.Message):
+
+            c_1 = self.current_commander_id == query.chat.id
+
+        elif isinstance(query, types.CallbackQuery):
+            c_1 = self.current_commander_id == query.message.chat.id
+
         return c_1
 
-    def is_assassin(self, message):
+    def is_assassin(self, query):
         print("is_assassin")
 
-        c_1 = self.assassin_id == message.chat.id
+        if isinstance(query, types.Message):
+
+            c_1 = self.assassin_id == query.chat.id
+
+        elif isinstance(query, types.CallbackQuery):
+            c_1 = self.assassin_id == query.message.chat.id
+
         return c_1
 
     # Whens Conditions
@@ -928,8 +987,8 @@ class Bot():
         c_2 = self.is_created_state()
 
         # What
-        c_3 = message.text in self.optional_characters
-        c_4 = message.text in self.checked_optional_characters
+        c_3 = message.data in self.optional_characters
+        c_4 = message.data in self.checked_optional_characters
 
         return c_1 and c_2 and (c_3 or c_4)
 
@@ -942,7 +1001,7 @@ class Bot():
         c_2 = self.is_created_state()
 
         # what
-        c_3 = message.text == Keys.start_game
+        c_3 = message.data == Keys.start_game
 
         return c_1 and c_2 and c_3
 
@@ -960,6 +1019,30 @@ class Bot():
 
         return c_1 and (c_2 or c_3) and c_4
 
+    def is_player_query_ok(self, query):
+
+        # Who
+        c_1 = self.is_player(query)
+
+        # When: Any Time
+
+        # What
+        c_2 = query.data == Keys.ok
+
+        return c_1 and c_2
+
+    def is_player_query_pin(self, query):
+
+        # Who
+        c_1 = self.is_player(query)
+
+        # When: Any Time
+
+        # What
+        c_2 = query.data == Keys.pin
+
+        return c_1 and c_2
+
     def is_commander_choosing_name(self, message):
         print("is_commander_choosing_name")
 
@@ -970,8 +1053,8 @@ class Bot():
         c_2 = self.is_committee_choosing_state()
 
         # what
-        c_3 = message.text in self.names
-        c_4 = message.text in self.checked_names
+        c_3 = message.data in self.names
+        c_4 = message.data in self.checked_names
 
         return c_1 and c_2 and (c_3 or c_4)
 
@@ -985,7 +1068,7 @@ class Bot():
         c_2 = self.is_committee_choosing_state()
 
         # what
-        c_3 = message.text in [Keys.final, Keys.propose]
+        c_3 = message.data in [Keys.final, Keys.propose]
 
         return c_1 and c_2 and c_3
 
@@ -999,8 +1082,8 @@ class Bot():
         c_2 = self.is_committee_voting_state()
 
         # what
-        c_3 = emojize(message.text) in [Keys.agree, Keys.disagree]
-
+        c_3 = message.data in [Keys.agree, Keys.disagree]
+        # TODO: Do we need emojize ?
         return c_1 and c_2 and c_3
 
     def is_eligible_fail_success(self, message):
@@ -1013,7 +1096,7 @@ class Bot():
         c_2 = self.is_mission_voting_state()
 
         # what
-        c_3 = message.text in [Keys.success, Keys.fail]
+        c_3 = message.data in [Keys.success, Keys.fail]
 
         return c_1 and c_2 and c_3
 
@@ -1027,7 +1110,7 @@ class Bot():
         c_2 = self.is_assassin_shooting_state()
 
         # what
-        c_3 = message.text != Keys.assassin_shoots
+        c_3 = message.data != Keys.assassin_shoots
 
         return c_1 and c_2 and c_3
 
@@ -1041,7 +1124,7 @@ class Bot():
         c_2 = self.is_assassin_shooting_state()
 
         # what
-        c_3 = message.text == Keys.assassin_shoots
+        c_3 = message.data == Keys.assassin_shoots
 
         return c_1 and c_2 and c_3
 
@@ -1050,8 +1133,7 @@ class Bot():
 
     def character_keyboard(self):
 
-        keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-        buttons = []
+        keyboard = types.InlineKeyboardMarkup(row_width=1)
 
         for character in self.optional_characters:
 
@@ -1063,14 +1145,13 @@ class Bot():
 
                 temp_str = ""
 
-            buttons.append(types.KeyboardButton(emojize(temp_str + character)))
+            button = emojize(f"{temp_str}{character}")
+            inline = types.InlineKeyboardButton(button, callback_data=button)
+            keyboard.row(inline)
 
-        keyboard.add(*buttons)
-        buttons_last_layers = [Keys.start_game]
-
-        last_layer_buttons = map(types.KeyboardButton, buttons_last_layers)
-
-        keyboard.add(*last_layer_buttons)
+        start = Keys.start_game
+        inline = types.InlineKeyboardButton(start, callback_data=start)
+        keyboard.add(inline)
 
         return keyboard
 
@@ -1085,7 +1166,7 @@ class Bot():
 
     def commander_keyboard(self):
 
-        keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+        keyboard = types.InlineKeyboardMarkup(row_width=2)
 
         for name in self.names:
 
@@ -1097,35 +1178,52 @@ class Bot():
 
                 temp_str = ""
 
-            button = types.KeyboardButton(emojize(f"{temp_str}{name}"))
-            keyboard.row(button)
+            button = emojize(f"{temp_str}{name}")
+            inline = types.InlineKeyboardButton(button, callback_data=button)
+            keyboard.row(inline)
 
-        buttons_str = [Keys.propose, Keys.final]
-        buttons = map(types.KeyboardButton, buttons_str)
-        keyboard.row(*buttons)
+        final = Keys.final
+        propose = Keys.propose
+
+        f_inline = types.InlineKeyboardButton(final, callback_data=final)
+        p_inline = types.InlineKeyboardButton(propose, callback_data=propose)
+
+        keyboard.add(p_inline, f_inline)
 
         return keyboard
 
     def committee_vote_keyboard(self):
 
-        buttons_str = [Keys.agree, Keys.disagree]
-        buttons = map(types.KeyboardButton, buttons_str)
-        keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-        keyboard.add(*buttons)
+        keyboard = types.InlineKeyboardMarkup(row_width=2)
+
+        agree = Keys.agree
+        disagree = Keys.disagree
+        a_inline = types.InlineKeyboardButton(agree, callback_data=agree)
+        d_inline = types.InlineKeyboardButton(disagree, callback_data=disagree)
+
+        keyboard.add(a_inline, d_inline)
         return keyboard
 
     def mission_vote_keyboard(self):
 
-        buttons_str = [Keys.success, Keys.fail]
-        shuffle(buttons_str)
-        buttons = map(types.KeyboardButton, buttons_str)
-        keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-        keyboard.add(*buttons)
+        keyboard = types.InlineKeyboardMarkup(row_width=2)
+
+        sucess = Keys.success
+        fail = Keys.fail
+
+        s_inline = types.InlineKeyboardButton(sucess, callback_data=sucess)
+        f_inline = types.InlineKeyboardButton(fail, callback_data=fail)
+
+        inline_buttons = [s_inline, f_inline]
+        shuffle(inline_buttons)
+
+        keyboard.add(*inline_buttons)
+
         return keyboard
 
     def assassin_keyboard(self):
 
-        keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+        keyboard = types.InlineKeyboardMarkup(row_width=1)
 
         for name in self.names:
 
@@ -1137,14 +1235,33 @@ class Bot():
 
                 temp_str = ""
 
-            button = types.KeyboardButton(emojize(f"{temp_str}{name}"))
-            keyboard.row(button)
+            button = emojize(f"{temp_str}{name}")
+            inline = types.InlineKeyboardButton(button, callback_data=button)
+            keyboard.row(inline)
 
-        buttons_str = Keys.assassin_shoots
-        buttons = types.KeyboardButton(emojize(buttons_str))
-        keyboard.row(buttons)
+        assassin = Keys.assassin_shoots
+        inline = types.InlineKeyboardButton(assassin, callback_data=assassin)
+        keyboard.row(inline)
 
         return keyboard
+
+    def ok_keyboard(self):
+
+        keyboard = types.InlineKeyboardMarkup(row_width=1)
+        ok = Keys.ok
+
+        inline = types.InlineKeyboardButton(ok, callback_data=ok)
+        keyboard.row(inline)
+
+        return keyboard
+
+    def pin_keyboard(self):
+
+        keyboard = types.InlineKeyboardMarkup(row_width=1)
+        pin = Keys.pin
+
+        inline = types.InlineKeyboardButton(pin, callback_data=pin)
+        keyboard.row(inline)
 
     def remove_keyboard(self):
         return types.ReplyKeyboardRemove()
@@ -1184,7 +1301,9 @@ class Bot():
                 "\n" + sep +
                 "\n" + "Mission Results:" +
                 "\n" + f"# Sucesses: {success}" +
-                "\n" + f"# Fails: {fail}")
+                "\n" + f"# Fails: {fail}" +
+                "\n" + sep +
+                "\n")
 
     def send_committee_summary(self):
 
@@ -1214,15 +1333,16 @@ class Bot():
         Round = self.game.round - 1
         names = "\n-".join(self.mission_voters_name)
         commander = self.current_commander
-        summary = self.add_mission_vote(names, self.game.fail_count,
-                                        self.game.success_count,
-                                        Round, commander)
+        self.game_summary = self.add_mission_vote(names, self.game.fail_count,
+                                                  self.game.success_count,
+                                                  Round, commander)
 
+        self.game_summary += self.send_round_info()
         keyboard = self.remove_keyboard()
 
         for id in self.ids:
 
-            self.bot.send_message(id, summary, reply_markup=keyboard)
+            self.bot.send_message(id, self.game_summary, reply_markup=keyboard)
 
 
 my_bot = Bot()

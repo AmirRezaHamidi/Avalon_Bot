@@ -46,7 +46,7 @@ class Morgana():
 
     def __init__(self):
 
-        self.message = CharM_T.Morgana
+        self.message = CharM_T.morgana
         self.name = Char_T.morgana
         self.side = Char_T.evil_side
         self.has_info = True

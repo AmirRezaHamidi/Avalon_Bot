@@ -188,8 +188,6 @@ class Avalon_Engine():
             if character.name == Char_T.mafia:
                 self.mafia_in_game = True
 
-            print(self.game_character)
-
         for name, character in self.names_to_characters.items():
 
             if self.show_role:

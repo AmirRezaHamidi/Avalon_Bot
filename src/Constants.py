@@ -28,7 +28,9 @@ Keys = SimpleNamespace(
     declined=emojize(":prohibited: Declined"),
     natural=emojize(":white_small_square:"),
     evil_win=emojize(":red_square:"),
-    city_win=(emojize(":green_square:"))
+    city_win=(emojize(":green_square:")),
+    ok="OK !!",
+    pin="Pin this message."
 )
 
 States = SimpleNamespace(
@@ -88,12 +90,15 @@ GaS_T = SimpleNamespace(
     "\nAsk your friends to join the game."
     "\nYour name in the game is: ",
     YN="Your name in the game is: ",
+    CHC="Choose you prefered character in the game.",
     GOG="A game already exists."
     "\nFind it using the search command.",
     NGET="No game exists.",
     TGT="The game was terminated.",
     SFG="Searching ...",
     NGSC="No game exist. Try again ...",
+    GIOG="A game has already started. You should wait ...",
+    YSCG="You should create a game first ",
     GOSC="A game is ongoing. Try again later ...",
     YAJ="you have already joined the game.",
     GESC="A game already exists and you can join it.",
@@ -135,7 +140,7 @@ Oth_T = SimpleNamespace(
     CV="Your vote: ",
     MV='Choose between "Fail" and "Success".',
     YVB=":slightly_smiling_face: you have voted before",
-    CNF="Not Valid !!!"
+    CNF="Not a valid command."
 )
 
 Ass_T = SimpleNamespace(
@@ -143,5 +148,5 @@ Ass_T = SimpleNamespace(
     ASS1="Who do you want to shoot?",
     ASS2_1="You chose ",
     ASS2_2=" as the Merlin.",
-    ASSE_3="You should choose someone !!",
+    ASS3="You should choose someone !!",
 )
