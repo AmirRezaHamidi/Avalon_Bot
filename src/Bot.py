@@ -193,6 +193,13 @@ class Bot():
                 self.bot.send_message(message.chat.id, text,
                                       reply_markup=keyboard)
 
+        # Print Input #
+        @self.bot.message_handler()
+        def print_function(message):
+            print("print_function")
+
+            self.bot.send_message(message.chat.id, Oth_T.CNF)
+
         # Choose_character #
         @self.bot.callback_query_handler(func=self.is_admin_choosing_character)
         def Choose_character(call):
@@ -370,13 +377,6 @@ class Bot():
             chat_id = query.message.chat.id
             message_id = query.message.id
             self.bot.delete_message(chat_id, message_id)
-
-        # Print Input #
-        @self.bot.message_handler()
-        def print_function(message):
-            print("print_function")
-
-            self.bot.send_message(message.chat.id, Oth_T.CNF)
 
         # delete inline keyboard #
         @self.bot.callback_query_handler(func=lambda x: x)
