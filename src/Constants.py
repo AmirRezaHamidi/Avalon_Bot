@@ -69,19 +69,20 @@ Char_T = SimpleNamespace(
 CharM_T = SimpleNamespace(
 
     khiar='You are a "Khiar".',
-    persival='You are the "Persival".\nMerlin and Morgana: \n\n\n',
-    merlin='You are the "Merlin".\nMafia Team: \n\n\n',
-    mafia='You are a "Mafia-e-Mamooli".\nMafia Team: \n\n\n',
-    morgana='You are the "Morgana".\nMafia Team: \n\n\n',
-    assassin='You are the "Assassin".\nMafia Team: \n\n\n',
-    mordred='You are the "Moredred".\nMafia Team: \n\n\n',
+    persival=f'You are the "Persival".\n\nMerlin and Morgana: \n{"-" * 15}',
+    merlin=f'You are the "Merlin".\n\nMafia Team: \n{"-" * 15}',
+    mafia=f'You are a "Mafia-e-Mamooli".\n\nMafia Team: \n{"-" * 15}',
+    morgana=f'You are the "Morgana".\n\nMafia Team: \n{"-" * 15}',
+    assassin=f'You are the "Assassin".\n\nMafia Team: \n{"-" * 15}',
+    mordred=f'You are the "Moredred".\n\nMafia Team: \n{"-" * 15}',
     oberon='You are the "Oberon"'
 )
 
 Err_T = SimpleNamespace(
 
     PCE="There are too many characters.",
-    PNE="Not Enough players, there should be atleast 5 players.",
+    PNEL="Not Enough players, there should be atleast 5 players.",
+    PNEH="Too many Players. The maximum number of players is 10."
 )
 
 GaS_T = SimpleNamespace(
@@ -107,6 +108,13 @@ GaS_T = SimpleNamespace(
     TGHS="The game has already started.",
     RFG=" was removed from the game.",
     ATG=" was add to the game.",
+    IGI="Game Information:",
+    YR="Your Role:",
+    PINF="Players info:",
+    NOM="Number of Evils:",
+    CIG="Characters in the game:",
+    main_sep="*" * 30,
+    sep="-" * 15,
 )
 
 

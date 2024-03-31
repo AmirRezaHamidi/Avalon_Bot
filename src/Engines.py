@@ -15,14 +15,18 @@ class Avalon_Engine():
         self.game_character = [Assassin(), Merlin()]
         self.names_to_characters = dict()
 
+        self.n_khiars = int()
+        self.n_mafia = int()
         self.persival_in_game = False
         self.morgana_in_game = False
         self.mafia_in_game = False
         self.mordred_in_game = False
+        self.oberon_in_game = False
 
         self.show_role = False
         self.all_messages = dict()
 
+        self.character_in_game = str()
         # Rounc Parameters
         self.round = 1
         self.city_wins = int()
@@ -124,7 +128,12 @@ class Avalon_Engine():
 
         if len(self.names) < 5:
 
-            message = Err_T.PNE
+            message = Err_T.PNEL
+            raise ValueError(message)
+
+        if len(self.names) > 10:
+
+            message = Err_T.PNEH
             raise ValueError(message)
 
         if len(self.names) < len(self.game_character):
@@ -134,41 +143,10 @@ class Avalon_Engine():
 
         else:
 
-            if len(self.names) == 5:
-
-                n_city = 3
-                n_evil = 2
-                self.non_power_characters(n_city, n_evil)
-
-            elif len(self.names) == 6:
-
-                n_city = 4
-                n_evil = 2
-                self.non_power_characters(n_city, n_evil)
-
-            elif len(self.names) == 7:
-
-                n_city = 4
-                n_evil = 3
-                self.non_power_characters(n_city, n_evil)
-
-            elif len(self.names) == 8:
-
-                n_city = 5
-                n_evil = 3
-                self.non_power_characters(n_city, n_evil)
-
-            elif len(self.names) == 9:
-
-                n_city = 6
-                n_evil = 3
-                self.non_power_characters(n_city, n_evil)
-
-            elif len(self.names) == 10:
-
-                n_city = 6
-                n_evil = 4
-                self.non_power_characters(n_city, n_evil)
+            self.n_players = len(self.names)
+            self.n_city = int(self.n_players * (2/3))
+            self.n_evil = self.n_players - self.n_city
+            self.non_power_characters(self.n_city, self.n_evil)
 
     def character_assignment(self):
 
@@ -183,10 +161,17 @@ class Avalon_Engine():
 
         for character in self.game_character:
 
-            self.all_messages[character.name] = character.message
+            if character.name == Char_T.khiar:
+                self.n_khiars += 1
 
             if character.name == Char_T.mafia:
                 self.mafia_in_game = True
+                self.n_mafia += 1
+
+            if character.name == Char_T.oberon:
+                self.oberon_in_game = True
+
+            self.all_messages[character.name] = character.message
 
         for name, character in self.names_to_characters.items():
 
@@ -278,6 +263,35 @@ class Avalon_Engine():
             elif character.name == Char_T.oberon:
 
                 self.all_messages[Char_T.merlin] += f_name
+
+        self.character_in_game += \
+            f"-{Char_T.khiar}" + f" (x{self.n_khiars})" + "\n"
+
+        self.character_in_game += \
+            f"-{Char_T.merlin}" + "\n"
+
+        if self.persival_in_game:
+
+            self.character_in_game += \
+                f"-{Char_T.persival}" + "\n"
+
+        if self.mafia_in_game:
+            self.character_in_game += \
+                f"-{Char_T.mafia}" + f" (x{self.n_mafia})" + "\n"
+
+        self.character_in_game += Char_T.assassin + "\n"
+
+        if self.morgana_in_game:
+            self.character_in_game += \
+                f"-{Char_T.morgana}" + "\n"
+
+        if self.mordred_in_game:
+            self.character_in_game += \
+                f"-{Char_T.mordred}" + "\n"
+
+        if self.oberon_in_game:
+            self.character_in_game += \
+                f"-{Char_T.oberon}" + "\n"
 
     def check_committee(self, mission_voters):
 
