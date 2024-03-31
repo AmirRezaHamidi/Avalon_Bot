@@ -101,7 +101,7 @@ GaS_T = SimpleNamespace(
     YSCG="You should create a game first ",
     GOSC="A game is ongoing. Try again later ...",
     YAJ="you have already joined the game.",
-    GESC="A game already exists and you can join it.",
+    GESC="1 Game found.",
     YJGS="You have joined the game sucessfuly.",
     GAJG=" has joined the game.",
     TGHS="The game has already started.",
@@ -124,13 +124,13 @@ Co_T = SimpleNamespace(
 
 GaSi_T = SimpleNamespace(
 
+    CW="City Won.",
     CW3R="City won 3 rounds, it's time for assassin to shoot.",
     RCW="\nReason: Assassin guessed the wrong person as Merlin.",
-    CW="City Won.",
+    EW="Evil Won.",
     REW1="\nReason: The Committee was rejected 5 times in a row.",
     REW2="\nReason: Assassin Shooted the Merlin.",
     REW3="\nReason: Evil won three rounds.",
-    EW="Evil Won.",
 )
 
 Oth_T = SimpleNamespace(
