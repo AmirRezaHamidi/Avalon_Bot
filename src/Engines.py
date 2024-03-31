@@ -279,7 +279,8 @@ class Avalon_Engine():
             self.character_in_game += \
                 f"-{Char_T.mafia}" + f" (x{self.n_mafia})" + "\n"
 
-        self.character_in_game += Char_T.assassin + "\n"
+        self.character_in_game += \
+            f"-{Char_T.assassin}" + "\n"
 
         if self.morgana_in_game:
             self.character_in_game += \

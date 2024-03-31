@@ -508,7 +508,7 @@ class Bot():
                     "\n" + GaS_T.sep +
                     "\n" + GaS_T.CIG +
                     "\n" + self.game.character_in_game +
-                    "\n" + GaS_T.sep +
+                    GaS_T.sep +
                     "\n" + "Rounds:" +
                     "\n" + self.add_round_info())
 

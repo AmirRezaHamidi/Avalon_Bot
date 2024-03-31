@@ -69,12 +69,12 @@ Char_T = SimpleNamespace(
 CharM_T = SimpleNamespace(
 
     khiar='You are a "Khiar".',
-    persival=f'You are the "Persival".\n\nMerlin and Morgana: \n{"-" * 15}',
-    merlin=f'You are the "Merlin".\n\nMafia Team: \n{"-" * 15}',
-    mafia=f'You are a "Mafia-e-Mamooli".\n\nMafia Team: \n{"-" * 15}',
-    morgana=f'You are the "Morgana".\n\nMafia Team: \n{"-" * 15}',
-    assassin=f'You are the "Assassin".\n\nMafia Team: \n{"-" * 15}',
-    mordred=f'You are the "Moredred".\n\nMafia Team: \n{"-" * 15}',
+    persival=f'You are the "Persival".\n\n{"-" * 15}Merlin and Morgana: \n',
+    merlin=f'You are the "Merlin".\n\n{"-" * 15}Mafia Team: \n',
+    mafia=f'You are a "Mafia-e-Mamooli".\n\n{"-" * 15}Mafia Team:',
+    morgana=f'You are the "Morgana".\n\n{"-" * 15}Mafia Team: \n',
+    assassin=f'You are the "Assassin".\n\n{"-" * 15}Mafia Team: \n',
+    mordred=f'You are the "Moredred".\n\n{"-" * 15}Mafia Team: \n',
     oberon='You are the "Oberon"'
 )
 
