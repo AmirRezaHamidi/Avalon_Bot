@@ -12,6 +12,14 @@ Directories = SimpleNamespace(
     TGW=f"{current_working_directory}\\src\\Data\\terminating_game_word.txt",
 )
 
+Commands = SimpleNamespace(
+
+    search="search",
+    unpinall="unpinall",
+    uselady="uselady",
+    assassinshoot="assassinshoot"
+)
+
 Keys = SimpleNamespace(
 
     start_game=emojize(':check_mark_button: Start Game'),

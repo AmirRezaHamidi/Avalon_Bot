@@ -5,7 +5,7 @@ from emoji import demojize, emojize
 from loguru import logger
 from telebot import types
 
-from Constants import Directories, \
+from Constants import Commands, Directories, \
     Keys, Sub_States, States, \
     GaS_T, Char_T, Ass_T, GaSi_T, Co_T, Vote_T, Oth_T
 from Engines import Avalon_Engine
@@ -18,7 +18,32 @@ terminating_game_word = read_txt_file(Directories.TGW)
 
 class Bot():
 
+    def __init__(self):
+
+        # Debuding parameters
+        self.debug_mode = True
+
+        # Initializing the parameters
+        logger.info("Initializing ...")
+        self.initial_condition()
+
+        # Defining the bot ...
+        logger.info("Defining bot ...")
+        self.bot = telebot.TeleBot(TOKEN)
+
+        # defining bot handlders ...
+        logger.info("Defining handlers ...")
+        self.handlers()
+
+        # Start polling ...
+        logger.info("Polling ... ")
+        self.bot.infinity_polling()
+
     def initial_condition(self):
+
+        if self.debug_mode:
+
+            print("initial_condition")
 
         # admin parameters
         self.creating_game_word = creating_game_word
@@ -77,26 +102,18 @@ class Bot():
         self.mission_summary = str()
         self.game_summary = str()
 
-    def __init__(self):
-
-        # Initializing the bot ...
-        self.initial_condition()
-        self.bot = telebot.TeleBot(TOKEN)
-
-        # defining bot handlders ...
-        logger.info("Defining the handlers ...")
-        self.handlers()
-
-        # Start polling ...
-        logger.info("Start Polling ...")
-        self.bot.infinity_polling()
-
     def handlers(self):
+
+        if self.debug_mode:
+            print("handlers")
 
         # Create game #
         @self.bot.message_handler(regexp=self.creating_game_word)
         def creating_game_word(message):
-            print("creating_game_word")
+
+            if self.debug_mode:
+
+                print("creating_game_word")
 
             if self.game_state == States.no_game:
 
@@ -121,7 +138,10 @@ class Bot():
         # Terminate Game #
         @self.bot.message_handler(func=self.is_admin_terminating_game)
         def terminating_game_word(message):
-            print("terminate_game")
+
+            if self.debug_mode:
+
+                print("terminate_game")
 
             if self.game_state == States.no_game:
 
@@ -143,9 +163,12 @@ class Bot():
                 self.ended_game_state()
 
         # Search Command #
-        @self.bot.message_handler(commands=["search"])
+        @self.bot.message_handler(commands=[Commands.search])
         def search_command(message):
-            print("search_command")
+
+            if self.debug_mode:
+
+                print("search_command")
 
             chat_id = message.chat.id
             text = GaS_T.SFG
@@ -168,7 +191,10 @@ class Bot():
         # Join Game #
         @self.bot.message_handler(regexp=Keys.join_game)
         def joining_game(message):
-            print("join_game")
+
+            if self.debug_mode:
+
+                print("join_game")
 
             chat_id = message.chat.id
 
@@ -205,7 +231,10 @@ class Bot():
         # Print Input #
         @self.bot.message_handler()
         def print_function(message):
-            print("print_function")
+
+            if self.debug_mode:
+
+                print("print_function")
 
             text = Vote_T.CNF
             chat_id = message.chat.id
@@ -216,14 +245,20 @@ class Bot():
         # Choose_character #
         @self.bot.callback_query_handler(func=self.is_admin_choosing_character)
         def Choose_character_query(query):
-            print("choose_character")
+
+            if self.debug_mode:
+
+                print("choose_character")
 
             self.admin_choose_characters(query)
 
         # Send Info #
         @self.bot.callback_query_handler(func=self.is_admin_starting_game)
         def starting_game_query(query):
-            print("starting_game_query")
+
+            if self.debug_mode:
+
+                print("starting_game_query")
 
             if self.game_state == States.created:
 
@@ -242,7 +277,10 @@ class Bot():
         # ccommander choosing name #
         @self.bot.callback_query_handler(func=self.is_commander_choosing_name)
         def commander_choosing_name(query):
-            print("commander_choosing_name")
+
+            if self.debug_mode:
+
+                print("commander_choosing_name")
 
             self.commander_choose_name(query)
 
@@ -250,7 +288,10 @@ class Bot():
         @self.bot.callback_query_handler(
                 func=self.is_commander_pressing_button)
         def commander_press_button(query):
-            print("commander_press_button")
+
+            if self.debug_mode:
+
+                print("commander_press_button")
 
             self.game.check_committee(self.mission_voters)
 
@@ -265,7 +306,10 @@ class Bot():
         # committee vote #
         @self.bot.callback_query_handler(func=self.is_eligible_vote)
         def vote_for_committee(query):
-            print("vote_for_committee")
+
+            if self.debug_mode:
+
+                print("vote_for_committee")
 
             name = self.ids_to_names[query.message.chat.id]
 
@@ -302,7 +346,10 @@ class Bot():
         # mission vote #
         @self.bot.callback_query_handler(func=self.is_eligible_fail_success)
         def vote_for_mission(query):
-            print("vote_for_mission")
+
+            if self.debug_mode:
+
+                print("vote_for_mission")
 
             name = self.ids_to_names[query.message.chat.id]
 
@@ -338,13 +385,19 @@ class Bot():
 
         @self.bot.callback_query_handler(func=self.is_assassin_choosing_name)
         def assassin_choosing_name(query):
-            print("assassin_choosing_name")
+
+            if self.debug_mode:
+
+                print("assassin_choosing_name")
 
             self.assassin_choose_name(query)
 
         @self.bot.callback_query_handler(func=self.is_assassin_pressing_button)
         def assassin_pressing_button(query):
-            print("assassin_pressing_button")
+
+            if self.debug_mode:
+
+                print("assassin_pressing_button")
 
             if self.assassins_guess == str():
 
@@ -357,7 +410,10 @@ class Bot():
         # Pin Query #
         @self.bot.callback_query_handler(func=self.is_player_query_pin)
         def pin_query(query):
-            print("pin_query")
+
+            if self.debug_mode:
+
+                print("pin_query")
 
             chat_id = query.message.chat.id
             message_id = query.message.id
@@ -370,7 +426,10 @@ class Bot():
         # Pin Query #
         @self.bot.callback_query_handler(func=self.is_player_query_unpin)
         def unpin_query(query):
-            print("pin_query")
+
+            if self.debug_mode:
+
+                print("unpin_query")
 
             chat_id = query.message.chat.id
             message_id = query.message.id
@@ -381,9 +440,12 @@ class Bot():
                                                reply_markup=keyboard)
 
         # OKs Query #
-        @self.bot.callback_query_handler(func=self.is_player_query_ok)
-        def ok_query(query):
-            print("ok_query")
+        @self.bot.callback_query_handler(func=self.is_player_query_got_it)
+        def got_it_query(query):
+
+            if self.debug_mode:
+
+                print("got_it_query")
 
             chat_id = query.message.chat.id
             message_id = query.message.id
@@ -393,7 +455,10 @@ class Bot():
         # delete inline keyboard #
         @self.bot.callback_query_handler(func=lambda x: x)
         def delete_inline_keyboards(query):
-            print("delete_inline_keyboard")
+
+            if self.debug_mode:
+
+                print("delete_inline_keyboard")
 
             chat_id = query.message.chat.id
             message_id = query.message.id
@@ -929,28 +994,24 @@ class Bot():
         return c_1
 
     def is_admin(self, query):
-        print("is_admin")
 
         c_1 = self.admin_id == query.message.chat.id
 
         return c_1
 
     def is_player(self, query):
-        print("is_player")
 
         c_1 = query.message.chat.id in self.ids
 
         return c_1
 
     def is_commander(self, query):
-        print("is_commander")
 
         c_1 = self.current_commander_id == query.message.chat.id
 
         return c_1
 
     def is_assassin(self, query):
-        print("is_assassin")
 
         c_1 = self.assassin_id == query.message.chat.id
 
@@ -959,19 +1020,16 @@ class Bot():
     # Whens Conditions
     # Main State
     def is_no_game_state(self):
-        print("is_no_game_state")
 
         c_1 = self.game_state == States.no_game
         return c_1
 
     def is_created_state(self):
-        print("is_created_state")
 
         c_1 = self.game_state == States.created
         return c_1
 
     def is_started_state(self):
-        print("is_started_state")
 
         c_1 = self.game_state == States.started
         return c_1
@@ -1035,7 +1093,6 @@ class Bot():
         return c_1 and (c_2 or c_3) and c_4
 
     def is_admin_choosing_character(self, query):
-        print("is_admin_choosing_character")
 
         # who
         c_1 = self.is_admin(query)
@@ -1049,7 +1106,7 @@ class Bot():
 
         return c_1 and c_2 and (c_3 or c_4)
 
-    def is_player_query_ok(self, query):
+    def is_player_query_got_it(self, query):
 
         # Who
         c_1 = self.is_player(query)
@@ -1084,7 +1141,6 @@ class Bot():
         return c_1 and c_2
 
     def is_commander_choosing_name(self, query):
-        print("is_commander_choosing_name")
 
         # who
         c_1 = self.is_commander(query)
@@ -1099,7 +1155,6 @@ class Bot():
         return c_1 and c_2 and (c_3 or c_4)
 
     def is_commander_pressing_button(self, query):
-        print("is_commander_pressing_button")
 
         # who
         c_1 = self.is_commander(query)
@@ -1113,7 +1168,6 @@ class Bot():
         return c_1 and c_2 and c_3
 
     def is_eligible_vote(self, query):
-        print("is_eligible_vote")
 
         # what
         c_1 = self.is_player(query)
@@ -1127,7 +1181,6 @@ class Bot():
         return c_1 and c_2 and c_3
 
     def is_eligible_fail_success(self, query):
-        print("is_eligible_fail_success")
 
         # when
         c_1 = self.is_player(query)
@@ -1141,7 +1194,6 @@ class Bot():
         return c_1 and c_2 and c_3
 
     def is_assassin_choosing_name(self, query):
-        print("is_assassin_choosing_name")
 
         # who
         c_1 = self.is_assassin(query)
@@ -1155,7 +1207,6 @@ class Bot():
         return c_1 and c_2 and c_3
 
     def is_assassin_pressing_button(self, query):
-        print("is_assassin_pressing_button")
 
         # who
         c_1 = self.is_assassin(query)
