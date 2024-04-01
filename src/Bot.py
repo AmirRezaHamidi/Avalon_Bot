@@ -7,7 +7,7 @@ from telebot import types
 
 from Constants import Directories, \
     Keys, Sub_States, States, \
-    GaS_T, Char_T, Ass_T, GaSi_T, Co_T, Oth_T
+    GaS_T, Char_T, Ass_T, GaSi_T, Co_T, Vote_T, Oth_T
 from Engines import Avalon_Engine
 from utils.io import read_txt_file  # write_json_file
 
@@ -178,11 +178,12 @@ class Bot():
 
                     self.add_player(message)
                     name = self.ids_to_names[chat_id]
-                    text = f"{GaS_T.YJGS}\n{GaS_T.YN}{name}."
-                    keyboard = self.remove_keyboard()
 
                     text = f"{name}{GaS_T.GAJG}"
                     self.bot.send_message(self.admin_id, text)
+
+                    text = f"{GaS_T.YJGS}\n{GaS_T.YN}{name}."
+                    keyboard = self.remove_keyboard()
 
                 else:
 
@@ -206,10 +207,11 @@ class Bot():
         def print_function(message):
             print("print_function")
 
-            text = Oth_T.CNF
+            text = Vote_T.CNF
             chat_id = message.chat.id
 
             self.bot.send_message(chat_id, text)
+            print(demojize(message.text))
 
         # Choose_character #
         @self.bot.callback_query_handler(func=self.is_admin_choosing_character)
@@ -229,12 +231,13 @@ class Bot():
 
             elif self.game_state == States.no_game:
 
-                self.bot.answer_callback_query(query.id, GaS_T.YSCG)
+                text = GaS_T.YSCG
+                self.bot.answer_callback_query(query.id, text)
 
             else:
 
                 text = GaS_T.TGHS
-                self.bot.send_message(query.chat.id, text)
+                self.bot.answer_callback_query(query.id, text)
 
         # ccommander choosing name #
         @self.bot.callback_query_handler(func=self.is_commander_choosing_name)
@@ -358,8 +361,24 @@ class Bot():
 
             chat_id = query.message.chat.id
             message_id = query.message.id
+            keyboard = self.unpin_keyboard()
 
             self.bot.pin_chat_message(chat_id, message_id)
+            self.bot.edit_message_reply_markup(chat_id, message_id,
+                                               reply_markup=keyboard)
+
+        # Pin Query #
+        @self.bot.callback_query_handler(func=self.is_player_query_unpin)
+        def unpin_query(query):
+            print("pin_query")
+
+            chat_id = query.message.chat.id
+            message_id = query.message.id
+            keyboard = self.pin_keyboard()
+
+            self.bot.unpin_chat_message(chat_id, message_id,)
+            self.bot.edit_message_reply_markup(chat_id, message_id,
+                                               reply_markup=keyboard)
 
         # OKs Query #
         @self.bot.callback_query_handler(func=self.is_player_query_ok)
@@ -379,7 +398,30 @@ class Bot():
             chat_id = query.message.chat.id
             message_id = query.message.id
 
-            self.bot.delete_message(chat_id, message_id)
+            if self.game_state == States.no_game:
+
+                self.bot.delete_message(chat_id, message_id)
+
+            else:
+
+                word_list = [Keys.fail,
+                             Keys.success,
+                             Keys.agree,
+                             Keys.disagree,
+                             Keys.pin,
+                             Keys.unpin,
+                             *self.names,
+                             *self.checked_names,
+                             *self.optional_characters,
+                             *self.checked_optional_characters]
+
+                if query.data in word_list:
+
+                    self.bot.answer_callback_query(query.id, Oth_T.TA)
+
+                else:
+
+                    self.bot.delete_message(chat_id, message_id)
 
     def grab_name(self, message):
 
@@ -488,6 +530,8 @@ class Bot():
 
         self.define_game()
         self.started_game_state()
+        small_sep = GaS_T.small_sep
+        big_sep = GaS_T.big_sep
 
         for name, character in self.game.names_to_characters.items():
 
@@ -497,19 +541,20 @@ class Bot():
             chat_id = self.names_to_ids[name]
 
             text = (GaS_T.IGI +
-                    "\n" + GaS_T.main_sep +
+                    "\n" + big_sep +
                     "\n" + GaS_T.YR +
                     "\n" + "-" + self.game.all_messages[character.name] +
-                    "\n" + GaS_T.sep +
+                    "\n" + big_sep +
                     "\n" + GaS_T.PINF +
                     "\n" + f"# Players: {self.game.n_players}" +
                     "\n" + f"# Cities: {self.game.n_city}" +
                     "\n" + f"# Evils: {self.game.n_evil}" +
-                    "\n" + GaS_T.sep +
+                    "\n" + small_sep +
                     "\n" + GaS_T.CIG +
                     "\n" + self.game.character_in_game +
-                    GaS_T.sep +
+                    big_sep +
                     "\n" + "Rounds:" +
+                    "\n" +
                     "\n" + self.add_round_info())
 
             keyboard = self.pin_keyboard()
@@ -599,9 +644,8 @@ class Bot():
 
                 commander_order_show += f"{name}\n"
 
-        n_players = f"{len(self.names)} Players"
-        text = emojize(f"{Co_T.CO} ({n_players})\n\n" + commander_order_show)
-        keyboard = self.pin_keyboard()
+        text = emojize(f"{Co_T.CO} \n\n" + commander_order_show)
+        keyboard = self.ok_keyboard()
 
         for id in self.ids:
 
@@ -611,9 +655,7 @@ class Bot():
 
         self.committee_choosing_state()
         self.resolve_commander()
-
-        if self.game.round == 1:
-            self.send_commander_order()
+        self.send_commander_order()
 
         n_committee = self.game.all_round[self.game.round]
 
@@ -633,9 +675,8 @@ class Bot():
 
         except ValueError as e:
 
-            chat_id = query.message.chat.id
-
-            self.bot.send_message(chat_id, e.args[0])
+            query_id = query.id
+            self.bot.answer_callback_query(query_id, e.args[0])
 
     def transfer_committee_vote(self, query):
 
@@ -709,7 +750,7 @@ class Bot():
 
     def go_to_mission_voting(self):
 
-        text = Oth_T.MV
+        text = Vote_T.MV
 
         for name in self.mission_voters:
 
@@ -727,7 +768,7 @@ class Bot():
 
         chat_id = query.message.chat.id
         message_id = query.message.id
-        text = emojize(f"{Oth_T.CV}{query.data}")
+        text = emojize(f"{Vote_T.CV}{query.data}")
 
         self.bot.answer_callback_query(query.id, text)
         self.bot.delete_message(chat_id, message_id)
@@ -741,7 +782,7 @@ class Bot():
 
         chat_id = query.message.chat.id
         message_id = query.message.id
-        text = Oth_T.SFV
+        text = Vote_T.SFV
 
         self.bot.answer_callback_query(query.id, text)
         self.bot.delete_message(chat_id, message_id)
@@ -749,7 +790,7 @@ class Bot():
     def you_voted(self, query):
 
         query_id = query.id
-        text = emojize(Oth_T.YVB)
+        text = emojize(Vote_T.YVB)
 
         self.bot.answer_callback_query(query_id, text)
 
@@ -1029,7 +1070,17 @@ class Bot():
 
         # What
         c_2 = query.data == Keys.pin
+        return c_1 and c_2
 
+    def is_player_query_unpin(self, query):
+
+        # Who
+        c_1 = self.is_player(query)
+
+        # When: Any Time
+
+        # What
+        c_2 = query.data == Keys.unpin
         return c_1 and c_2
 
     def is_commander_choosing_name(self, query):
@@ -1252,6 +1303,18 @@ class Bot():
         inline = types.InlineKeyboardButton(pin, callback_data=pin)
         keyboard.row(inline)
 
+        return keyboard
+
+    def unpin_keyboard(self):
+
+        keyboard = types.InlineKeyboardMarkup(row_width=1)
+        pin = Keys.unpin
+
+        inline = types.InlineKeyboardButton(pin, callback_data=pin)
+        keyboard.row(inline)
+
+        return keyboard
+
     def remove_keyboard(self):
         return types.ReplyKeyboardRemove()
 
@@ -1260,7 +1323,7 @@ class Bot():
 
     def add_committee_header(self, rejected_count):
 
-        sep = "-" * 15
+        sep = GaS_T.small_sep
         return ("\n" + f"Rejection Count: {rejected_count}" +
                 "\n" + sep +
                 "\n" + "Committee Votes:" +
@@ -1274,14 +1337,14 @@ class Bot():
     def add_committee_footer(self):
 
         sign = Keys.accept if self.game.committee_accept else Keys.declined
-        sep = "-" * 15
+        sep = GaS_T.small_sep
 
         return (sep +
                 "\n" + "Committee Result:"
                 "\n" + sign)
 
     def add_mission_vote(self, names, fail, success, Round, commander):
-        sep = "-" * 15
+        sep = GaS_T.small_sep
 
         return (f"Round: {Round} (Commander: {commander})" +
                 "\n" + sep +

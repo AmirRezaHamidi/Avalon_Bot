@@ -6,155 +6,257 @@ current_working_directory = os.getcwd()
 Directories = SimpleNamespace(
 
     Token=f"{current_working_directory}\\src\\Data\\Bot_Token.txt",
+
     CGW=f"{current_working_directory}\\src\\Data\\creating_game_word.txt",
+
     TGW=f"{current_working_directory}\\src\\Data\\terminating_game_word.txt",
 )
 
 Keys = SimpleNamespace(
 
     start_game=emojize(':check_mark_button: Start Game'),
+
     join_game=emojize(':plus: Join the Game'),
+
     choose_character=emojize(':performing_arts: Lets choose characters'),
+
     finished_choosing=emojize(':check_mark_button: Finished Choosing'),
+
     propose=emojize(':loudspeaker: Propose'),
+
     final=emojize(':hundred_points: Final Decision'),
-    success=emojize(':green_circle: Success'),
-    fail=emojize(':red_circle: Fail'),
+
+    success=emojize(':green_square: Success'),
+
+    fail=emojize(':red_square: Fail'),
+
     check_box=emojize(':check_box_with_check:'),
+
     agree=emojize(':thumbs_up:Agree'),
+
     disagree=emojize(':thumbs_down: Disagree'),
+
     assassin_shoots=emojize(':water_pistol: Shoot'),
+
     accept=emojize(":check_mark_button: Accept"),
+
     declined=emojize(":prohibited: Declined"),
-    natural=emojize(":white_small_square:"),
-    evil_win=emojize(":red_square:"),
-    city_win=(emojize(":green_square:")),
-    ok="OK !!",
-    pin="Pin this message."
+
+    evil_win=emojize(":red_circle:"),
+
+    city_win=emojize(":green_circle:"),
+
+    ok=emojize(":thinking_face:I Got It"),
+
+    pin=emojize(":bell:Pin this message."),
+
+    unpin=emojize(":bell_with_slash:Unpin this message.")
 )
 
 States = SimpleNamespace(
 
     no_game='no_game',
+
     created='created',
+
     started='started'
 )
 
 Sub_States = SimpleNamespace(
 
     character_choosing='character_choosing',
+
     committee_choosing='committee_choosing',
+
     committee_voting='committee_voting',
+
     mission_voting='mission_voting',
+
     assassin_shooting='assassin_shooting',
+
     assassin_shooted="assassin_shooted"
 )
 
 Char_T = SimpleNamespace(
 
     city_side="City",
+
     evil_side="Evil",
+
     khiar="Khiar",
+
     persival="Persival",
+
     merlin="Merlin",
-    mafia="Mafia",
+
+    mafia="Mafia-e-Mamooli",
+
     morgana="Morgana",
+
     assassin="Assassin",
+
     oberon='Oberon',
+
     mordred='Mordred',
+
     lady="Lady",
+
     persival_morgana='Persival/Morgana',
+)
+
+GaS_T = SimpleNamespace(
+
+    CG="The game was created."      # Create Game
+       "\nAsk your friends to join the game."
+       "\nYour name in the game is: ",
+
+    YN="Your name in the game is: ",  # Your Name
+
+    GOG="A game already exists."
+        "\nFind it using the search command.",
+
+    CHC="Choose you prefered character in the game.",
+
+    NGET="No game exists to terminate.",
+
+    TGT="The game was terminated.",
+
+    SFG="Searching ...",
+
+    NGSC="No Game found.",
+
+    GESC="1 Game found.",
+
+    GIOG="A game has already started. You should wait ...",
+
+    YSCG="You should create a game first ",
+
+    GOSC="A game is ongoing. Try again later ...",
+
+    YAJ="you have already joined the game.",
+
+    YJGS="You have joined the game sucessfuly.",
+
+    GAJG=" has joined the game.",
+
+    TGHS="The game has already started.",
+
+    RFG=" was removed from the game.",
+
+    ATG=" was add to the game.",
+
+    IGI="Game Information:",
+
+    YR="Your Role:",
+
+    PINF="Players info:",
+
+    NOM="Number of Evils:",
+
+    CIG="Characters in the game:",
+
+    big_sep="-" * 45,
+
+    small_sep="-" * 15,
 )
 
 CharM_T = SimpleNamespace(
 
-    khiar='You are a "Khiar".',
-    persival=f'You are the "Persival".\n\n{"-" * 15}Merlin and Morgana: \n',
-    merlin=f'You are the "Merlin".\n\n{"-" * 15}Mafia Team: \n',
-    mafia=f'You are a "Mafia-e-Mamooli".\n\n{"-" * 15}Mafia Team:',
-    morgana=f'You are the "Morgana".\n\n{"-" * 15}Mafia Team: \n',
-    assassin=f'You are the "Assassin".\n\n{"-" * 15}Mafia Team: \n',
-    mordred=f'You are the "Moredred".\n\n{"-" * 15}Mafia Team: \n',
-    oberon='You are the "Oberon"'
+    khiar=f'You are a {Char_T.khiar}.',
+
+    persival=(f'You are the {Char_T.persival}.'
+              f'\n{GaS_T.small_sep}'
+              f'\n{Char_T.persival} Information:'),
+
+    merlin=(f'You are the {Char_T.merlin}.'
+            f'\n{GaS_T.small_sep}'
+            f'\n{Char_T.merlin} Information:'),
+
+    mafia=(f'You are a {Char_T.mafia}.'
+           f'\n{GaS_T.small_sep}'
+           f'\n{Char_T.mafia} Information:'),
+
+    morgana=(f'You are the "{Char_T.morgana}.'
+             f'\n{GaS_T.small_sep}'
+             f'\n{Char_T.morgana} Information:'),
+
+    assassin=(f'You are the {Char_T.assassin}.'
+              f'\n{GaS_T.small_sep}'
+              f'\n{Char_T.assassin} Information:'),
+
+    mordred=(f'You are the {Char_T.assassin}.'
+             f'\n{GaS_T.small_sep}'
+             f'\n{Char_T.assassin} Information:'),
+
+    oberon=f'You are the {Char_T.morgana}.'
 )
 
 Err_T = SimpleNamespace(
 
     PCE="There are too many characters.",
+
     PNEL="Not Enough players, there should be atleast 5 players.",
+
     PNEH="Too many Players. The maximum number of players is 10."
 )
-
-GaS_T = SimpleNamespace(
-
-    CG="The game was created."
-    "\nAsk your friends to join the game."
-    "\nYour name in the game is: ",
-    YN="Your name in the game is: ",
-    CHC="Choose you prefered character in the game.",
-    GOG="A game already exists."
-    "\nFind it using the search command.",
-    NGET="No game exists.",
-    TGT="The game was terminated.",
-    SFG="Searching ...",
-    NGSC="No game exist. Try again ...",
-    GIOG="A game has already started. You should wait ...",
-    YSCG="You should create a game first ",
-    GOSC="A game is ongoing. Try again later ...",
-    YAJ="you have already joined the game.",
-    GESC="1 Game found.",
-    YJGS="You have joined the game sucessfuly.",
-    GAJG=" has joined the game.",
-    TGHS="The game has already started.",
-    RFG=" was removed from the game.",
-    ATG=" was add to the game.",
-    IGI="Game Information:",
-    YR="Your Role:",
-    PINF="Players info:",
-    NOM="Number of Evils:",
-    CIG="Characters in the game:",
-    main_sep="*" * 30,
-    sep="-" * 15,
-)
-
 
 Co_T = SimpleNamespace(
 
     CO="Commander's order:",
+
     CCN1="You are the commander in this round.",
+
     CCN2_1="You should pick ",
     CCN2_2=" players.",
+
     ATC=" was add to the committee.",
+
     RFC=" was removed from the committee.",
+
     PCC='Proposed committee by commander:',
+
     FCC='Final committee by commander:',
 )
 
 GaSi_T = SimpleNamespace(
 
-    CW="City Won.",
     CW3R="City won 3 rounds, it's time for assassin to shoot.",
+    CW="City Won.",
     RCW="\nReason: Assassin guessed the wrong person as Merlin.",
+
     EW="Evil Won.",
     REW1="\nReason: The Committee was rejected 5 times in a row.",
     REW2="\nReason: Assassin Shooted the Merlin.",
     REW3="\nReason: Evil won three rounds.",
 )
 
-Oth_T = SimpleNamespace(
+Vote_T = SimpleNamespace(
 
-    YR="We are preparing roles for you ...",
     SFV="Your vote has been received.",
+
     CV="Your vote: ",
+
     MV='Choose between "Fail" and "Success".',
+
     YVB=":slightly_smiling_face: you have voted before",
+
     CNF="Not a valid command."
 )
 
 Ass_T = SimpleNamespace(
 
     ASS1="Who do you want to shoot?",
+
     ASS2_1="You chose ",
     ASS2_2=" as the Merlin.",
+
     ASS3="You should choose someone !!",
+)
+
+Summ_T = SimpleNamespace()
+
+Oth_T = SimpleNamespace(
+
+    TA="Please Try again ...",
+
 )

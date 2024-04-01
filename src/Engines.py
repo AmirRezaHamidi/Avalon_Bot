@@ -8,6 +8,7 @@ class Avalon_Engine():
 
     def __init__(self, names, optional_characters=None):
 
+        # Players Name
         self.names = names
 
         # Character Parameters
@@ -25,9 +26,9 @@ class Avalon_Engine():
 
         self.show_role = False
         self.all_messages = dict()
-
         self.character_in_game = str()
-        # Rounc Parameters
+
+        # Round Parameters
         self.round = 1
         self.city_wins = int()
         self.evil_wins = int()
