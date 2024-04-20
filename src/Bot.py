@@ -62,6 +62,8 @@ class Bot():
         self.ids_to_names = dict()
         self.names_to_ids = dict()
 
+        self.id_to_message_id = dict()
+
         # Character parameters
         # characters
         merlin = Char_T.merlin
@@ -81,7 +83,7 @@ class Bot():
         self.commander_order = list()
         self.current_commander = str()
         self.current_commander_id = int()
-        self.shuffle_commander_order = True
+        self.shuffle_commander_order = False
         self.commander_number = 0
 
         # committee parameters
@@ -107,125 +109,17 @@ class Bot():
         if self.debug_mode:
             print("handlers")
 
-        # Create game #
-        @self.bot.message_handler(regexp=self.creating_game_word)
-        def creating_game_word(message):
+        # Start Command #
+        @self.bot.message_handler(commands=[Commands.start])
+        def start_command(message):
 
             if self.debug_mode:
 
-                print("creating_game_word")
-
-            if self.game_state == States.no_game:
-
-                self.created_game_state(message)
-                self.add_player(message)
-
-                name = self.ids_to_names[message.chat.id]
-                self.bot.send_message(message.chat.id, f"{GaS_T.CG}{name}.")
-
-                chat_id = message.chat.id
-                text = GaS_T.CHC
-                keyboard = self.character_keyboard()
-
-            else:
-
-                chat_id = message.chat.id
-                text = GaS_T.GOG
-                keyboard = self.remove_keyboard()
-
-            self.bot.send_message(chat_id, text, reply_markup=keyboard)
-
-        # Terminate Game #
-        @self.bot.message_handler(func=self.is_admin_terminating_game)
-        def terminating_game_word(message):
-
-            if self.debug_mode:
-
-                print("terminate_game")
-
-            if self.game_state == States.no_game:
-
-                chat_id = message.chat.id
-                text = GaS_T.NGET
-                keyboard = self.remove_keyboard()
-
-                self.bot.send_message(chat_id, text, reply_markup=keyboard)
-
-            else:
-
-                text = GaS_T.TGT
-                keyboard = self.remove_keyboard()
-
-                for id in self.ids:
-
-                    self.bot.send_message(id, text, reply_markup=keyboard)
-
-                self.ended_game_state()
-
-        # Search Command #
-        @self.bot.message_handler(commands=[Commands.search])
-        def search_command(message):
-
-            if self.debug_mode:
-
-                print("search_command")
+                print("start_command")
 
             chat_id = message.chat.id
-            text = GaS_T.SFG
-            keyboard = self.remove_keyboard()
-
-            self.bot.send_message(chat_id, text, reply_markup=keyboard)
-
-            if self.game_state == States.no_game:
-
-                text = GaS_T.NGSC
-                keyboard = self.remove_keyboard()
-
-            else:
-
-                text = GaS_T.GESC
-                keyboard = self.join_game_keyboard()
-
-            self.bot.send_message(chat_id, text, reply_markup=keyboard)
-
-        # Join Game #
-        @self.bot.message_handler(regexp=Keys.join_game)
-        def joining_game(message):
-
-            if self.debug_mode:
-
-                print("join_game")
-
-            chat_id = message.chat.id
-
-            if self.game_state == States.created:
-
-                if chat_id not in self.ids:
-
-                    self.add_player(message)
-                    name = self.ids_to_names[chat_id]
-
-                    text = f"{name}{GaS_T.GAJG}"
-                    self.bot.send_message(self.admin_id, text)
-
-                    text = f"{GaS_T.YJGS}\n{GaS_T.YN}{name}."
-                    keyboard = self.remove_keyboard()
-
-                else:
-
-                    text = GaS_T.YAJ
-                    keyboard = self.remove_keyboard()
-
-            elif self.game_state == States.started:
-
-                text = GaS_T.GIOG
-                keyboard = self.remove_keyboard()
-
-            elif self.game_state == States.no_game:
-
-                text = GaS_T.NGSC
-                keyboard = self.remove_keyboard()
-
+            text = GaS_T.SC
+            keyboard = self.join_creat_game_keyboard()
             self.bot.send_message(chat_id, text, reply_markup=keyboard)
 
         # Print Input #
@@ -236,11 +130,78 @@ class Bot():
 
                 print("print_function")
 
-            text = Vote_T.CNF
+            text = Oth_T.NAVC
             chat_id = message.chat.id
 
             self.bot.send_message(chat_id, text)
             print(demojize(message.text))
+
+        # Create game #
+        @self.bot.callback_query_handler(func=self.is_creating_game)
+        def create_game(query):
+
+            chat_id = query.message.chat.id
+            query_id = query.id
+            message_id = query.message.id
+
+            if self.debug_mode:
+
+                print("creating_game_word")
+
+            if self.game_state == States.no_game:
+
+                self.created_game_state(query)
+                self.add_player(query)    # To fix
+
+                text = f"{GaS_T.YJGS}{GaS_T.PSF}{"\n".join(self.names)}"
+                self.bot.edit_message_text(text, chat_id, message_id)
+
+                text = GaS_T.CHC
+                keyboard = self.character_keyboard()
+                self.bot.send_message(chat_id, text, reply_markup=keyboard)
+
+            else:
+
+                text = GaS_T.GOG
+                self.bot.answer_callback_query(query_id, text, cache_time=5)
+
+        @self.bot.callback_query_handler(func=self.is_joining_game)
+        def joining_game(query):
+
+            if self.debug_mode:
+
+                print("join_game")
+
+            chat_id = query.message.chat.id
+            query_id = query.id
+            message_id = query.message.id
+
+            if self.game_state == States.created:
+
+                if chat_id not in self.ids:
+
+                    self.add_player(query)     # To fix
+
+                    text = f"{GaS_T.YJGS} {GaS_T.PSF} {"\n".join(self.names)}"
+
+                    for chat_id, message_id in self.id_to_message_id.items():
+
+                        self.bot.edit_message_text(text, chat_id, message_id)
+
+                else:
+
+                    text = GaS_T.YAJ
+                    self.bot.answer_callback_query(query_id, text)
+
+            elif self.game_state == States.started:
+
+                text = GaS_T.GIOG
+                self.bot.answer_callback_query(query_id, text)
+
+            elif self.game_state == States.no_game:
+
+                text = GaS_T.NGSC
+                self.bot.answer_callback_query(query_id, text)
 
         # Choose_character #
         @self.bot.callback_query_handler(func=self.is_admin_choosing_character)
@@ -488,6 +449,18 @@ class Bot():
 
                     self.bot.delete_message(chat_id, message_id)
 
+    # auxilary functions. They help functionalize the code.
+    def edit_all(self, text):
+
+        for chat_id, message_id in self.id_to_message_id.items():
+
+            self.bot.edit_message_text(text, chat_id, message_id)
+
+    def edit_one(self, chat_id, text):
+
+        message_id = self.id_to_message_id[chat_id]
+        self.bot.edit_message_text(text, chat_id, message_id)
+
     def grab_name(self, message):
 
         name = str()
@@ -534,12 +507,15 @@ class Bot():
 
             return currupted_name
 
-    def add_player(self, message):
+    def add_player(self, query):
+
+        message = query.message
+        chat_id = query.message.chat.id
+        message_id = query.message.id
 
         name = self.grab_name(message)
         temp_name = name
 
-        id = message.chat.id
         similar_name_count = 0
 
         while True:
@@ -555,12 +531,13 @@ class Bot():
                 break
 
         self.names.append(name)
-        self.ids.append(id)
+        self.ids.append(chat_id)
 
         self.checked_names.append(emojize(f"{Keys.check_box}{name}"))
 
-        self.names_to_ids[name] = id
-        self.ids_to_names[id] = name
+        self.names_to_ids[name] = chat_id
+        self.ids_to_names[chat_id] = name
+        self.id_to_message_id[chat_id] = message_id
 
     def admin_choose_characters(self, query):
 
@@ -618,9 +595,7 @@ class Bot():
                     "\n" + GaS_T.CIG +
                     "\n" + self.game.character_in_game +
                     big_sep +
-                    "\n" + "Rounds:" +
-                    "\n" +
-                    "\n" + self.add_round_info())
+                    "\n" + "Board:" + self.add_round_info())
 
             keyboard = self.pin_keyboard()
             self.bot.send_message(chat_id, text, reply_markup=keyboard)
@@ -940,10 +915,10 @@ class Bot():
     # State functions
     # These functions help keep track of the state during the game.
 
-    def created_game_state(self, message):
+    def created_game_state(self, query):
 
         self.game_state = States.created
-        self.admin_id = message.chat.id
+        self.admin_id = query.message.chat.id
 
     def started_game_state(self):
 
@@ -996,6 +971,18 @@ class Bot():
     def is_admin(self, query):
 
         c_1 = self.admin_id == query.message.chat.id
+
+        return c_1
+
+    def is_creating_game(self, query):
+
+        c_1 = query.data == Keys.create_game
+
+        return c_1
+
+    def is_joining_game(self, query):
+
+        c_1 = query.data == Keys.join_game
 
         return c_1
 
@@ -1222,6 +1209,23 @@ class Bot():
     # keyboard makers
     # the following functions make keyboard for players.
 
+    def join_creat_game_keyboard(self):
+
+        keyboard = types.InlineKeyboardMarkup(row_width=1)
+
+        create_str = Keys.create_game
+        join_str = Keys.join_game
+
+        join_button = \
+            types.InlineKeyboardButton(join_str, callback_data=join_str)
+        create_button = \
+            types.InlineKeyboardButton(create_str, callback_data=create_str)
+
+        buttons = (create_button, join_button)
+        keyboard.row(*buttons)
+
+        return keyboard
+
     def character_keyboard(self):
 
         keyboard = types.InlineKeyboardMarkup(row_width=1)
@@ -1243,15 +1247,6 @@ class Bot():
         start = Keys.start_game
         inline = types.InlineKeyboardButton(start, callback_data=start)
         keyboard.add(inline)
-
-        return keyboard
-
-    def join_game_keyboard(self):
-
-        buttons_text = [Keys.join_game]
-        buttons = map(types.KeyboardButton, buttons_text)
-        keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-        keyboard.add(*buttons)
 
         return keyboard
 
@@ -1406,9 +1401,7 @@ class Bot():
                 "\n" + f"# Sucesses: {success}" +
                 "\n" + f"# Fails: {fail}" +
                 "\n" + sep +
-                "\n" + "Game Results:"
-                "\n" + sep +
-                "\n")
+                "\n" + "Board:")
 
     def send_committee_summary(self):
 
@@ -1451,3 +1444,59 @@ class Bot():
 
 
 my_bot = Bot()
+
+
+# # Search Command #
+# @self.bot.message_handler(commands=[Commands.searchgame])
+# def search_command(message):
+
+#     if self.debug_mode:
+
+#         print("search_command")
+
+#     chat_id = message.chat.id
+#     text = GaS_T.SFG
+#     keyboard = self.remove_keyboard()
+
+#     self.bot.send_message(chat_id, text, reply_markup=keyboard)
+
+#     if self.game_state == States.no_game:
+
+#         text = GaS_T.NGSC
+#         keyboard = self.remove_keyboard()
+
+#     else:
+
+#         text = GaS_T.GESC
+#         keyboard = self.join_game_keyboard()
+
+#     self.bot.send_message(chat_id, text, reply_markup=keyboard)
+
+# # Terminate Game #
+# @self.bot.message_handler(func=self.is_admin_terminating_game)
+# def terminating_game_word(message):
+
+#     if self.debug_mode:
+
+#         print("terminate_game")
+
+#     if self.game_state == States.no_game:
+
+#         chat_id = message.chat.id
+#         text = GaS_T.NGET
+#         keyboard = self.remove_keyboard()
+
+#         self.bot.send_message(chat_id, text, reply_markup=keyboard)
+
+#     else:
+
+#         text = GaS_T.TGT
+#         keyboard = self.remove_keyboard()
+
+#         for id in self.ids:
+
+#             self.bot.send_message(id, text, reply_markup=keyboard)
+
+#         self.ended_game_state()
+
+# Join Game #

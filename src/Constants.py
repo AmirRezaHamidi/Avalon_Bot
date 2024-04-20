@@ -14,17 +14,20 @@ Directories = SimpleNamespace(
 
 Commands = SimpleNamespace(
 
-    search="search",
-    unpinall="unpinall",
+    start="start",
+    creategame="creategame",
+    searchgame="searchgame",
     uselady="uselady",
     assassinshoot="assassinshoot"
 )
 
 Keys = SimpleNamespace(
 
-    start_game=emojize(':check_mark_button: Start Game'),
+    create_game=emojize(':plus: Create Game'),
 
-    join_game=emojize(':plus: Join the Game'),
+    join_game=emojize(':plus: Join Game'),
+
+    start_game=emojize(':check_mark_button: Start Game'),
 
     choose_character=emojize(':performing_arts: Lets choose characters'),
 
@@ -114,24 +117,24 @@ Char_T = SimpleNamespace(
 
 GaS_T = SimpleNamespace(
 
-    CG="The game was created."      # Create Game
+    SC=("Welcome. Create a new game or join an already existed game."),
+
+    CG="The game was created."
        "\nAsk your friends to join the game."
        "\nYour name in the game is: ",
 
-    YN="Your name in the game is: ",  # Your Name
+    PSF="\n\nPlayers in Game: \n\n",
+
+    YN="Your name in the game is: ",
 
     GOG="A game already exists."
-        "\nFind it using the search command.",
+        "\nJoin it using the join button.",
 
     CHC="Choose you prefered character in the game.",
 
-    NGET="No game exists to terminate.",
-
-    TGT="The game was terminated.",
-
     SFG="Searching ...",
 
-    NGSC="No Game found.",
+    NGSC="No Game exist. Creat one first.",
 
     GESC="1 Game found.",
 
@@ -248,7 +251,6 @@ Vote_T = SimpleNamespace(
 
     YVB=":slightly_smiling_face: you have voted before",
 
-    CNF="Not a valid command."
 )
 
 Ass_T = SimpleNamespace(
@@ -266,5 +268,11 @@ Summ_T = SimpleNamespace()
 Oth_T = SimpleNamespace(
 
     TA="Please Try again ...",
+    NAVC="Not a valid command."
 
 )
+
+
+# NGET="No game exists to terminate.",
+
+# TGT="The game was terminated.",
