@@ -65,7 +65,6 @@ class Bot():
         self.id_to_message_id = dict()
 
         # Character parameters
-        # characters
         merlin = Char_T.merlin
         assassin = Char_T.assassin
         mordred = Char_T.mordred
@@ -119,7 +118,7 @@ class Bot():
 
             chat_id = message.chat.id
             text = GaS_T.SC
-            keyboard = self.join_creat_game_keyboard()
+            keyboard = self.join_create_game_keyboard()
             self.bot.send_message(chat_id, text, reply_markup=keyboard)
 
         # Print Input #
@@ -146,12 +145,12 @@ class Bot():
 
             if self.debug_mode:
 
-                print("creating_game_word")
+                print("create_game")
 
             if self.game_state == States.no_game:
 
                 self.created_game_state(query)
-                self.add_player(query)    # To fix
+                self.add_player(query)
 
                 text = f"{GaS_T.YJGS}{GaS_T.PSF}{"\n".join(self.names)}"
                 self.bot.edit_message_text(text, chat_id, message_id)
@@ -166,7 +165,7 @@ class Bot():
                 self.bot.answer_callback_query(query_id, text, cache_time=5)
 
         @self.bot.callback_query_handler(func=self.is_joining_game)
-        def joining_game(query):
+        def join_game(query):
 
             if self.debug_mode:
 
@@ -180,7 +179,7 @@ class Bot():
 
                 if chat_id not in self.ids:
 
-                    self.add_player(query)     # To fix
+                    self.add_player(query)
 
                     text = f"{GaS_T.YJGS} {GaS_T.PSF} {"\n".join(self.names)}"
 
@@ -1164,7 +1163,7 @@ class Bot():
 
         # what
         c_3 = query.data in [Keys.agree, Keys.disagree]
-        # TODO: Do we need emojize ?
+
         return c_1 and c_2 and c_3
 
     def is_eligible_fail_success(self, query):
@@ -1209,7 +1208,7 @@ class Bot():
     # keyboard makers
     # the following functions make keyboard for players.
 
-    def join_creat_game_keyboard(self):
+    def join_create_game_keyboard(self):
 
         keyboard = types.InlineKeyboardMarkup(row_width=1)
 

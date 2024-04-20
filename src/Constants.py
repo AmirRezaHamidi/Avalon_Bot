@@ -195,9 +195,9 @@ CharM_T = SimpleNamespace(
               f'\n{GaS_T.small_sep}'
               f'\n{Char_T.assassin} Information:'),
 
-    mordred=(f'You are the {Char_T.assassin}.'
+    mordred=(f'You are the {Char_T.mordred}.'
              f'\n{GaS_T.small_sep}'
-             f'\n{Char_T.assassin} Information:'),
+             f'\n{Char_T.mordred} Information:'),
 
     oberon=f'You are the {Char_T.morgana}.'
 )
