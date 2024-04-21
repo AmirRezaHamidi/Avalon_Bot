@@ -138,7 +138,7 @@ GaS_T = SimpleNamespace(
 
     GESC="1 Game found.",
 
-    GIOG="A game has already started. You should wait ...",
+    GIOG="Game has already started. Join the next round",
 
     YSCG="You should create a game first ",
 
@@ -199,7 +199,7 @@ CharM_T = SimpleNamespace(
              f'\n{GaS_T.small_sep}'
              f'\n{Char_T.mordred} Information:'),
 
-    oberon=f'You are the {Char_T.morgana}.'
+    oberon=f'You are the {Char_T.oberon}.'
 )
 
 Err_T = SimpleNamespace(
@@ -263,7 +263,11 @@ Ass_T = SimpleNamespace(
     ASS3="You should choose someone !!",
 )
 
-Summ_T = SimpleNamespace()
+Summ_T = SimpleNamespace(
+    CCIG="City Characters",
+    ECIG="Evil Characters"
+
+)
 
 Oth_T = SimpleNamespace(
 
@@ -272,7 +276,14 @@ Oth_T = SimpleNamespace(
 
 )
 
+Panel_T = SimpleNamespace(
 
-# NGET="No game exists to terminate.",
-
-# TGT="The game was terminated.",
+    rounds=["R1", "R2", "R3", "R4", "R5"],
+    game_info=emojize(":performing_arts: Game Information"),
+    special_ability=emojize(":crystal_ball: Special Ability"),
+    commander_order=emojize(":fleur-de-lis: commander's order"),
+    committee_=emojize("committee"),
+    committee_left=emojize(":left_arrow:"),
+    committee_right=emojize(":right_arrow:"),
+    RHNRY="Round has not reached yet !!"
+)

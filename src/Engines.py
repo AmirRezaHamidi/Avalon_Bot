@@ -1,7 +1,7 @@
 import random
 from Characters import (Assassin, Merlin, Minion, Mordred,
                         Morgana, Oberon, Persival, Servant)
-from Constants import Char_T, Err_T
+from Constants import Char_T, Err_T, Summ_T
 
 
 class Avalon_Engine():
@@ -265,6 +265,8 @@ class Avalon_Engine():
 
                 self.all_messages[Char_T.merlin] += f_name
 
+        self.character_in_game += Summ_T.CCIG + f" (x{self.n_city})" + "\n"
+
         self.character_in_game += \
             f"-{Char_T.khiar}" + f" (x{self.n_khiars})" + "\n"
 
@@ -275,6 +277,9 @@ class Avalon_Engine():
 
             self.character_in_game += \
                 f"-{Char_T.persival}" + "\n"
+
+        self.character_in_game += ("\n" +
+                                   Summ_T.ECIG + f" (x{self.n_evil})" + "\n")
 
         if self.mafia_in_game:
             self.character_in_game += \
