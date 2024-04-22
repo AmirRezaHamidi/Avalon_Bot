@@ -50,6 +50,8 @@ Keys = SimpleNamespace(
     evil_win=emojize(":red_circle:"),
 
     city_win=emojize(":green_circle:"),
+
+    cancle=emojize(":cross_mark: Cancle")
 )
 
 States = SimpleNamespace(
@@ -225,6 +227,8 @@ GaSi_T = SimpleNamespace(
     REW1="\nReason: The Committee was rejected 5 times in a row.",
     REW2="\nReason: Assassin Shooted the Merlin.",
     REW3="\nReason: Evil won three rounds.",
+
+    ASG="Assassin's Guess: "
 )
 
 Vote_T = SimpleNamespace(
@@ -266,8 +270,7 @@ Panel_Keys = SimpleNamespace(
     game_info=emojize(":performing_arts: Game Information"),
     commander_order=emojize(":fleur-de-lis: commander's order"),
     assassin_shoot=emojize(":water_pistol: Assassin Shoot"),
-    lady=emojize(":woman_elf: Lady Token"),
-    Cancle=":cross_mark: Cancle"
+    lady=emojize(":woman_elf: Lady Token")
 )
 
 PanelM_T = SimpleNamespace(
@@ -277,6 +280,6 @@ PanelM_T = SimpleNamespace(
     LC="This is the last committee yet !!",
     FC="This is the first committee !!",
     AR="Already Requested",
-    ASE="NOT Allowed",
+    ASE="You are not allowed",
     CS="Comming Soon ... "
 )
