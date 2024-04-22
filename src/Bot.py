@@ -1,5 +1,6 @@
 from random import shuffle
 from types import SimpleNamespace
+from telebot.apihelper import ApiTelegramException
 
 import telebot
 from emoji import demojize, emojize
@@ -8,7 +9,8 @@ from telebot import types
 
 from Constants import Commands, Directories, \
     Keys, Sub_States, States, \
-    GaS_T, Char_T, Ass_T, GaSi_T, Co_T, Vote_T, Oth_T, Panel_T
+    GaS_T, Char_T, Ass_T, GaSi_T, Co_T, Vote_T, Oth_T, \
+    Panel_Keys, PanelM_T
 from Engines import Avalon_Engine
 from utils.io import read_txt_file  # write_json_file
 
@@ -70,8 +72,8 @@ class Bot():
         self.panel.keyboard = self.panel_keyboard()
         self.panel.button_str = self.get_panel_str()
         self.panel.pages = dict()
-        self.panel.pages[Panel_T.committee] = list()
-        self.panel.chat_id_to_committee_page = dict()
+        self.panel.pages[Panel_Keys.committee] = list()
+        self.panel.chat_to_committee = dict()
 
         # Character parameters
         merlin = Char_T.merlin
@@ -215,30 +217,36 @@ class Bot():
         @self.bot.callback_query_handler(func=self.is_player_hitting_panel)
         def panel_hit(query):
 
-            if query.data in Panel_T.rounds:
+            if query.data in Panel_Keys.rounds:
                 self.panel_show_round(query)
 
-            elif query.data == Panel_T.committee_left:
+            elif query.data == Panel_Keys.committee_left:
+
                 print(query.data)
-                # self.panel_show_committee(query)
+                self.panel_show_previous_committee(query)
 
-            elif query.data == Panel_T.committee:
+            elif query.data == Panel_Keys.committee:
 
+                print(query.data)
                 self.panel_show_committee(query)
 
-            elif query.data == Panel_T.committee_right:
-                print(query.data)
-                # self.panel_show_next_committee(query)
+            elif query.data == Panel_Keys.committee_right:
 
-            elif query.data == Panel_T.commander_order:
+                print(query.data)
+                self.panel_show_next_committee(query)
+
+            elif query.data == Panel_Keys.commander_order:
+
                 print(query.data)
                 # self.panel_show_commander_order(query)
 
-            elif query.data == Panel_T.special_ability:
+            elif query.data == Panel_Keys.special_ability:
+
                 print(query.data)
                 # self.panel_send_assassin_keyboard(query)
 
-            elif query.data == Panel_T.game_info:
+            elif query.data == Panel_Keys.game_info:
+
                 print(query.data)
                 # self.panel_show_game_info(query)
 
@@ -493,9 +501,9 @@ class Bot():
 
         panel_strs = list()
 
-        for item in vars(Panel_T):
+        for item in vars(Panel_Keys):
 
-            attr = Panel_T.__getattribute__(item)
+            attr = Panel_Keys.__getattribute__(item)
 
             if isinstance(attr, list):
 
@@ -511,55 +519,101 @@ class Bot():
 
     def panel_show_round(self, query):
 
-        if int(query.data[1]) >= self.game.round:
+        try:
+            if int(query.data[1]) >= self.game.round:
+
+                query_id = query.id
+                self.bot.answer_callback_query(query_id, PanelM_T.RHNRY)
+
+            else:
+
+                text = self.panel.pages[query.data]
+                chat_id = query.message.chat.id
+                self.edit_one(chat_id, text)
+
+        except ApiTelegramException:
 
             query_id = query.id
-            self.bot.answer_callback_query(query_id, Panel_T.RHNRY)
-
-        else:
-
-            text = self.panel.pages[query.data]
-            chat_id = query.message.chat.id
-            self.edit_one(chat_id, text)
+            text = PanelM_T.AR
+            self.bot.answer_callback_query(query_id, text)
 
     def panel_show_committee(self, query):
 
-        chat_id = query.message.chat.id
+        try:
 
-        self.panel.chat_id_to_committee_page[chat_id] = \
-            len(self.panel.pages[Panel_T.committee]) + 1
+            n_committee = len(self.panel.pages[Panel_Keys.committee])
 
-        text = self.panel.pages[query.data]
-        self.edit_one(chat_id, text)
+            if n_committee == 0:
+
+                query_id = query.id
+                text = PanelM_T.NCHBCY
+                self.bot.answer_callback_query(query_id, text)
+
+            else:
+
+                chat_id = query.message.chat.id
+                self.panel.chat_to_committee[chat_id] = n_committee
+
+                text = self.panel.pages[Panel_Keys.committee][-1]
+
+                self.edit_one(chat_id, text)
+
+        except ApiTelegramException:
+
+            query_id = query.id
+            text = PanelM_T.AR
+            self.bot.answer_callback_query(query_id, text)
 
     def panel_show_previous_committee(self, query):
 
+        n_committee = len(self.panel.pages[Panel_Keys.committee])
         chat_id = query.message.chat.id
 
-        if self.panel.chat_id_to_committee_page[chat_id] == 0:
+        if n_committee == 0:
 
             query_id = query.id
-            self.bot.answer_callback_query(query_id, "somthing")
+            text = PanelM_T.NCHBCY
+            self.bot.answer_callback_query(query_id, text)
+
+        elif self.panel.chat_to_committee[chat_id] == 0:
+
+            query_id = query.id
+            text = PanelM_T.FC
+            self.bot.answer_callback_query(query_id, text)
 
         else:
 
-            self.panel.chat_id_to_committee_page[chat_id] -= 1
-            self.panel_show_committee(query)
+            self.panel.chat_to_committee[chat_id] -= 1
+            target_committee = self.panel.chat_to_committee[chat_id]
+            text = self.panel.pages[Panel_Keys.committee][target_committee]
+            self.edit_one(chat_id, text)
 
     def panel_show_next_committee(self, query):
 
         chat_id = query.message.chat.id
-        n_committees = len(self.panel.pages[Panel_T.committee])
+        n_committee = len(self.panel.pages[Panel_Keys.committee])
 
-        if self.panel.chat_id_to_committee_page[chat_id] == n_committees:
+        print(n_committee)
+        print(self.panel.chat_to_committee[chat_id])
+
+        if n_committee == 0:
 
             query_id = query.id
-            self.bot.answer_callback_query(query_id, "somthing")
+            text = PanelM_T.NCHBCY
+            self.bot.answer_callback_query(query_id, text)
+
+        if self.panel.chat_to_committee[chat_id] == n_committee:
+
+            query_id = query.id
+            text = PanelM_T.LC
+            self.bot.answer_callback_query(query_id, text)
 
         else:
 
-            self.panel.chat_id_to_committee_page[chat_id] += 1
-            self.panel_show_committee(query)
+            self.panel.chat_to_committee[chat_id] += 1
+            target_committee = self.panel.chat_to_committee[chat_id]
+            text = self.panel.pages[Panel_Keys.committee][target_committee]
+            self.edit_one(chat_id, text)
 
     def edit_all(self, text, keyboard=None):
 
@@ -724,7 +778,7 @@ class Bot():
                     "\n" + big_sep +
                     "\n" + commander_order_text)
 
-            self.panel.pages[Panel_T.game_info] = game_info_text
+            self.panel.pages[Panel_Keys.game_info] = game_info_text
 
             self.edit_one(chat_id, text)
 
@@ -1346,7 +1400,7 @@ class Bot():
     def panel_keyboard(self):
 
         keyboard = types.InlineKeyboardMarkup(row_width=5, )
-        rs = Panel_T.rounds
+        rs = Panel_Keys.rounds
         buttons = list()
 
         for r in rs:
@@ -1356,9 +1410,9 @@ class Bot():
 
         keyboard.row(*buttons)
 
-        chl = Panel_T.committee_left
-        ch = Panel_T.committee
-        chr = Panel_T.committee_right
+        chl = Panel_Keys.committee_left
+        ch = Panel_Keys.committee
+        chr = Panel_Keys.committee_right
 
         buttons = list()
 
@@ -1368,9 +1422,9 @@ class Bot():
 
         keyboard.row(*buttons)
 
-        gi = Panel_T.game_info
-        sa = Panel_T.special_ability
-        co = Panel_T.commander_order
+        gi = Panel_Keys.game_info
+        sa = Panel_Keys.special_ability
+        co = Panel_Keys.commander_order
 
         inline = types.InlineKeyboardButton(gi, callback_data=gi)
         keyboard.row(inline)
@@ -1538,10 +1592,10 @@ class Bot():
     # Summary Functions
     # the following function are to make summary during the fellow of the game.
 
-    def add_committee_header(self, rejected_count):
+    def add_committee_header(self, Round, rejected_count):
 
         sep = GaS_T.small_sep
-        return ("\n" + f"Rejection Count: {rejected_count}" +
+        return ("\n" + f"Round: {Round}, Rejection Count: {rejected_count}" +
                 "\n" + sep +
                 "\n" + "Committee Votes:" +
                 "\n")
@@ -1585,12 +1639,17 @@ class Bot():
             self.game.reject_count += 1
 
         rejected = self.game.reject_count
-
-        self.committee_summary = (self.add_committee_header(rejected) +
+        Round = self.game.round
+        self.committee_summary = (self.add_committee_header(Round, rejected) +
                                   self.committee_summary)
         self.committee_summary += self.add_committee_footer()
 
-        self.panel.pages[Panel_T.committee].append(self.committee_summary)
+        self.panel.pages[Panel_Keys.committee].append(self.committee_summary)
+        n_committee = len(self.panel.pages[Panel_Keys.committee])
+
+        for chat_id in self.ids:
+
+            self.panel.chat_to_committee[chat_id] = n_committee
 
         self.edit_all(self.committee_summary)
 

@@ -276,14 +276,23 @@ Oth_T = SimpleNamespace(
 
 )
 
-Panel_T = SimpleNamespace(
+Panel_Keys = SimpleNamespace(
 
     rounds=["R1", "R2", "R3", "R4", "R5"],
     game_info=emojize(":performing_arts: Game Information"),
     special_ability=emojize(":crystal_ball: Special Ability"),
     commander_order=emojize(":fleur-de-lis: commander's order"),
-    committee_=emojize("committee"),
+    committee=emojize("committee"),
     committee_left=emojize(":left_arrow:"),
     committee_right=emojize(":right_arrow:"),
-    RHNRY="Round has not reached yet !!"
+)
+
+PanelM_T = SimpleNamespace(
+
+    RHNRY="Round has not reached yet !!",
+    NCHBCY="No committee has been created yet !!",
+    LC="This is the last committee yet !!",
+    FC="This is the first committee !!",
+    AR="Already Requested"
+
 )
