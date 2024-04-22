@@ -6,10 +6,6 @@ current_working_directory = os.getcwd()
 Directories = SimpleNamespace(
 
     Token=f"{current_working_directory}\\src\\Data\\Bot_Token.txt",
-
-    CGW=f"{current_working_directory}\\src\\Data\\creating_game_word.txt",
-
-    TGW=f"{current_working_directory}\\src\\Data\\terminating_game_word.txt",
 )
 
 Commands = SimpleNamespace(
@@ -33,8 +29,6 @@ Keys = SimpleNamespace(
 
     finished_choosing=emojize(':check_mark_button: Finished Choosing'),
 
-    propose=emojize(':loudspeaker: Propose'),
-
     final=emojize(':hundred_points: Final Decision'),
 
     success=emojize(':green_square: Success'),
@@ -56,12 +50,6 @@ Keys = SimpleNamespace(
     evil_win=emojize(":red_circle:"),
 
     city_win=emojize(":green_circle:"),
-
-    ok=emojize(":thinking_face:I Got It"),
-
-    pin=emojize(":bell:Pin this message."),
-
-    unpin=emojize(":bell_with_slash:Unpin this message.")
 )
 
 States = SimpleNamespace(
@@ -225,8 +213,6 @@ Co_T = SimpleNamespace(
     RFC=" was removed from the committee.",
 
     PCC='Proposed committee by commander:',
-
-    FCC='Final committee by commander:',
 )
 
 GaSi_T = SimpleNamespace(
@@ -250,7 +236,7 @@ Vote_T = SimpleNamespace(
     MV='Choose between "Fail" and "Success".',
 
     YVB=":slightly_smiling_face: you have voted before",
-
+    PTV="Remaining voters \n"
 )
 
 Ass_T = SimpleNamespace(
@@ -264,27 +250,24 @@ Ass_T = SimpleNamespace(
 )
 
 Summ_T = SimpleNamespace(
+
     CCIG="City Characters",
     ECIG="Evil Characters"
-
 )
 
 Oth_T = SimpleNamespace(
 
     TA="Please Try again ...",
     NAVC="Not a valid command."
-
 )
 
 Panel_Keys = SimpleNamespace(
 
-    rounds=["R1", "R2", "R3", "R4", "R5"],
     game_info=emojize(":performing_arts: Game Information"),
-    special_ability=emojize(":crystal_ball: Special Ability"),
     commander_order=emojize(":fleur-de-lis: commander's order"),
-    committee=emojize("committee"),
-    committee_left=emojize(":left_arrow:"),
-    committee_right=emojize(":right_arrow:"),
+    assassin_shoot=emojize(":water_pistol: Assassin Shoot"),
+    lady=emojize(":woman_elf: Lady Token"),
+    Cancle=":cross_mark: Cancle"
 )
 
 PanelM_T = SimpleNamespace(
@@ -293,6 +276,7 @@ PanelM_T = SimpleNamespace(
     NCHBCY="No committee has been created yet !!",
     LC="This is the last committee yet !!",
     FC="This is the first committee !!",
-    AR="Already Requested"
-
+    AR="Already Requested",
+    ASE="NOT Allowed",
+    CS="Comming Soon ... "
 )

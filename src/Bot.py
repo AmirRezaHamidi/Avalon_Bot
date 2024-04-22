@@ -8,15 +8,14 @@ from loguru import logger
 from telebot import types
 
 from Constants import Commands, Directories, \
-    Keys, Sub_States, States, \
+    Keys, PanelM_T, Sub_States, States, \
     GaS_T, Char_T, Ass_T, GaSi_T, Co_T, Vote_T, Oth_T, \
-    Panel_Keys, PanelM_T
+    Panel_Keys
+
 from Engines import Avalon_Engine
-from utils.io import read_txt_file  # write_json_file
+from utils.io import read_txt_file
 
 TOKEN = read_txt_file(Directories.Token)
-# creating_game_word = read_txt_file(Directories.CGW)
-# terminating_game_word = read_txt_file(Directories.TGW)
 
 
 class Bot():
@@ -49,8 +48,6 @@ class Bot():
             print("initial_condition")
 
         # # admin parameters
-        # self.creating_game_word = creating_game_word
-        # self.terminating_game_word = terminating_game_word
         self.admin_id = int()
 
         # game state parameter
@@ -71,9 +68,6 @@ class Bot():
         self.panel = SimpleNamespace()
         self.panel.keyboard = self.panel_keyboard()
         self.panel.button_str = self.get_panel_str()
-        self.panel.pages = dict()
-        self.panel.pages[Panel_Keys.committee] = list()
-        self.panel.chat_to_committee = dict()
 
         # Character parameters
         merlin = Char_T.merlin
@@ -217,38 +211,21 @@ class Bot():
         @self.bot.callback_query_handler(func=self.is_player_hitting_panel)
         def panel_hit(query):
 
-            if query.data in Panel_Keys.rounds:
-                self.panel_show_round(query)
+            if query.data == Panel_Keys.game_info:
 
-            elif query.data == Panel_Keys.committee_left:
-
-                print(query.data)
-                self.panel_show_previous_committee(query)
-
-            elif query.data == Panel_Keys.committee:
-
-                print(query.data)
-                self.panel_show_committee(query)
-
-            elif query.data == Panel_Keys.committee_right:
-
-                print(query.data)
-                self.panel_show_next_committee(query)
+                self.panel_show_game_info(query)
 
             elif query.data == Panel_Keys.commander_order:
 
-                print(query.data)
-                # self.panel_show_commander_order(query)
+                self.panel_show_commander_order(query)
 
-            elif query.data == Panel_Keys.special_ability:
+            elif query.data == Panel_Keys.assassin_shoot:
 
-                print(query.data)
-                # self.panel_send_assassin_keyboard(query)
+                self.panel_assassin_shoot(query)
 
-            elif query.data == Panel_Keys.game_info:
+            elif query.data == Panel_Keys.lady:
 
-                print(query.data)
-                # self.panel_show_game_info(query)
+                self.panel_use_lady(query)
 
         # Choose_character #
         @self.bot.callback_query_handler(func=self.is_admin_choosing_character)
@@ -332,6 +309,9 @@ class Bot():
                 else:
 
                     self.handle_committee_vote(query)
+
+                    self.id_to_temp_message_id = dict()
+
                     self.game.count_committee_vote(self.committee_votes)
                     self.send_committee_summary()
 
@@ -413,54 +393,8 @@ class Bot():
 
             else:
 
-                self.end_assassin_shot()
+                self.end_assassin_shot(query)
 
-        # Pin Query #
-        @self.bot.callback_query_handler(func=self.is_player_query_pin)
-        def pin_query(query):
-
-            if self.debug_mode:
-
-                print("pin_query")
-
-            chat_id = query.message.chat.id
-            message_id = query.message.id
-            keyboard = self.unpin_keyboard()
-
-            self.bot.pin_chat_message(chat_id, message_id)
-            self.bot.edit_message_reply_markup(chat_id, message_id,
-                                               reply_markup=keyboard)
-
-        # Pin Query #
-        @self.bot.callback_query_handler(func=self.is_player_query_unpin)
-        def unpin_query(query):
-
-            if self.debug_mode:
-
-                print("unpin_query")
-
-            chat_id = query.message.chat.id
-            message_id = query.message.id
-            keyboard = self.pin_keyboard()
-
-            self.bot.unpin_chat_message(chat_id, message_id,)
-            self.bot.edit_message_reply_markup(chat_id, message_id,
-                                               reply_markup=keyboard)
-
-        # OKs Query #
-        @self.bot.callback_query_handler(func=self.is_player_query_got_it)
-        def got_it_query(query):
-
-            if self.debug_mode:
-
-                print("got_it_query")
-
-            chat_id = query.message.chat.id
-            message_id = query.message.id
-
-            self.bot.delete_message(chat_id, message_id)
-
-        # delete inline keyboard #
         @self.bot.callback_query_handler(func=lambda x: x)
         def delete_inline_keyboards(query):
 
@@ -481,8 +415,6 @@ class Bot():
                              Keys.success,
                              Keys.agree,
                              Keys.disagree,
-                             Keys.pin,
-                             Keys.unpin,
                              *self.names,
                              *self.checked_names,
                              *self.optional_characters,
@@ -497,6 +429,12 @@ class Bot():
                     self.bot.delete_message(chat_id, message_id)
 
     # auxilary functions. They help functionalize the code.
+    def send_all(self, text):
+
+        for id in self.ids:
+
+            self.bot.send_message(id, text)
+
     def get_panel_str(self):
 
         panel_strs = list()
@@ -517,123 +455,64 @@ class Bot():
 
         return panel_strs
 
-    def panel_show_round(self, query):
-
-        try:
-            if int(query.data[1]) >= self.game.round:
-
-                query_id = query.id
-                self.bot.answer_callback_query(query_id, PanelM_T.RHNRY)
-
-            else:
-
-                text = self.panel.pages[query.data]
-                chat_id = query.message.chat.id
-                self.edit_one(chat_id, text)
-
-        except ApiTelegramException:
-
-            query_id = query.id
-            text = PanelM_T.AR
-            self.bot.answer_callback_query(query_id, text)
-
-    def panel_show_committee(self, query):
-
-        try:
-
-            n_committee = len(self.panel.pages[Panel_Keys.committee])
-
-            if n_committee == 0:
-
-                query_id = query.id
-                text = PanelM_T.NCHBCY
-                self.bot.answer_callback_query(query_id, text)
-
-            else:
-
-                chat_id = query.message.chat.id
-                self.panel.chat_to_committee[chat_id] = n_committee
-
-                text = self.panel.pages[Panel_Keys.committee][-1]
-
-                self.edit_one(chat_id, text)
-
-        except ApiTelegramException:
-
-            query_id = query.id
-            text = PanelM_T.AR
-            self.bot.answer_callback_query(query_id, text)
-
-    def panel_show_previous_committee(self, query):
-
-        n_committee = len(self.panel.pages[Panel_Keys.committee])
-        chat_id = query.message.chat.id
-
-        if n_committee == 0:
-
-            query_id = query.id
-            text = PanelM_T.NCHBCY
-            self.bot.answer_callback_query(query_id, text)
-
-        elif self.panel.chat_to_committee[chat_id] == 0:
-
-            query_id = query.id
-            text = PanelM_T.FC
-            self.bot.answer_callback_query(query_id, text)
-
-        else:
-
-            self.panel.chat_to_committee[chat_id] -= 1
-            target_committee = self.panel.chat_to_committee[chat_id]
-            text = self.panel.pages[Panel_Keys.committee][target_committee]
-            self.edit_one(chat_id, text)
-
-    def panel_show_next_committee(self, query):
+    def panel_show_game_info(self, query):
 
         chat_id = query.message.chat.id
-        n_committee = len(self.panel.pages[Panel_Keys.committee])
+        query_id = query.id
+        big_sep = GaS_T.big_sep
 
-        print(n_committee)
-        print(self.panel.chat_to_committee[chat_id])
+        character = self.game.names_to_characters[self.ids_to_names[chat_id]]
+        role_text = (GaS_T.IGI +
+                     "\n" + big_sep +
+                     "\n" + GaS_T.YR +
+                     "\n" + "-" + self.game.all_messages[character.name])
 
-        if n_committee == 0:
+        game_info_text = (self.game.character_in_game +
+                          big_sep +
+                          "\n" + "Board:" + self.add_round_info())
 
-            query_id = query.id
-            text = PanelM_T.NCHBCY
-            self.bot.answer_callback_query(query_id, text)
+        text = (role_text +
+                "\n" + big_sep +
+                "\n" + game_info_text)
 
-        if self.panel.chat_to_committee[chat_id] == n_committee:
+        self.edit_one(query_id, chat_id, text)
 
-            query_id = query.id
-            text = PanelM_T.LC
-            self.bot.answer_callback_query(query_id, text)
+    def panel_show_commander_order(self, query):
 
-        else:
+        chat_id = query.message.chat.id
+        query_id = query.id
+        text = self.make_commander_order_message(1)
 
-            self.panel.chat_to_committee[chat_id] += 1
-            target_committee = self.panel.chat_to_committee[chat_id]
-            text = self.panel.pages[Panel_Keys.committee][target_committee]
-            self.edit_one(chat_id, text)
+        self.edit_one(query_id, chat_id, text)
 
-    def edit_all(self, text, keyboard=None):
+    def panel_assassin_shoot(self, query):
 
-        if keyboard is None:
-            keyboard = self.panel.keyboard
+        text = PanelM_T.CS
+        query_id = query.id
+        self.bot.answer_callback_query(query_id, text)
 
-        for chat_id, message_id in self.id_to_message_id.items():
+    def panel_use_lady(self, query):
 
-            self.bot.edit_message_text(text, chat_id, message_id,
-                                       reply_markup=keyboard)
+        text = PanelM_T.CS
+        query_id = query.id
+        self.bot.answer_callback_query(query_id, text)
 
-    def edit_one(self, chat_id, text, keyboard=None):
+    def edit_one(self, query_id, chat_id, text, keyboard=None):
 
         message_id = self.id_to_message_id[chat_id]
 
         if keyboard is None:
             keyboard = self.panel.keyboard
 
-        self.bot.edit_message_text(text, chat_id, message_id,
-                                   reply_markup=keyboard)
+        try:
+            self.bot.edit_message_text(text, chat_id, message_id,
+                                       reply_markup=keyboard)
+
+        except ApiTelegramException:
+
+            text = PanelM_T.AR
+            self.bot.answer_callback_query(query_id, text)
+            print("\n\nsame request\n\n")
 
     def grab_name(self, message):
 
@@ -748,6 +627,7 @@ class Bot():
         self.started_game_state()
 
         chat_id = query.message.chat.id
+        query_id = query.id
         message_id = query.message.id
         self.bot.delete_message(chat_id, message_id)
 
@@ -760,27 +640,16 @@ class Bot():
 
             chat_id = self.names_to_ids[name]
 
-            role_text = (GaS_T.IGI +
-                         "\n" + big_sep +
-                         "\n" + GaS_T.YR +
-                         "\n" + "-" + self.game.all_messages[character.name])
-
-            game_info_text = (self.game.character_in_game +
-                              big_sep +
-                              "\n" + "Board:" + self.add_round_info())
-
-            self.make_commander_order()
-            commander_order_text = self.make_commander_order_message()
-
-            text = (role_text +
+            text = (GaS_T.IGI +
                     "\n" + big_sep +
-                    "\n" + game_info_text +
+                    "\n" + GaS_T.YR +
+                    "\n" + "-" + self.game.all_messages[character.name] +
                     "\n" + big_sep +
-                    "\n" + commander_order_text)
+                    "\n" + self.game.character_in_game +
+                    big_sep +
+                    "\n" + "Board:" + self.add_round_info())
 
-            self.panel.pages[Panel_Keys.game_info] = game_info_text
-
-            self.edit_one(chat_id, text)
+            self.edit_one(query_id, chat_id, text)
 
     def make_commander_order(self):
 
@@ -852,34 +721,29 @@ class Bot():
 
         return round_info
 
-    def make_commander_order_message(self):
+    def make_commander_order_message(self, offset):
 
         commander_order_show = str()
 
         for index, name in enumerate(self.commander_order):
 
-            if index == self.commander_number:
+            if index == self.commander_number - offset:
 
-                commander_order_show += emojize(f"{name} --> (:crown:)\n")
+                commander_order_show += emojize(f"-{name} --> (:crown:)\n")
 
             else:
 
-                commander_order_show += f"{name}\n"
+                commander_order_show += f"-{name}\n"
 
-        text = emojize(f"{Co_T.CO} \n\n" + commander_order_show)
+        text = emojize(f"{Co_T.CO} \n" + commander_order_show)
 
         return text
-        # keyboard = self.ok_keyboard()
-
-        # for id in self.ids:
-
-        #     self.bot.send_message(id, text, reply_markup=keyboard)
 
     def go_to_next_commander(self):
 
         self.committee_choosing_state()
+        self.make_commander_order()
         self.resolve_commander()
-        # self.make_commander_order_message()
 
         n_committee = self.game.all_round[self.game.round]
 
@@ -894,7 +758,6 @@ class Bot():
         try:
 
             self.send_info(query)
-            # self.make_commander_order()
             self.go_to_next_commander()
 
         except ValueError as e:
@@ -944,25 +807,14 @@ class Bot():
 
     def commander_decision(self, query):
 
-        if query.data == Keys.propose:
+        text = f"{Co_T.PCC}\n-" + "\n-".join(self.mission_voters)
+        keyboard = self.committee_vote_keyboard()
+        self.bot.delete_message(query.message.chat.id, query.message.id)
 
-            text = f"{Co_T.PCC}\n-" + "\n-".join(self.mission_voters)
-            keyboard = self.ok_keyboard()
+        for id in self.ids:
+            self.bot.send_message(id, text, reply_markup=keyboard)
 
-            for id in self.ids:
-
-                self.bot.send_message(id, text, reply_markup=keyboard)
-
-        elif query.data == Keys.final:
-
-            text = f"{Co_T.FCC}\n-" + "\n-".join(self.mission_voters)
-            keyboard = self.committee_vote_keyboard()
-
-            for id in self.ids:
-                self.bot.send_message(id, text, reply_markup=keyboard)
-
-            self.bot.delete_message(query.message.chat.id, query.message.id)
-            self.committee_voting_state()
+        self.committee_voting_state()
 
     def pick_right_players(self, query):
 
@@ -992,10 +844,26 @@ class Bot():
 
         chat_id = query.message.chat.id
         message_id = query.message.id
-        text = emojize(f"{Vote_T.CV}{query.data}")
+        query_id = query.id
 
-        self.bot.answer_callback_query(query.id, text)
-        self.bot.delete_message(chat_id, message_id)
+        query_text = emojize(f"{Vote_T.CV}{query.data}")
+        self.bot.answer_callback_query(query_id, query_text)
+
+        self.id_to_temp_message_id[chat_id] = message_id
+
+        if len(self.id_to_temp_message_id) == len(self.names):
+
+            for chat_id, message_id in self.id_to_temp_message_id.items():
+                self.bot.delete_message(chat_id, message_id)
+
+        else:
+
+            text = Vote_T.PTV + "-" + "\n-".join(self.committee_voters)
+            keyboard = self.committee_vote_keyboard()
+
+            for chat_id, message_id in self.id_to_temp_message_id.items():
+                self.bot.edit_message_text(text, chat_id, message_id,
+                                           reply_markup=keyboard)
 
         name = self.ids_to_names[chat_id]
         self.committee_summary += self.add_committee_vote(name, query.data)
@@ -1021,11 +889,10 @@ class Bot():
     def city_3_won(self):
 
         text = GaSi_T.CW3R
-        keyboard = self.remove_keyboard()
 
         for id in self.ids:
 
-            self.bot.send_message(id, text, reply_markup=keyboard)
+            self.bot.send_message(id, text)
 
         text = Ass_T.ASS1
         keyboard = self.assassin_keyboard()
@@ -1054,7 +921,11 @@ class Bot():
         text = Ass_T.ASS3
         self.bot.answer_callback_query(query_id, text)
 
-    def end_assassin_shot(self):
+    def end_assassin_shot(self, query):
+
+        chat_id = query.message.chat.id
+        message_id = query.message.id
+        self.bot.delete_message(chat_id, message_id)
 
         self.game.assassin_shoot(self.assassins_guess)
 
@@ -1066,33 +937,29 @@ class Bot():
 
             text = f"{GaSi_T.CW}{GaSi_T.RCW}"
 
-        keyboard = self.remove_keyboard()
-
         for id in self.ids:
 
-            self.bot.send_message(id, text, reply_markup=keyboard)
+            self.bot.send_message(id, text)
 
         self.ended_game_state()
 
     def end_evil_3_won(self):
 
         text = f"{GaSi_T.EW}{GaSi_T.REW3}"
-        keyboard = self.remove_keyboard()
 
         for id in self.ids:
 
-            self.bot.send_message(id, text, reply_markup=keyboard)
+            self.bot.send_message(id, text)
 
         self.ended_game_state()
 
     def end_5_reject(self):
 
         text = f"{GaSi_T.EW}{GaSi_T.REW1}"
-        keyboard = self.remove_keyboard()
 
         for id in self.ids:
 
-            self.bot.send_message(id, text, reply_markup=keyboard)
+            self.bot.send_message(id, text)
 
         self.ended_game_state()
 
@@ -1143,13 +1010,6 @@ class Bot():
     # rule checkers
     # the following functions check the necessary rules
     # for each message handler. their output is either True or False.
-
-    # Whos Conditions
-    def is_admin_message(self, message):
-
-        c_1 = self.admin_id == message.chat.id
-
-        return c_1
 
     def is_admin(self, query):
 
@@ -1235,11 +1095,10 @@ class Bot():
         return c_1 and c_2
 
     # Whos, Whens, Whats (Copmlex Conditions)
-
     def is_player_hitting_panel(self, query):
 
         # who
-        c_1 = True   # self.is_player(query)
+        c_1 = self.is_player(query)
 
         # when
         c_2 = True
@@ -1276,45 +1135,6 @@ class Bot():
 
         return c_1 and c_2 and (c_3 or c_4)
 
-    def is_player_query_got_it(self, query):
-
-        # Who
-        c_1 = self.is_player(query)
-
-        # When
-        c_2 = True
-
-        # What
-        c_3 = query.data == Keys.ok
-
-        return c_1 and c_2 and c_3
-
-    def is_player_query_pin(self, query):
-
-        # Who
-        c_1 = self.is_player(query)
-
-        # When
-        c_2 = True
-
-        # What
-        c_3 = query.data == Keys.pin
-
-        return c_1 and c_2 and c_3
-
-    def is_player_query_unpin(self, query):
-
-        # Who
-        c_1 = self.is_player(query)
-
-        # When
-        c_2 = True
-
-        # What
-        c_3 = query.data == Keys.unpin
-
-        return c_1 and c_2 and c_3
-
     def is_commander_choosing_name(self, query):
 
         # who
@@ -1338,7 +1158,7 @@ class Bot():
         c_2 = self.is_committee_choosing_state()
 
         # what
-        c_3 = query.data in [Keys.final, Keys.propose]
+        c_3 = query.data == Keys.final
 
         return c_1 and c_2 and c_3
 
@@ -1397,46 +1217,6 @@ class Bot():
     # keyboard makers
     # the following functions make keyboard for players.
 
-    def panel_keyboard(self):
-
-        keyboard = types.InlineKeyboardMarkup(row_width=5, )
-        rs = Panel_Keys.rounds
-        buttons = list()
-
-        for r in rs:
-
-            inline = types.InlineKeyboardButton(r, callback_data=r)
-            buttons.append(inline)
-
-        keyboard.row(*buttons)
-
-        chl = Panel_Keys.committee_left
-        ch = Panel_Keys.committee
-        chr = Panel_Keys.committee_right
-
-        buttons = list()
-
-        buttons.append(types.InlineKeyboardButton(chl, callback_data=chl))
-        buttons.append(types.InlineKeyboardButton(ch, callback_data=ch))
-        buttons.append(types.InlineKeyboardButton(chr, callback_data=chr))
-
-        keyboard.row(*buttons)
-
-        gi = Panel_Keys.game_info
-        sa = Panel_Keys.special_ability
-        co = Panel_Keys.commander_order
-
-        inline = types.InlineKeyboardButton(gi, callback_data=gi)
-        keyboard.row(inline)
-
-        inline = types.InlineKeyboardButton(co, callback_data=co)
-        keyboard.row(inline)
-
-        inline = types.InlineKeyboardButton(sa, callback_data=sa)
-        keyboard.row(inline)
-
-        return keyboard
-
     def join_create_game_keyboard(self):
 
         keyboard = types.InlineKeyboardMarkup(row_width=1)
@@ -1475,6 +1255,18 @@ class Bot():
 
         return keyboard
 
+    def panel_keyboard(self):
+
+        keyboard = types.InlineKeyboardMarkup()
+
+        for item in vars(Panel_Keys):
+
+            attr = Panel_Keys.__getattribute__(item)
+            inline = types.InlineKeyboardButton(attr, callback_data=attr)
+            keyboard.row(inline)
+
+        return keyboard
+
     def commander_keyboard(self):
 
         keyboard = types.InlineKeyboardMarkup(row_width=2)
@@ -1494,12 +1286,8 @@ class Bot():
             keyboard.row(inline)
 
         final = Keys.final
-        propose = Keys.propose
-
         f_inline = types.InlineKeyboardButton(final, callback_data=final)
-        p_inline = types.InlineKeyboardButton(propose, callback_data=propose)
-
-        keyboard.add(p_inline, f_inline)
+        keyboard.add(f_inline)
 
         return keyboard
 
@@ -1556,39 +1344,6 @@ class Bot():
 
         return keyboard
 
-    def ok_keyboard(self):
-
-        keyboard = types.InlineKeyboardMarkup(row_width=1)
-        ok = Keys.ok
-
-        inline = types.InlineKeyboardButton(ok, callback_data=ok)
-        keyboard.row(inline)
-
-        return keyboard
-
-    def pin_keyboard(self):
-
-        keyboard = types.InlineKeyboardMarkup(row_width=1)
-        pin = Keys.pin
-
-        inline = types.InlineKeyboardButton(pin, callback_data=pin)
-        keyboard.row(inline)
-
-        return keyboard
-
-    def unpin_keyboard(self):
-
-        keyboard = types.InlineKeyboardMarkup(row_width=1)
-        pin = Keys.unpin
-
-        inline = types.InlineKeyboardButton(pin, callback_data=pin)
-        keyboard.row(inline)
-
-        return keyboard
-
-    def remove_keyboard(self):
-        return types.ReplyKeyboardRemove()
-
     # Summary Functions
     # the following function are to make summary during the fellow of the game.
 
@@ -1623,10 +1378,12 @@ class Bot():
                 "\n" + "-" + names +
                 "\n" + sep +
                 "\n" + "Mission Results:" +
-                "\n" + f"# Sucesses: {success}" +
-                "\n" + f"# Fails: {fail}" +
+                "\n" + f"-Sucesses: {success}" +
+                "\n" + f"-Fails: {fail}" +
                 "\n" + sep +
-                "\n" + f"Board: {self.add_round_info()}")
+                "\n" + f"Board: {self.add_round_info()}" +
+                "\n" + sep +
+                "\n" + self.make_commander_order_message(0))
 
     def send_committee_summary(self):
 
@@ -1640,18 +1397,13 @@ class Bot():
 
         rejected = self.game.reject_count
         Round = self.game.round
+
         self.committee_summary = (self.add_committee_header(Round, rejected) +
                                   self.committee_summary)
+
         self.committee_summary += self.add_committee_footer()
 
-        self.panel.pages[Panel_Keys.committee].append(self.committee_summary)
-        n_committee = len(self.panel.pages[Panel_Keys.committee])
-
-        for chat_id in self.ids:
-
-            self.panel.chat_to_committee[chat_id] = n_committee
-
-        self.edit_all(self.committee_summary)
+        self.send_all(self.committee_summary)
 
     def send_mission_summary(self):
 
@@ -1662,8 +1414,7 @@ class Bot():
                                                   self.game.success_count,
                                                   Round, commander)
 
-        self.panel.pages[f"R{Round}"] = self.game_summary
-        self.edit_all(self.game_summary)
+        self.send_all(self.game_summary)
 
 
 my_bot = Bot()
