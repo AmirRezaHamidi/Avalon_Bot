@@ -157,7 +157,8 @@ class Bot():
                 self.created_game_state(query)
                 self.add_player(query)
 
-                text = f"{GaS_T.YJGS}{GaS_T.PSF}{"\n".join(self.names)}"
+                names = "\n".join(self.names)
+                text = f"{GaS_T.YJGS}{GaS_T.PSF}{names}"
                 self.bot.edit_message_text(text, chat_id, message_id)
 
                 text = GaS_T.CHC
@@ -186,7 +187,8 @@ class Bot():
 
                     self.add_player(query)
 
-                    text = f"{GaS_T.YJGS}{GaS_T.PSF}{"\n".join(self.names)}"
+                    names = "\n".join(self.names)
+                    text = f"{GaS_T.YJGS}{GaS_T.PSF}{names}"
 
                     for chat_id, message_id in self.id_to_message_id.items():
 
@@ -746,7 +748,7 @@ class Bot():
 
                     text = f"{Keys.city_win}"
 
-                elif result == -1:
+                else:
 
                     text = f"{Keys.evil_win}"
 
